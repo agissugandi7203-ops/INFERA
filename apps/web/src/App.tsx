@@ -1,29 +1,34 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter } from 'react-router-dom';
+import { BrowserRouter, useNavigate, useLocation } from 'react-router-dom';
 import { Navbar } from './components/common/Navbar';
 import { Footer } from './components/common/Footer';
 import { AppRoutes } from './routes';
 import { AuthModal } from './features/auth/AuthModal';
 import { supabase } from './lib/supabase';
 
-export const App: React.FC = () => {
+const AppContent: React.FC = () => {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const isDashboard = location.pathname.startsWith('/dashboard');
 
   useEffect(() => {
     if (!supabase) return;
 
-    // Initial session check
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user?.email) {
         setUserEmail(session.user.email);
       }
     });
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session?.user?.email) {
         setUserEmail(session.user.email);
+        if (event === 'SIGNED_IN') {
+          navigate('/dashboard');
+        }
       } else {
         setUserEmail(null);
       }
@@ -32,36 +37,55 @@ export const App: React.FC = () => {
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
+  }, [navigate]);
 
   const handleLogout = async () => {
     if (supabase) {
       await supabase.auth.signOut();
     }
     setUserEmail(null);
+    navigate('/');
+  };
+
+  const handleAuthSuccess = (email: string) => {
+    setUserEmail(email);
+    setIsAuthOpen(false);
+    navigate('/dashboard');
   };
 
   return (
-    <BrowserRouter>
-      <div className="flex min-h-screen flex-col bg-white text-neutral-900 selection:bg-neutral-200">
+    <div className="flex min-h-screen flex-col bg-white text-neutral-900 selection:bg-neutral-200">
+      {!isDashboard && (
         <Navbar
           userEmail={userEmail}
           onOpenAuth={() => setIsAuthOpen(true)}
           onLogout={handleLogout}
         />
-        <main className="flex-1 flex items-center justify-center">
-          <AppRoutes
-            userEmail={userEmail}
-            onOpenAuth={() => setIsAuthOpen(true)}
-          />
-        </main>
-        <Footer />
-        <AuthModal
-          isOpen={isAuthOpen}
-          onClose={() => setIsAuthOpen(false)}
-          onAuthSuccess={(email) => setUserEmail(email)}
+      )}
+
+      <main className={isDashboard ? 'flex-1' : 'flex-1 flex items-center justify-center'}>
+        <AppRoutes
+          userEmail={userEmail}
+          onOpenAuth={() => setIsAuthOpen(true)}
+          onLogout={handleLogout}
         />
-      </div>
+      </main>
+
+      {!isDashboard && <Footer />}
+
+      <AuthModal
+        isOpen={isAuthOpen}
+        onClose={() => setIsAuthOpen(false)}
+        onAuthSuccess={handleAuthSuccess}
+      />
+    </div>
+  );
+};
+
+export const App: React.FC = () => {
+  return (
+    <BrowserRouter>
+      <AppContent />
     </BrowserRouter>
   );
 };

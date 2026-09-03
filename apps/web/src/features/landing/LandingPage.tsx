@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { apiClient } from '../../lib/api-client';
 import type { HealthStatus } from '@healthathon/shared';
 
@@ -39,8 +40,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ userEmail, onOpenAuth 
             Masuk / Buat Akun
           </button>
         ) : (
-          <div className="rounded-lg border border-neutral-200 bg-white px-4 py-2 text-xs text-neutral-700">
-            Status: <span className="font-semibold text-neutral-900">Terautentikasi ({userEmail})</span>
+          <div className="flex items-center gap-3">
+            <Link
+              to="/dashboard"
+              className="rounded-lg bg-neutral-900 px-5 py-2.5 text-xs font-semibold text-white hover:bg-neutral-800 transition"
+            >
+              Buka Dashboard
+            </Link>
           </div>
         )}
       </div>
