@@ -1,0 +1,25 @@
+{
+  "name": "healthathon-bpjs-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Production-grade fullstack monorepo for HealthAthon BPJS with React Vite and Express TypeScript",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -n \"api,web\" -c \"blue.bold,green.bold\" \"npm --workspace=@healthathon/api run dev\" \"npm --workspace=@healthathon/web run dev\"",
+    "dev:api": "npm --workspace=@healthathon/api run dev",
+    "dev:web": "npm --workspace=@healthathon/web run dev",
+    "build": "npm --workspace=@healthathon/shared run build && npm --workspace=@healthathon/api run build && npm --workspace=@healthathon/web run build",
+    "build:shared": "npm --workspace=@healthathon/shared run build",
+    "typecheck": "npm --workspace=@healthathon/shared run typecheck && npm --workspace=@healthathon/api run typecheck && npm --workspace=@healthathon/web run typecheck",
+    "clean": "node -e \"fs.rmSync('dist', { recursive: true, force: true })\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
