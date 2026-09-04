@@ -94,6 +94,30 @@ class OpenRouterService {
       throw AppError.internal(`OpenRouter error: ${message}`);
     }
   }
+
+  public async getEmbedding(text: string): Promise<number[]> {
+    if (!this.client) {
+      throw AppError.internal('OpenRouter client is not configured');
+    }
+
+    try {
+      const response = await this.client.embeddings.create({
+        model: 'text-embedding-3-small',
+        input: text,
+      });
+
+      const firstItem = response.data?.[0];
+      if (!firstItem || !firstItem.embedding) {
+        throw AppError.internal('Received empty embedding from OpenRouter');
+      }
+
+      return firstItem.embedding;
+    } catch (err) {
+      if (err instanceof AppError) throw err;
+      const message = err instanceof Error ? err.message : 'Embedding error';
+      throw AppError.internal(`OpenRouter embedding error: ${message}`);
+    }
+  }
 }
 
 export const openRouterService = new OpenRouterService();

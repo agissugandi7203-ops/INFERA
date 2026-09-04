@@ -4,6 +4,7 @@ import { AvatarChatBox } from './components/AvatarChatBox';
 import { FloatingAvatarWidget } from './components/FloatingAvatarWidget';
 import { AvatarDebugControls } from './components/AvatarDebugControls';
 import { AvatarController, CharacterEmotion } from './avatar/AvatarController';
+import { VoiceContextMenu } from './components/VoiceContextMenu';
 import {
   ChatMessage,
   OpenRouterSettings,
@@ -13,6 +14,7 @@ import {
   getStoredChatHistory,
   saveStoredChatHistory,
   sendOpenRouterChat,
+  ANIME_VOICE_PRESETS,
 } from './services/openrouter';
 import { SpeechService } from './services/speech';
 import {
@@ -44,10 +46,68 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
   const [isMinimized, setIsMinimized] = useState<boolean>(false);
   const [isListening, setIsListening] = useState<boolean>(false);
   const [isSoundDetected, setIsSoundDetected] = useState<boolean>(false);
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
 
   const controllerRef = useRef<AvatarController | null>(null);
   const emotionTimedownRef = useRef<NodeJS.Timeout | null>(null);
   const stopListeningRef = useRef<(() => void) | null>(null);
+
+  const handleContextMenu = (e: React.MouseEvent) => {
+    const target = e.target as HTMLElement;
+    if (target.closest('input') || target.closest('textarea')) {
+      return;
+    }
+    e.preventDefault();
+    setContextMenu({ x: e.clientX, y: e.clientY });
+  };
+
+  const handleSelectVoiceFromMenu = (voiceId: string) => {
+    const newSettings = { ...settings, elevenLabsVoiceId: voiceId };
+    setSettings(newSettings);
+    saveStoredSettings(newSettings);
+
+    const preset = ANIME_VOICE_PRESETS.find((v) => v.id === voiceId);
+    const voiceName = preset ? preset.name : 'Anime';
+
+    handleSelectEmotion('happy', 4000);
+    SpeechService.speak(
+      `Halo! Suaraku sekarang aktif menggunakan karakter ${voiceName}!`,
+      (openVal) => {
+        if (controllerRef.current) controllerRef.current.setMouthOpen(openVal);
+        setManualMouthOpen(openVal);
+      },
+      undefined,
+      () => {
+        if (controllerRef.current) controllerRef.current.setMouthOpen(0);
+        setManualMouthOpen(0);
+        handleSelectEmotion('normal', 0);
+      },
+      settings.elevenLabsApiKey,
+      voiceId
+    );
+  };
+
+  const handlePreviewVoiceFromMenu = (voiceId: string) => {
+    const preset = ANIME_VOICE_PRESETS.find((v) => v.id === voiceId);
+    const voiceName = preset ? preset.name : 'Anime';
+
+    handleSelectEmotion('speaking', 3000);
+    SpeechService.speak(
+      `Halo! Ini adalah sampel suara anime ${voiceName}.`,
+      (openVal) => {
+        if (controllerRef.current) controllerRef.current.setMouthOpen(openVal);
+        setManualMouthOpen(openVal);
+      },
+      undefined,
+      () => {
+        if (controllerRef.current) controllerRef.current.setMouthOpen(0);
+        setManualMouthOpen(0);
+        handleSelectEmotion('normal', 0);
+      },
+      settings.elevenLabsApiKey,
+      voiceId
+    );
+  };
 
   // Load chat history from localStorage
   useEffect(() => {
@@ -251,7 +311,10 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-neutral-50 text-neutral-900 flex flex-col relative overflow-x-hidden">
+    <div
+      onContextMenu={handleContextMenu}
+      className="min-h-screen bg-neutral-50 text-neutral-900 flex flex-col relative overflow-x-hidden"
+    >
       <DashboardHeader userEmail={userEmail} onLogout={onLogout || (() => {})} />
 
       {/* Main Workspace Dashboard Content */}
@@ -262,11 +325,11 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
             <div className="flex items-center gap-2">
               <h1 className="text-xl font-bold text-neutral-900">Portal Layanan Asisten BPJS Kesehatan</h1>
               <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/60">
-                GPT OSS 120B & ElevenLabs
+                GPT OSS 120B & ElevenLabs Anime
               </span>
             </div>
             <p className="text-xs text-neutral-500 mt-1">
-              Klik tubuh avatar untuk berbicara langsung, hover untuk mengatur ukuran (hingga 1 jendela), atau klik kanan untuk opsi minimize.
+              Klik kanan di mana saja pada dashboard untuk <strong>Ganti Suara Anime</strong> instan, atau klik avatar untuk mulai berbicara.
             </p>
           </div>
 
@@ -384,6 +447,19 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
             onClose={() => setIsChatOpen(false)}
           />
         </div>
+      )}
+
+      {/* Right-Click Context Menu for Quick Voice Selection */}
+      {contextMenu && (
+        <VoiceContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          currentVoiceId={settings.elevenLabsVoiceId || DEFAULT_SETTINGS.elevenLabsVoiceId || 'cgSgspJ2msm6clMCkdW9'}
+          onSelectVoice={handleSelectVoiceFromMenu}
+          onOpenAdvancedSettings={() => setShowSettingsModal(true)}
+          onPreviewVoice={handlePreviewVoiceFromMenu}
+          onClose={() => setContextMenu(null)}
+        />
       )}
     </div>
   );
