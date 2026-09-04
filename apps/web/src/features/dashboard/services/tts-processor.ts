@@ -181,21 +181,21 @@ export class TTSProcessor {
       return clean;
     }
 
-    // Apply natural punctuation pauses if specified
+    // Apply natural breathing pauses if specified
     if (metadata.pauses && Array.isArray(metadata.pauses)) {
       for (const pause of metadata.pauses) {
         if (pause.after && pause.duration_ms >= 140) {
           const target = pause.after.trim();
           if (clean.includes(target)) {
-            // Replace target with natural breathing punctuation if not already followed by punctuation
-            const regex = new RegExp(`(${escapeRegExp(target)})(?![.,?!…])`, 'g');
+            // Replace target with breathing punctuation if not already followed by an ellipsis
+            const regex = new RegExp(`(${escapeRegExp(target)})(?!\\s*\\.{2,})`, 'g');
             clean = clean.replace(regex, `$1... `);
           }
         }
       }
     }
 
-    return clean.replace(/\s+/g, ' ').trim();
+    return clean.replace(/\.{3,}\s*\.{3,}/g, '... ').replace(/\s+/g, ' ').trim();
   }
 }
 

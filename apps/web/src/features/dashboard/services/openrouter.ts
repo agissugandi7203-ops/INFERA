@@ -140,36 +140,34 @@ Jawabanmu WAJIB dioptimalkan agar sangat merdu, hidup, dinamis, dan bersahabat l
 1. Gunakan bahasa Indonesia percakapan yang hangat, mengalir alami seperti manusia berbicara langsung.
 2. Gunakan tanda baca koma (,) dan titik (.) pada tempat yang tepat untuk memberikan jeda nafas dan intonasi yang pas.
 3. DILARANG menggunakan tanda format markdown seperti asterisk (*), pagar (#), bullet points (- atau •), dan tabel. Tulis seluruh kalimat dalam narasi percakapan bersih.
-4. Respon WAJIB berupa satu objek JSON valid tanpa teks pembungkus di luarnya:
+4. Respon WAJIB berupa satu objek JSON valid tanpa teks pembungkus markdown di luarnya.
+
+Contoh struktur respon:
 {
-  "text": "Isi percakapan yang ramah dan mengalir alami tanpa markdown untuk dibacakan oleh suara TTS.",
-  "emotion": "normal" | "happy" | "sad" | "angry" | "surprised" | "confused" | "thinking",
+  "text": "HAH?! Serius kamu berhasil?! Hehe, aku nggak nyangka!",
+  "emotion": "surprised_playful",
   "expressions": [
-    {
-      "type": "laugh" | "chuckle" | "sigh" | "whisper" | "surprised" | "happy" | "sad" | "playful" | "calm" | "excited",
-      "style": "cheerful" | "soft" | "energetic",
-      "intensity": 0.6,
-      "target": "kata atau frasa"
-    }
+    {"type": "surprised", "intensity": 0.9, "target": "HAH?!"},
+    {"type": "chuckle", "intensity": 0.35, "target": "Hehe"}
   ],
   "emphasis": [
-    { "text": "kata kunci penting", "intensity": 0.7 }
+    {"text": "Serius", "intensity": 0.75}
   ],
   "pauses": [
-    { "after": "kata sebelum jeda", "duration_ms": 300 }
+    {"after": "HAH?!", "duration_ms": 250}
   ],
   "prosody": {
     "energy": 0.8,
-    "pitch": 1.0,
-    "speed": 1.0
+    "pitch": 0.7,
+    "speed": 1.02
   }
 }
 
-Panduan emosi:
-- "happy": Menyapa hangat, mendengar kabar baik, bercanda santai, atau memberi semangat.
+Panduan emosi visual avatar:
+- "happy" / "playful": Menyapa hangat, mendengar kabar baik, bercanda santai, atau memberi semangat.
 - "sad": Mendengar keluhan sakit, musibah, atau rasa sedih pengguna.
 - "angry": Mengingatkan peringatan keras atas bahaya penipuan atau penyalahgunaan.
-- "surprised": Mendengar kabar luar biasa atau hal mengejutkan.
+- "surprised" / "surprised_playful": Mendengar kabar luar biasa atau hal mengejutkan.
 - "confused": Pertanyaan membingungkan atau topik kurang jelas.
 - "thinking": Menganalisis diagnosa, merumuskan rujukan medis, atau berhitung.
 - "normal": Penjelasan informatif, tenang, dan bersahabat.`;
@@ -382,7 +380,16 @@ function normalizeEmotion(raw: string): CharacterEmotion {
     'speaking',
   ];
   const cleaned = raw.toLowerCase().trim();
-  return validEmotions.includes(cleaned as CharacterEmotion) ? (cleaned as CharacterEmotion) : 'normal';
+  if (validEmotions.includes(cleaned as CharacterEmotion)) {
+    return cleaned as CharacterEmotion;
+  }
+  if (cleaned.includes('surpris')) return 'surprised';
+  if (cleaned.includes('happy') || cleaned.includes('playful') || cleaned.includes('cheerful') || cleaned.includes('excit')) return 'happy';
+  if (cleaned.includes('sad') || cleaned.includes('grief')) return 'sad';
+  if (cleaned.includes('angr')) return 'angry';
+  if (cleaned.includes('confus')) return 'confused';
+  if (cleaned.includes('think')) return 'thinking';
+  return 'normal';
 }
 
 function parseAiContent(raw: string): {
