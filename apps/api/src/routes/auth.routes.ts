@@ -14,13 +14,14 @@ import {
   forgotPasswordSchema,
   googleAuthQuerySchema,
 } from '../validators/auth.validator.js';
+import { authLimiter } from '../middleware/rate-limit.middleware.js';
 
 const router = Router();
 
 router.get('/status', getAuthStatus);
-router.post('/login', validateBody(loginSchema), login);
-router.post('/register', validateBody(registerSchema), register);
-router.post('/reset-password', validateBody(forgotPasswordSchema), forgotPassword);
+router.post('/login', authLimiter, validateBody(loginSchema), login);
+router.post('/register', authLimiter, validateBody(registerSchema), register);
+router.post('/reset-password', authLimiter, validateBody(forgotPasswordSchema), forgotPassword);
 router.get('/google-url', validateQuery(googleAuthQuerySchema), getGoogleAuthUrl);
 router.get('/me', getCurrentUser);
 

@@ -1,0 +1,794 @@
+{
+  "canvasWidth": 1124,
+  "canvasHeight": 2000,
+  "scale": 0.4,
+  "atlas": {
+    "image": "character-atlas.png",
+    "size": {
+      "w": 2048,
+      "h": 2048
+    }
+  },
+  "anchors": {
+    "head": {
+      "x": 562,
+      "y": 408
+    },
+    "eye_l": {
+      "x": 515,
+      "y": 330
+    },
+    "eye_r": {
+      "x": 609,
+      "y": 330
+    },
+    "eyebrow_l": {
+      "x": 519,
+      "y": 305
+    },
+    "eyebrow_r": {
+      "x": 605,
+      "y": 305
+    },
+    "mouth": {
+      "x": 562,
+      "y": 392
+    },
+    "body": {
+      "x": 562,
+      "y": 680
+    }
+  },
+  "frames": {
+    "b_hair_long": {
+      "frame": {
+        "x": 4,
+        "y": 4,
+        "w": 419,
+        "h": 846
+      },
+      "canvasOffset": {
+        "x": 353,
+        "y": 294
+      },
+      "parent": "b_hair",
+      "defaultVisible": true,
+      "zIndex": 10
+    },
+    "body_base": {
+      "frame": {
+        "x": 427,
+        "y": 4,
+        "w": 275,
+        "h": 593
+      },
+      "canvasOffset": {
+        "x": 425,
+        "y": 392
+      },
+      "parent": "body",
+      "defaultVisible": true,
+      "zIndex": 20
+    },
+    "legs_r": {
+      "frame": {
+        "x": 706,
+        "y": 4,
+        "w": 160,
+        "h": 588
+      },
+      "canvasOffset": {
+        "x": 524,
+        "y": 1306
+      },
+      "parent": "body",
+      "defaultVisible": true,
+      "zIndex": 5
+    },
+    "tight_r": {
+      "frame": {
+        "x": 870,
+        "y": 4,
+        "w": 389,
+        "h": 514
+      },
+      "canvasOffset": {
+        "x": 363,
+        "y": 823
+      },
+      "parent": "body",
+      "defaultVisible": true,
+      "zIndex": 2
+    },
+    "tight_l": {
+      "frame": {
+        "x": 1263,
+        "y": 4,
+        "w": 389,
+        "h": 514
+      },
+      "canvasOffset": {
+        "x": 372,
+        "y": 823
+      },
+      "parent": "body",
+      "defaultVisible": true,
+      "zIndex": 3
+    },
+    "legs_l": {
+      "frame": {
+        "x": 1656,
+        "y": 4,
+        "w": 116,
+        "h": 434
+      },
+      "canvasOffset": {
+        "x": 449,
+        "y": 1302
+      },
+      "parent": "body",
+      "defaultVisible": true,
+      "zIndex": 4
+    },
+    "skirt_1": {
+      "frame": {
+        "x": 4,
+        "y": 854,
+        "w": 478,
+        "h": 424
+      },
+      "canvasOffset": {
+        "x": 323,
+        "y": 750
+      },
+      "parent": "body",
+      "defaultVisible": true,
+      "zIndex": 30
+    },
+    "cb_1": {
+      "frame": {
+        "x": 486,
+        "y": 854,
+        "w": 269,
+        "h": 322
+      },
+      "canvasOffset": {
+        "x": 428,
+        "y": 443
+      },
+      "parent": "body",
+      "defaultVisible": true,
+      "zIndex": 40
+    },
+    "shoulder_r": {
+      "frame": {
+        "x": 759,
+        "y": 854,
+        "w": 104,
+        "h": 295
+      },
+      "canvasOffset": {
+        "x": 648,
+        "y": 473
+      },
+      "parent": "body",
+      "defaultVisible": true,
+      "zIndex": 10
+    },
+    "shoulder_l": {
+      "frame": {
+        "x": 867,
+        "y": 854,
+        "w": 104,
+        "h": 295
+      },
+      "canvasOffset": {
+        "x": 373,
+        "y": 473
+      },
+      "parent": "body",
+      "defaultVisible": true,
+      "zIndex": 12
+    },
+    "head_base": {
+      "frame": {
+        "x": 975,
+        "y": 854,
+        "w": 178,
+        "h": 247
+      },
+      "canvasOffset": {
+        "x": 473,
+        "y": 187
+      },
+      "parent": "head",
+      "defaultVisible": true,
+      "zIndex": 10
+    },
+    "sleeve_r": {
+      "frame": {
+        "x": 1157,
+        "y": 854,
+        "w": 143,
+        "h": 231
+      },
+      "canvasOffset": {
+        "x": 638,
+        "y": 468
+      },
+      "parent": "body",
+      "defaultVisible": true,
+      "zIndex": 11
+    },
+    "sleeve_l": {
+      "frame": {
+        "x": 1304,
+        "y": 854,
+        "w": 143,
+        "h": 231
+      },
+      "canvasOffset": {
+        "x": 343,
+        "y": 468
+      },
+      "parent": "body",
+      "defaultVisible": true,
+      "zIndex": 13
+    },
+    "hand_l": {
+      "frame": {
+        "x": 1451,
+        "y": 854,
+        "w": 78,
+        "h": 225
+      },
+      "canvasOffset": {
+        "x": 264,
+        "y": 915
+      },
+      "parent": "body",
+      "defaultVisible": true,
+      "zIndex": 16
+    },
+    "hand_r": {
+      "frame": {
+        "x": 1533,
+        "y": 854,
+        "w": 78,
+        "h": 225
+      },
+      "canvasOffset": {
+        "x": 782,
+        "y": 915
+      },
+      "parent": "body",
+      "defaultVisible": true,
+      "zIndex": 17
+    },
+    "exp_mad": {
+      "frame": {
+        "x": 1615,
+        "y": 854,
+        "w": 175,
+        "h": 216
+      },
+      "canvasOffset": {
+        "x": 475,
+        "y": 188
+      },
+      "parent": "head",
+      "defaultVisible": false,
+      "zIndex": 11
+    },
+    "arm_l": {
+      "frame": {
+        "x": 1794,
+        "y": 854,
+        "w": 159,
+        "h": 214
+      },
+      "canvasOffset": {
+        "x": 274,
+        "y": 726
+      },
+      "parent": "body",
+      "defaultVisible": true,
+      "zIndex": 14
+    },
+    "arm_r": {
+      "frame": {
+        "x": 4,
+        "y": 1282,
+        "w": 159,
+        "h": 214
+      },
+      "canvasOffset": {
+        "x": 691,
+        "y": 726
+      },
+      "parent": "body",
+      "defaultVisible": true,
+      "zIndex": 15
+    },
+    "f_hair_3": {
+      "frame": {
+        "x": 167,
+        "y": 1282,
+        "w": 114,
+        "h": 212
+      },
+      "canvasOffset": {
+        "x": 446,
+        "y": 191
+      },
+      "parent": "head",
+      "defaultVisible": true,
+      "zIndex": 60
+    },
+    "f_hair_2": {
+      "frame": {
+        "x": 285,
+        "y": 1282,
+        "w": 110,
+        "h": 198
+      },
+      "canvasOffset": {
+        "x": 568,
+        "y": 205
+      },
+      "parent": "head",
+      "defaultVisible": true,
+      "zIndex": 70
+    },
+    "exp_dark": {
+      "frame": {
+        "x": 399,
+        "y": 1282,
+        "w": 175,
+        "h": 167
+      },
+      "canvasOffset": {
+        "x": 475,
+        "y": 188
+      },
+      "parent": "head",
+      "defaultVisible": false,
+      "zIndex": 11
+    },
+    "mid_hair": {
+      "frame": {
+        "x": 578,
+        "y": 1282,
+        "w": 201,
+        "h": 160
+      },
+      "canvasOffset": {
+        "x": 462,
+        "y": 179
+      },
+      "parent": "head",
+      "defaultVisible": true,
+      "zIndex": 50
+    },
+    "f_hair_1_2": {
+      "frame": {
+        "x": 783,
+        "y": 1282,
+        "w": 47,
+        "h": 138
+      },
+      "canvasOffset": {
+        "x": 546,
+        "y": 214
+      },
+      "parent": "head",
+      "defaultVisible": true,
+      "zIndex": 75
+    },
+    "f_hair_1": {
+      "frame": {
+        "x": 834,
+        "y": 1282,
+        "w": 86,
+        "h": 130
+      },
+      "canvasOffset": {
+        "x": 533,
+        "y": 210
+      },
+      "parent": "head",
+      "defaultVisible": true,
+      "zIndex": 80
+    },
+    "ear_l": {
+      "frame": {
+        "x": 924,
+        "y": 1282,
+        "w": 34,
+        "h": 62
+      },
+      "canvasOffset": {
+        "x": 469,
+        "y": 324
+      },
+      "parent": "head",
+      "defaultVisible": true,
+      "zIndex": 12
+    },
+    "ear_r": {
+      "frame": {
+        "x": 962,
+        "y": 1282,
+        "w": 34,
+        "h": 62
+      },
+      "canvasOffset": {
+        "x": 622,
+        "y": 324
+      },
+      "parent": "head",
+      "defaultVisible": true,
+      "zIndex": 13
+    },
+    "acc_h1": {
+      "frame": {
+        "x": 1000,
+        "y": 1282,
+        "w": 48,
+        "h": 51
+      },
+      "canvasOffset": {
+        "x": 473,
+        "y": 232
+      },
+      "parent": "head",
+      "defaultVisible": true,
+      "zIndex": 90
+    },
+    "exp_shock": {
+      "frame": {
+        "x": 1052,
+        "y": 1282,
+        "w": 116,
+        "h": 36
+      },
+      "canvasOffset": {
+        "x": 504,
+        "y": 320
+      },
+      "parent": "head",
+      "defaultVisible": false,
+      "zIndex": 86
+    },
+    "eye_l_lash_u": {
+      "frame": {
+        "x": 1172,
+        "y": 1282,
+        "w": 58,
+        "h": 35
+      },
+      "canvasOffset": {
+        "x": 482,
+        "y": 299
+      },
+      "parent": "eye_l",
+      "defaultVisible": true,
+      "zIndex": 26
+    },
+    "eye_r_lash_u": {
+      "frame": {
+        "x": 1234,
+        "y": 1282,
+        "w": 58,
+        "h": 35
+      },
+      "canvasOffset": {
+        "x": 585,
+        "y": 299
+      },
+      "parent": "eye_r",
+      "defaultVisible": true,
+      "zIndex": 26
+    },
+    "mouth_open": {
+      "frame": {
+        "x": 1296,
+        "y": 1282,
+        "w": 38,
+        "h": 35
+      },
+      "canvasOffset": {
+        "x": 543,
+        "y": 385
+      },
+      "parent": "mouth",
+      "defaultVisible": false,
+      "zIndex": 33
+    },
+    "eye_l_eyeball": {
+      "frame": {
+        "x": 1338,
+        "y": 1282,
+        "w": 26,
+        "h": 27
+      },
+      "canvasOffset": {
+        "x": 507,
+        "y": 322
+      },
+      "parent": "eye_l",
+      "defaultVisible": true,
+      "zIndex": 21
+    },
+    "eye_r_eyeball": {
+      "frame": {
+        "x": 1368,
+        "y": 1282,
+        "w": 26,
+        "h": 27
+      },
+      "canvasOffset": {
+        "x": 591,
+        "y": 322
+      },
+      "parent": "eye_r",
+      "defaultVisible": true,
+      "zIndex": 21
+    },
+    "mouth_3": {
+      "frame": {
+        "x": 1398,
+        "y": 1282,
+        "w": 28,
+        "h": 27
+      },
+      "canvasOffset": {
+        "x": 548,
+        "y": 383
+      },
+      "parent": "mouth",
+      "defaultVisible": false,
+      "zIndex": 38
+    },
+    "mouth_uncomfortable": {
+      "frame": {
+        "x": 1430,
+        "y": 1282,
+        "w": 31,
+        "h": 21
+      },
+      "canvasOffset": {
+        "x": 547,
+        "y": 392
+      },
+      "parent": "mouth",
+      "defaultVisible": false,
+      "zIndex": 39
+    },
+    "eye_l_white": {
+      "frame": {
+        "x": 1465,
+        "y": 1282,
+        "w": 37,
+        "h": 20
+      },
+      "canvasOffset": {
+        "x": 497,
+        "y": 328
+      },
+      "parent": "eye_l",
+      "defaultVisible": true,
+      "zIndex": 20
+    },
+    "eye_l_lash_b": {
+      "frame": {
+        "x": 1506,
+        "y": 1282,
+        "w": 26,
+        "h": 20
+      },
+      "canvasOffset": {
+        "x": 490,
+        "y": 329
+      },
+      "parent": "eye_l",
+      "defaultVisible": true,
+      "zIndex": 25
+    },
+    "eye_r_white": {
+      "frame": {
+        "x": 1536,
+        "y": 1282,
+        "w": 37,
+        "h": 20
+      },
+      "canvasOffset": {
+        "x": 590,
+        "y": 328
+      },
+      "parent": "eye_r",
+      "defaultVisible": true,
+      "zIndex": 20
+    },
+    "eye_r_lash_b": {
+      "frame": {
+        "x": 1577,
+        "y": 1282,
+        "w": 26,
+        "h": 20
+      },
+      "canvasOffset": {
+        "x": 608,
+        "y": 329
+      },
+      "parent": "eye_r",
+      "defaultVisible": true,
+      "zIndex": 25
+    },
+    "eye_l_pupil": {
+      "frame": {
+        "x": 1607,
+        "y": 1282,
+        "w": 10,
+        "h": 12
+      },
+      "canvasOffset": {
+        "x": 515,
+        "y": 330
+      },
+      "parent": "eye_l",
+      "defaultVisible": true,
+      "zIndex": 22
+    },
+    "eye_r_pupil": {
+      "frame": {
+        "x": 1621,
+        "y": 1282,
+        "w": 10,
+        "h": 12
+      },
+      "canvasOffset": {
+        "x": 600,
+        "y": 330
+      },
+      "parent": "eye_r",
+      "defaultVisible": true,
+      "zIndex": 22
+    },
+    "exp_uncomfortable": {
+      "frame": {
+        "x": 1635,
+        "y": 1282,
+        "w": 146,
+        "h": 8
+      },
+      "canvasOffset": {
+        "x": 489,
+        "y": 334
+      },
+      "parent": "head",
+      "defaultVisible": false,
+      "zIndex": 86
+    },
+    "eyebrow_l": {
+      "frame": {
+        "x": 1785,
+        "y": 1282,
+        "w": 43,
+        "h": 6
+      },
+      "canvasOffset": {
+        "x": 498,
+        "y": 302
+      },
+      "parent": "head",
+      "defaultVisible": true,
+      "zIndex": 85
+    },
+    "eyebrow_r": {
+      "frame": {
+        "x": 1832,
+        "y": 1282,
+        "w": 44,
+        "h": 6
+      },
+      "canvasOffset": {
+        "x": 584,
+        "y": 302
+      },
+      "parent": "head",
+      "defaultVisible": true,
+      "zIndex": 85
+    },
+    "eye_l_spark2": {
+      "frame": {
+        "x": 1880,
+        "y": 1282,
+        "w": 6,
+        "h": 4
+      },
+      "canvasOffset": {
+        "x": 519,
+        "y": 328
+      },
+      "parent": "eye_l",
+      "defaultVisible": true,
+      "zIndex": 24
+    },
+    "eye_r_spark2": {
+      "frame": {
+        "x": 1890,
+        "y": 1282,
+        "w": 6,
+        "h": 4
+      },
+      "canvasOffset": {
+        "x": 600,
+        "y": 328
+      },
+      "parent": "eye_r",
+      "defaultVisible": true,
+      "zIndex": 24
+    },
+    "nose": {
+      "frame": {
+        "x": 1900,
+        "y": 1282,
+        "w": 10,
+        "h": 3
+      },
+      "canvasOffset": {
+        "x": 557,
+        "y": 375
+      },
+      "parent": "head",
+      "defaultVisible": true,
+      "zIndex": 15
+    },
+    "eye_l_spark1": {
+      "frame": {
+        "x": 1914,
+        "y": 1282,
+        "w": 5,
+        "h": 3
+      },
+      "canvasOffset": {
+        "x": 508,
+        "y": 338
+      },
+      "parent": "eye_l",
+      "defaultVisible": true,
+      "zIndex": 23
+    },
+    "eye_r_spark1": {
+      "frame": {
+        "x": 1923,
+        "y": 1282,
+        "w": 5,
+        "h": 3
+      },
+      "canvasOffset": {
+        "x": 611,
+        "y": 338
+      },
+      "parent": "eye_r",
+      "defaultVisible": true,
+      "zIndex": 23
+    },
+    "mouth_closed": {
+      "frame": {
+        "x": 1932,
+        "y": 1282,
+        "w": 35,
+        "h": 2
+      },
+      "canvasOffset": {
+        "x": 545,
+        "y": 396
+      },
+      "parent": "mouth",
+      "defaultVisible": true,
+      "zIndex": 32
+    }
+  }
+}

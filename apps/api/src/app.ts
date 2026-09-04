@@ -6,9 +6,13 @@ import { env } from './config/env.js';
 import { API_PREFIX } from '@healthathon/shared';
 import apiRouter from './routes/api.routes.js';
 import { notFoundHandler, errorHandler } from './middleware/error.middleware.js';
+import { generalLimiter } from './middleware/rate-limit.middleware.js';
 
 export const createApp = (): Application => {
   const app = express();
+
+  // Rate limiting (General API protection against spam & DOS)
+  app.use(generalLimiter);
 
   // Security headers
   app.use(helmet());
@@ -28,9 +32,9 @@ export const createApp = (): Application => {
     app.use(morgan(env.NODE_ENV === 'production' ? 'combined' : 'dev'));
   }
 
-  // Body parsers
-  app.use(express.json({ limit: '10mb' }));
-  app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+  // Body parsers (Strict payload size limiting)
+  app.use(express.json({ limit: '2mb' }));
+  app.use(express.urlencoded({ extended: true, limit: '2mb' }));
 
   // Root welcome route
   app.get('/', (_req, res) => {
