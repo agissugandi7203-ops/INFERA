@@ -1,3 +1,9 @@
+import {
+  VOICE_DEFAULT_ID,
+  BASE_VOICE_SETTINGS,
+  ElevenLabsVoiceSettings,
+} from './tts-processor';
+
 export class SpeechService {
   private static synth = typeof window !== 'undefined' ? window.speechSynthesis : null;
   private static lipSyncInterval: number | null = null;
@@ -42,7 +48,8 @@ export class SpeechService {
     onStart?: () => void,
     onEnd?: () => void,
     elevenLabsApiKey?: string,
-    elevenLabsVoiceId = 'cgSgspJ2msm6clMCkdW9'
+    elevenLabsVoiceId: string = VOICE_DEFAULT_ID,
+    voiceSettings?: ElevenLabsVoiceSettings
   ): Promise<void> {
     this.stopSpeaking();
 
@@ -61,7 +68,12 @@ export class SpeechService {
     // Only fallback to Web Speech if API key is completely absent.
     if (elevenLabsApiKey && elevenLabsApiKey.trim().length > 5) {
       try {
-        const audioBlob = await this.fetchElevenLabsAudio(cleanText, elevenLabsApiKey.trim(), elevenLabsVoiceId);
+        const audioBlob = await this.fetchElevenLabsAudio(
+          cleanText,
+          elevenLabsApiKey.trim(),
+          elevenLabsVoiceId,
+          voiceSettings
+        );
         await this.playAudioWithLipSync(audioBlob, onLipSync, onStart, onEnd);
         return;
       } catch (err) {
@@ -79,8 +91,10 @@ export class SpeechService {
   private static async fetchElevenLabsAudio(
     text: string,
     apiKey: string,
-    voiceId: string
+    voiceId: string,
+    voiceSettings?: ElevenLabsVoiceSettings
   ): Promise<Blob> {
+    const settings = voiceSettings || BASE_VOICE_SETTINGS;
     const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
       method: 'POST',
       headers: {
@@ -91,10 +105,11 @@ export class SpeechService {
         text,
         model_id: 'eleven_multilingual_v2',
         voice_settings: {
-          stability: 0.45,
-          similarity_boost: 0.85,
-          style: 0.35,
-          use_speaker_boost: true,
+          stability: settings.stability,
+          similarity_boost: settings.similarity_boost,
+          style: settings.style,
+          use_speaker_boost: settings.use_speaker_boost,
+          speed: settings.speed,
         },
       }),
     });

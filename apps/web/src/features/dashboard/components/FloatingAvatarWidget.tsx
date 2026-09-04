@@ -7,7 +7,14 @@ import {
   MessageSquare,
   RotateCcw,
   Sliders,
+  Volume2,
+  ChevronRight,
+  Check,
 } from 'lucide-react';
+import {
+  VOICE_DEFAULT_ID,
+  VOICE_SECONDARY_ID,
+} from '../services/tts-processor';
 
 interface FloatingAvatarWidgetProps {
   currentEmotion: CharacterEmotion;
@@ -19,6 +26,8 @@ interface FloatingAvatarWidgetProps {
   onOpenChat?: () => void;
   onMinimize: () => void;
   isMinimized?: boolean;
+  selectedVoiceId?: string;
+  onSelectVoice?: (voiceId: string) => void;
 }
 
 const STORAGE_KEY_POS = 'healthathon_avatar_pos';
@@ -39,6 +48,8 @@ export const FloatingAvatarWidget: React.FC<FloatingAvatarWidgetProps> = ({
   onOpenChat,
   onMinimize,
   isMinimized = false,
+  selectedVoiceId = VOICE_DEFAULT_ID,
+  onSelectVoice,
 }) => {
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 640;
   const DEFAULT_SCALE = isMobile ? DEFAULT_SCALE_MOBILE : DEFAULT_SCALE_DESKTOP;
@@ -87,6 +98,8 @@ export const FloatingAvatarWidget: React.FC<FloatingAvatarWidgetProps> = ({
   const [isDragging, setIsDragging] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
+  const [showVoiceSubmenu, setShowVoiceSubmenu] = useState(false);
+  const openedAtRef = useRef<number>(0);
 
   const isMouseDownRef = useRef(false);
   const posRef = useRef(position);
@@ -148,8 +161,13 @@ export const FloatingAvatarWidget: React.FC<FloatingAvatarWidgetProps> = ({
     };
 
     const onGlobalClick = (e: MouseEvent) => {
+      // Cooldown check: prevent immediately closing if the right click release or immediate click fires
+      if (performance.now() - openedAtRef.current < 250) {
+        return;
+      }
       if (contextMenu && !(e.target as HTMLElement).closest('.avatar-context-menu')) {
         setContextMenu(null);
+        setShowVoiceSubmenu(false);
       }
     };
 
@@ -169,6 +187,7 @@ export const FloatingAvatarWidget: React.FC<FloatingAvatarWidgetProps> = ({
   const handlePointerDown = (e: React.PointerEvent) => {
     if (e.button !== 0) return;
     if ((e.target as HTMLElement).closest('.ignore-drag')) return;
+    if ((e.target as HTMLElement).closest('.avatar-context-menu')) return;
     e.preventDefault();
     isMouseDownRef.current = true;
     dragStartRef.current = {
@@ -180,9 +199,12 @@ export const FloatingAvatarWidget: React.FC<FloatingAvatarWidgetProps> = ({
 
   const handleContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
+    e.stopPropagation();
+    openedAtRef.current = performance.now();
+    setShowVoiceSubmenu(false);
     setContextMenu({
-      x: Math.min(e.clientX, window.innerWidth - 230),
-      y: Math.min(e.clientY, window.innerHeight - 190),
+      x: Math.min(e.clientX, window.innerWidth - 240),
+      y: Math.min(e.clientY, window.innerHeight - 280),
     });
   };
 
@@ -206,6 +228,7 @@ export const FloatingAvatarWidget: React.FC<FloatingAvatarWidgetProps> = ({
     setScale(s);
     scaleRef.current = s;
     setContextMenu(null);
+    setShowVoiceSubmenu(false);
     try {
       localStorage.setItem(STORAGE_KEY_POS, JSON.stringify(p));
       localStorage.setItem(STORAGE_KEY_SCALE, s.toString());
@@ -325,38 +348,122 @@ export const FloatingAvatarWidget: React.FC<FloatingAvatarWidgetProps> = ({
             top: `${contextMenu.y}px`,
             zIndex: 100,
           }}
-          className="avatar-context-menu w-52 bg-white/96 backdrop-blur-md rounded-2xl shadow-2xl border border-neutral-200/90 p-1.5 space-y-0.5 text-xs animate-in fade-in zoom-in-95 duration-150 select-none"
+          className="avatar-context-menu w-56 bg-white/96 backdrop-blur-md rounded-2xl shadow-2xl border border-neutral-200/90 p-1.5 space-y-0.5 text-xs animate-in fade-in zoom-in-95 duration-150 select-none"
         >
           <div className="px-3 py-1.5 text-[10px] font-semibold text-neutral-400 uppercase tracking-wider">
             Opsi Asisten Avatar
           </div>
 
           <button
-            onClick={() => { setContextMenu(null); onClickToSpeak(); }}
+            onClick={() => { setContextMenu(null); setShowVoiceSubmenu(false); onClickToSpeak(); }}
             className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-neutral-700 hover:bg-emerald-50 hover:text-emerald-700 font-medium transition-colors text-left"
           >
             <Mic className="w-4 h-4 text-emerald-600" />
-            <span>{isListening ? 'Selesai Berbicara' : 'Bicara dengan Suara'}</span>
+            <span>{isListening ? 'Selesai Berbicara' : 'Berbicara dengan suara'}</span>
           </button>
 
           {onOpenChat && (
             <button
-              onClick={() => { setContextMenu(null); onOpenChat(); }}
+              onClick={() => { setContextMenu(null); setShowVoiceSubmenu(false); onOpenChat(); }}
               className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-neutral-700 hover:bg-indigo-50 hover:text-indigo-700 font-medium transition-colors text-left"
             >
               <MessageSquare className="w-4 h-4 text-indigo-600" />
-              <span>Buka Chat Teks</span>
+              <span>Buka teks</span>
             </button>
           )}
+
+          {/* Menu Suara */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowVoiceSubmenu((prev) => !prev);
+              }}
+              className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900 font-medium transition-colors text-left"
+            >
+              <div className="flex items-center gap-2.5">
+                <Volume2 className="w-4 h-4 text-indigo-600" />
+                <span>Suara</span>
+              </div>
+              <ChevronRight
+                className={`w-3.5 h-3.5 text-neutral-400 transition-transform duration-200 ${
+                  showVoiceSubmenu ? 'rotate-90 text-indigo-600' : ''
+                }`}
+              />
+            </button>
+
+            {showVoiceSubmenu && (
+              <div className="mt-1 mb-1 p-1 bg-neutral-50/90 rounded-xl border border-neutral-200/80 space-y-0.5 animate-in fade-in slide-in-from-top-1 duration-150">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (onSelectVoice) onSelectVoice(VOICE_DEFAULT_ID);
+                    setContextMenu(null);
+                    setShowVoiceSubmenu(false);
+                  }}
+                  className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs transition-colors text-left ${
+                    (selectedVoiceId || VOICE_DEFAULT_ID) === VOICE_DEFAULT_ID
+                      ? 'bg-emerald-100/80 text-emerald-900 font-semibold shadow-2xs'
+                      : 'text-neutral-600 hover:bg-neutral-200/60 hover:text-neutral-900 font-medium'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`w-2 h-2 rounded-full ${
+                        (selectedVoiceId || VOICE_DEFAULT_ID) === VOICE_DEFAULT_ID
+                          ? 'bg-emerald-600'
+                          : 'bg-neutral-300'
+                      }`}
+                    />
+                    <span>Voice Default</span>
+                  </div>
+                  {(selectedVoiceId || VOICE_DEFAULT_ID) === VOICE_DEFAULT_ID && (
+                    <Check className="w-3.5 h-3.5 text-emerald-700 flex-shrink-0" />
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (onSelectVoice) onSelectVoice(VOICE_SECONDARY_ID);
+                    setContextMenu(null);
+                    setShowVoiceSubmenu(false);
+                  }}
+                  className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs transition-colors text-left ${
+                    selectedVoiceId === VOICE_SECONDARY_ID
+                      ? 'bg-emerald-100/80 text-emerald-900 font-semibold shadow-2xs'
+                      : 'text-neutral-600 hover:bg-neutral-200/60 hover:text-neutral-900 font-medium'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`w-2 h-2 rounded-full ${
+                        selectedVoiceId === VOICE_SECONDARY_ID
+                          ? 'bg-emerald-600'
+                          : 'bg-neutral-300'
+                      }`}
+                    />
+                    <span>Voice Kedua</span>
+                  </div>
+                  {selectedVoiceId === VOICE_SECONDARY_ID && (
+                    <Check className="w-3.5 h-3.5 text-emerald-700 flex-shrink-0" />
+                  )}
+                </button>
+              </div>
+            )}
+          </div>
 
           <div className="h-px bg-neutral-100 mx-2" />
 
           <button
-            onClick={() => { setContextMenu(null); onMinimize(); }}
+            onClick={() => { setContextMenu(null); setShowVoiceSubmenu(false); onMinimize(); }}
             className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-rose-600 hover:bg-rose-50 font-medium transition-colors text-left"
           >
             <EyeOff className="w-4 h-4" />
-            <span>Sembunyikan / Minimize</span>
+            <span>Sembunyikan</span>
           </button>
 
           <button
@@ -364,7 +471,7 @@ export const FloatingAvatarWidget: React.FC<FloatingAvatarWidgetProps> = ({
             className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-neutral-500 hover:bg-neutral-100 hover:text-neutral-800 font-medium transition-colors text-left"
           >
             <RotateCcw className="w-3.5 h-3.5" />
-            <span>Reset Posisi & Ukuran</span>
+            <span>Reset</span>
           </button>
         </div>
       )}

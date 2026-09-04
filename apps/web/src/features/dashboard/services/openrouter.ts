@@ -1,4 +1,9 @@
 import { CharacterEmotion } from '../avatar/AvatarController';
+import {
+  VOICE_DEFAULT_ID,
+  VOICE_SECONDARY_ID,
+  VoiceExpressionMetadata,
+} from './tts-processor';
 
 export interface ChatMessage {
   id: string;
@@ -26,41 +31,27 @@ export interface VoicePreset {
 
 export const ANIME_VOICE_PRESETS: VoicePreset[] = [
   {
-    id: 'cgSgspJ2msm6clMCkdW9',
-    name: 'Jessica',
-    character: 'Gadis Anime Ceria & Manis (Default)',
-    description: 'Suara paling cocok untuk anime girl imut, ceria, dan ramah. 100% Gratis di ElevenLabs Free Tier.',
+    id: VOICE_DEFAULT_ID,
+    name: 'Voice Default',
+    character: 'Mythia — Karakter Anime Ceria & Manis (Default)',
+    description: 'Suara utama asisten avatar anime. Natural, hangat, dan ekspresif.',
     tier: 'free',
   },
   {
-    id: 'FGY2WhTYpPnrIDTdsKH5',
-    name: 'Laura',
-    character: 'Anime Enerjik & Bersemangat',
-    description: 'Nada ceria, lincah, dan penuh antusiasme ala karakter anime shonen/heroine. Gratis.',
-    tier: 'free',
-  },
-  {
-    id: 'hpp4J3VqNfWAUOO0d1Us',
-    name: 'Bella',
-    character: 'Anime Waifu Lembut & Menenangkan',
-    description: 'Intonasi santun, hangat, dan sangat menyejukkan. Gratis.',
-    tier: 'free',
-  },
-  {
-    id: 'EXAVITQu4vr4xnSDxMaL',
-    name: 'Sarah',
-    character: 'Onee-san Anime Dewasa',
-    description: 'Karakter suara kakak perempuan anime yang bijak dan penuh percaya diri. Gratis.',
+    id: VOICE_SECONDARY_ID,
+    name: 'Voice Kedua',
+    character: 'Kobo — Karakter Anime Lucu & Bersemangat',
+    description: 'Suara kedua asisten avatar anime. Ceria, ekspresif, dan bersemangat.',
     tier: 'free',
   },
 ];
 
 export const DEFAULT_SETTINGS: OpenRouterSettings = {
-  apiKey: import.meta.env.VITE_OPENROUTER_API_KEY as string || '',
+  apiKey: (import.meta.env.VITE_OPENROUTER_API_KEY as string) || '',
   model: (import.meta.env.VITE_DEFAULT_MODEL as string) || 'openai/gpt-oss-120b:nitro',
   useBackendProxy: false,
-  elevenLabsApiKey: import.meta.env.VITE_ELEVENLABS_API_KEY as string || '',
-  elevenLabsVoiceId: (import.meta.env.VITE_ELEVENLABS_VOICE_ID as string) || 'cgSgspJ2msm6clMCkdW9',
+  elevenLabsApiKey: (import.meta.env.VITE_ELEVENLABS_API_KEY as string) || '',
+  elevenLabsVoiceId: (import.meta.env.VITE_ELEVENLABS_VOICE_ID as string) || VOICE_DEFAULT_ID,
 };
 
 const STORAGE_SETTINGS_KEY = 'healthathon_openrouter_settings';
@@ -72,10 +63,10 @@ export function getStoredSettings(): OpenRouterSettings {
     if (!raw) return DEFAULT_SETTINGS;
     const parsed = JSON.parse(raw);
     
-    // Auto-migrate old non-free voice ID to the working free anime voice
-    let voiceId = parsed.elevenLabsVoiceId || DEFAULT_SETTINGS.elevenLabsVoiceId;
-    if (voiceId === 'A4AyGcPAjb1pHgflyZZp') {
-      voiceId = 'cgSgspJ2msm6clMCkdW9';
+    // Only allow either VOICE_DEFAULT_ID or VOICE_SECONDARY_ID, defaulting to VOICE_DEFAULT_ID
+    let voiceId = parsed.elevenLabsVoiceId;
+    if (voiceId !== VOICE_DEFAULT_ID && voiceId !== VOICE_SECONDARY_ID) {
+      voiceId = VOICE_DEFAULT_ID;
     }
 
     return {
@@ -142,17 +133,36 @@ export const AVATAR_EMOTION_TOOLS = [
   },
 ];
 
-const SYSTEM_PROMPT = `Kamu adalah asisten virtual BPJS Kesehatan interaktif dengan visual avatar anime 2D yang ramah, santun, cerdas, dan suportif.
+const SYSTEM_PROMPT = `Kamu adalah asisten virtual BPJS Kesehatan interaktif dengan visual avatar anime 2D yang ramah, santun, cerdas, dan ekspresif.
 
-INSTRUKSI KHUSUS VOICE GENERATION (ELEVENLABS ANIME):
-Jawabanmu WAJIB dioptimalkan agar sangat merdu, hidup, ceria, dan bersahabat layaknya karakter gadis anime saat dibacakan oleh model suara ElevenLabs.
-1. Gunakan bahasa Indonesia percakapan yang hangat, mengalir seperti manusia berbicara langsung.
+INSTRUKSI KHUSUS VOICE GENERATION (ELEVENLABS) & EXPRESSION METADATA:
+Jawabanmu WAJIB dioptimalkan agar sangat merdu, hidup, dinamis, dan bersahabat layaknya karakter anime sungguhan saat disuarakan oleh ElevenLabs TTS.
+1. Gunakan bahasa Indonesia percakapan yang hangat, mengalir alami seperti manusia berbicara langsung.
 2. Gunakan tanda baca koma (,) dan titik (.) pada tempat yang tepat untuk memberikan jeda nafas dan intonasi yang pas.
-3. DILARANG menggunakan tanda bintang (*), DILARANG menggunakan tanda pagar (#), DILARANG menggunakan bullet points (• atau -), dan DILARANG menggunakan format tabel. Tulis seluruh penjelasan dalam kalimat narasi percakapan yang utuh.
-4. Format respon WAJIB berupa JSON tunggal:
+3. DILARANG menggunakan tanda format markdown seperti asterisk (*), pagar (#), bullet points (- atau •), dan tabel. Tulis seluruh kalimat dalam narasi percakapan bersih.
+4. Respon WAJIB berupa satu objek JSON valid tanpa teks pembungkus di luarnya:
 {
-  "reply": "Isi percakapan yang ramah dan mengalir alami tanpa markdown.",
-  "emotion": "normal" | "happy" | "sad" | "angry" | "surprised" | "confused" | "thinking"
+  "text": "Isi percakapan yang ramah dan mengalir alami tanpa markdown untuk dibacakan oleh suara TTS.",
+  "emotion": "normal" | "happy" | "sad" | "angry" | "surprised" | "confused" | "thinking",
+  "expressions": [
+    {
+      "type": "laugh" | "chuckle" | "sigh" | "whisper" | "surprised" | "happy" | "sad" | "playful" | "calm" | "excited",
+      "style": "cheerful" | "soft" | "energetic",
+      "intensity": 0.6,
+      "target": "kata atau frasa"
+    }
+  ],
+  "emphasis": [
+    { "text": "kata kunci penting", "intensity": 0.7 }
+  ],
+  "pauses": [
+    { "after": "kata sebelum jeda", "duration_ms": 300 }
+  ],
+  "prosody": {
+    "energy": 0.8,
+    "pitch": 1.0,
+    "speed": 1.0
+  }
 }
 
 Panduan emosi:
@@ -168,7 +178,7 @@ export async function sendOpenRouterChat(
   userText: string,
   history: ChatMessage[],
   settings: OpenRouterSettings
-): Promise<{ reply: string; emotion: CharacterEmotion }> {
+): Promise<{ reply: string; emotion: CharacterEmotion; metadata?: VoiceExpressionMetadata }> {
   // If useBackendProxy is true or no direct key provided, try backend
   if (settings.useBackendProxy || (!settings.apiKey && import.meta.env.VITE_API_URL)) {
     try {
@@ -201,10 +211,16 @@ export async function sendOpenRouterChat(
   // Direct OpenRouter Client
   const apiKey = settings.apiKey.trim();
   if (!apiKey) {
+    const defaultMsg = 'Halo! Saya asisten avatar AI Anda. Silakan masukkan OpenRouter API Key Anda pada panel pengaturan agar saya dapat berpikir menggunakan model AI langsung!';
     return {
-      reply:
-        'Halo! Saya asisten avatar AI Anda. Silakan masukkan OpenRouter API Key Anda pada panel pengaturan agar saya dapat berpikir menggunakan model AI langsung!',
+      reply: defaultMsg,
       emotion: 'happy',
+      metadata: {
+        text: defaultMsg,
+        emotion: 'happy',
+        expressions: [{ type: 'happy', intensity: 0.6 }],
+        prosody: { energy: 0.8, pitch: 1.0, speed: 1.0 },
+      },
     };
   }
 
@@ -248,14 +264,26 @@ export async function sendOpenRouterChat(
   } catch (netErr) {
     clearTimeout(timeoutId);
     if (netErr instanceof Error && netErr.name === 'AbortError') {
+      const errReply = 'Maaf, server AI memerlukan waktu lebih lama dari biasanya untuk merespons. Silakan ulangi pertanyaan Anda.';
       return {
-        reply: 'Maaf, server AI memerlukan waktu lebih lama dari biasanya untuk merespons. Silakan ulangi pertanyaan Anda.',
+        reply: errReply,
         emotion: 'confused',
+        metadata: {
+          text: errReply,
+          emotion: 'confused',
+          expressions: [{ type: 'confused', intensity: 0.5 }],
+        },
       };
     }
+    const netReply = 'Koneksi ke layanan AI terganggu. Silakan periksa jaringan internet Anda atau coba beberapa saat lagi.';
     return {
-      reply: 'Koneksi ke layanan AI terganggu. Silakan periksa jaringan internet Anda atau coba beberapa saat lagi.',
+      reply: netReply,
       emotion: 'confused',
+      metadata: {
+        text: netReply,
+        emotion: 'confused',
+        expressions: [{ type: 'confused', intensity: 0.5 }],
+      },
     };
   } finally {
     clearTimeout(timeoutId);
@@ -273,9 +301,15 @@ export async function sendOpenRouterChat(
       // ignore
     }
     if (response.status === 429) {
+      const rateLimitReply = 'Layanan AI sedang menerima terlalu banyak permintaan (Rate Limit). Mohon tunggu beberapa detik sebelum bertanya kembali.';
       return {
-        reply: 'Layanan AI sedang menerima terlalu banyak permintaan (Rate Limit). Mohon tunggu beberapa detik sebelum bertanya kembali.',
+        reply: rateLimitReply,
         emotion: 'confused',
+        metadata: {
+          text: rateLimitReply,
+          emotion: 'confused',
+          expressions: [{ type: 'confused', intensity: 0.5 }],
+        },
       };
     }
     throw new Error(`OpenRouter Error (${response.status}): ${errorDetail}`);
@@ -331,6 +365,7 @@ export async function sendOpenRouterChat(
   return {
     reply: parsed.reply,
     emotion: detectedEmotion || parsed.emotion,
+    metadata: parsed.metadata,
   };
 }
 
@@ -350,7 +385,11 @@ function normalizeEmotion(raw: string): CharacterEmotion {
   return validEmotions.includes(cleaned as CharacterEmotion) ? (cleaned as CharacterEmotion) : 'normal';
 }
 
-function parseAiContent(raw: string): { reply: string; emotion: CharacterEmotion } {
+function parseAiContent(raw: string): {
+  reply: string;
+  emotion: CharacterEmotion;
+  metadata?: VoiceExpressionMetadata;
+} {
   let detectedEmotion: CharacterEmotion | null = null;
 
   // Tag match [happy], [sad], etc.
@@ -362,18 +401,29 @@ function parseAiContent(raw: string): { reply: string; emotion: CharacterEmotion
   }
 
   try {
-    const jsonMatch = cleanedText.match(/\{[\s\S]*?\}/);
+    const jsonMatch = cleanedText.match(/\{[\s\S]*\}/);
     if (jsonMatch) {
       const parsed = JSON.parse(jsonMatch[0]);
-      if (parsed.reply) {
+      const replyContent = parsed.text || parsed.reply;
+      if (replyContent && typeof replyContent === 'string') {
+        const emo = detectedEmotion || (parsed.emotion ? normalizeEmotion(parsed.emotion) : 'normal');
+        const metadata: VoiceExpressionMetadata = {
+          text: cleanTtsText(replyContent),
+          emotion: emo,
+          expressions: Array.isArray(parsed.expressions) ? parsed.expressions : [{ type: emo, intensity: 0.6 }],
+          emphasis: Array.isArray(parsed.emphasis) ? parsed.emphasis : [],
+          pauses: Array.isArray(parsed.pauses) ? parsed.pauses : [],
+          prosody: parsed.prosody && typeof parsed.prosody === 'object' ? parsed.prosody : { energy: 0.8, pitch: 1.0, speed: 1.0 },
+        };
         return {
-          reply: cleanTtsText(parsed.reply),
-          emotion: detectedEmotion || (parsed.emotion ? normalizeEmotion(parsed.emotion) : 'normal'),
+          reply: metadata.text,
+          emotion: emo,
+          metadata,
         };
       }
     }
   } catch {
-    // Fallback
+    // Fallback if JSON parse fails
   }
 
   // Keyword heuristic fallback
@@ -392,9 +442,18 @@ function parseAiContent(raw: string): { reply: string; emotion: CharacterEmotion
     }
   }
 
-  return {
-    reply: cleanTtsText(cleanedText.replace(/```json/g, '').replace(/```/g, '').trim()),
+  const cleanReply = cleanTtsText(cleanedText.replace(/```json/g, '').replace(/```/g, '').trim());
+  const fallbackMetadata: VoiceExpressionMetadata = {
+    text: cleanReply,
     emotion: detectedEmotion,
+    expressions: [{ type: detectedEmotion, intensity: 0.5 }],
+    prosody: { energy: 0.8, pitch: 1.0, speed: 1.0 },
+  };
+
+  return {
+    reply: cleanReply,
+    emotion: detectedEmotion,
+    metadata: fallbackMetadata,
   };
 }
 

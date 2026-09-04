@@ -4,8 +4,6 @@ import type {
   SimulationScenarioPreset,
   SimulationConfig,
   SimulationStats,
-  FraudTypology,
-  RiskLevel,
 } from '@healthathon/shared';
 import { generateClaimByScenario } from './claimGenerator';
 

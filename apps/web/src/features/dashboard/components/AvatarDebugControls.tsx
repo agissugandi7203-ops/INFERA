@@ -2,6 +2,10 @@ import React, { useState } from 'react';
 import { CharacterEmotion } from '../avatar/AvatarController';
 import { OpenRouterSettings, ANIME_VOICE_PRESETS } from '../services/openrouter';
 import { SpeechService } from '../services/speech';
+import {
+  VOICE_DEFAULT_ID,
+  VOICE_SECONDARY_ID,
+} from '../services/tts-processor';
 import { Bot, Check, Volume2, Play, Square, Sparkles } from 'lucide-react';
 
 interface AvatarDebugControlsProps {
@@ -47,14 +51,13 @@ export const AvatarDebugControls: React.FC<AvatarDebugControlsProps> = ({
   const [apiKeyInput, setApiKeyInput] = useState(settings.apiKey);
   const [selectedModel, setSelectedModel] = useState(settings.model || 'openai/gpt-oss-120b:nitro');
   const [elevenLabsKey, setElevenLabsKey] = useState(settings.elevenLabsApiKey || '');
-  const [selectedVoiceId, setSelectedVoiceId] = useState(
-    settings.elevenLabsVoiceId || 'cgSgspJ2msm6clMCkdW9'
+  const [selectedVoiceId, setSelectedVoiceId] = useState<string>(
+    settings.elevenLabsVoiceId === VOICE_SECONDARY_ID ? VOICE_SECONDARY_ID : VOICE_DEFAULT_ID
   );
-  const [customVoiceId, setCustomVoiceId] = useState('');
   const [isPlayingPreview, setIsPlayingPreview] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
 
-  const activeVoiceId = selectedVoiceId === 'custom' ? (customVoiceId.trim() || 'cgSgspJ2msm6clMCkdW9') : selectedVoiceId;
+  const activeVoiceId = selectedVoiceId === VOICE_SECONDARY_ID ? VOICE_SECONDARY_ID : VOICE_DEFAULT_ID;
 
   const handleTestVoice = async () => {
     if (isPlayingPreview) {
@@ -208,7 +211,7 @@ export const AvatarDebugControls: React.FC<AvatarDebugControlsProps> = ({
 
             <div className="space-y-1">
               <select
-                value={selectedVoiceId}
+                value={activeVoiceId}
                 onChange={(e) => setSelectedVoiceId(e.target.value)}
                 className="w-full px-3 py-2 text-xs rounded-xl border border-neutral-200 bg-neutral-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-medium text-neutral-800"
               >
@@ -217,26 +220,13 @@ export const AvatarDebugControls: React.FC<AvatarDebugControlsProps> = ({
                     ✨ {voice.name} — {voice.character}
                   </option>
                 ))}
-                <option value="custom">✏️ Masukkan Custom Voice ID...</option>
               </select>
 
               {/* Display active description */}
-              {selectedVoiceId !== 'custom' && (
-                <p className="text-[11px] text-neutral-500 italic px-1">
-                  {ANIME_VOICE_PRESETS.find((v) => v.id === selectedVoiceId)?.description}
-                </p>
-              )}
+              <p className="text-[11px] text-neutral-500 italic px-1">
+                {ANIME_VOICE_PRESETS.find((v) => v.id === activeVoiceId)?.description}
+              </p>
             </div>
-
-            {selectedVoiceId === 'custom' && (
-              <input
-                type="text"
-                placeholder="Masukkan Voice ID ElevenLabs (Contoh: cgSgspJ2msm6clMCkdW9)"
-                value={customVoiceId}
-                onChange={(e) => setCustomVoiceId(e.target.value)}
-                className="w-full px-3 py-2 text-xs rounded-xl border border-neutral-200 bg-neutral-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-mono"
-              />
-            )}
 
             {/* Test Voice Button */}
             <div className="flex items-center gap-2">

@@ -1,7 +1,6 @@
 import type {
   JknClaimRecord,
   SimulationScenarioPreset,
-  SeverityLevel,
   KelasRawat,
   FaskesClass,
 } from '@healthathon/shared';
