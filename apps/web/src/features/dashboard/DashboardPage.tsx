@@ -208,7 +208,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
 
       // Speak using ElevenLabs TTS — always prefer ElevenLabs key
       const el11Key = settings.elevenLabsApiKey || DEFAULT_SETTINGS.elevenLabsApiKey;
-      const el11Voice = settings.elevenLabsVoiceId || DEFAULT_SETTINGS.elevenLabsVoiceId || 'A4AyGcPAjb1pHgflyZZp';
+      const el11Voice = settings.elevenLabsVoiceId || DEFAULT_SETTINGS.elevenLabsVoiceId || 'cgSgspJ2msm6clMCkdW9';
 
       SpeechService.speak(
         reply,

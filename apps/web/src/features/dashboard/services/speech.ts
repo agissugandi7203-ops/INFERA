@@ -42,7 +42,7 @@ export class SpeechService {
     onStart?: () => void,
     onEnd?: () => void,
     elevenLabsApiKey?: string,
-    elevenLabsVoiceId = 'A4AyGcPAjb1pHgflyZZp'
+    elevenLabsVoiceId = 'cgSgspJ2msm6clMCkdW9'
   ): Promise<void> {
     this.stopSpeaking();
 
@@ -65,7 +65,7 @@ export class SpeechService {
         await this.playAudioWithLipSync(audioBlob, onLipSync, onStart, onEnd);
         return;
       } catch (err) {
-        console.error('[Speech] ElevenLabs TTS gagal:', err);
+        console.error('[Speech] ElevenLabs TTS gagal, menggunakan fallback anime web speech:', err);
         // Still fallback so the user isn't left in silence
         this.speakWithWebSpeech(cleanText, onLipSync, onStart, onEnd);
         return;
@@ -91,9 +91,9 @@ export class SpeechService {
         text,
         model_id: 'eleven_multilingual_v2',
         voice_settings: {
-          stability: 0.55,
-          similarity_boost: 0.8,
-          style: 0.0,
+          stability: 0.45,
+          similarity_boost: 0.85,
+          style: 0.35,
           use_speaker_boost: true,
         },
       }),
@@ -170,13 +170,23 @@ export class SpeechService {
 
     const utterance = new SpeechSynthesisUtterance(cleanText);
     utterance.lang = 'id-ID';
-    utterance.rate = 1.02;
-    utterance.pitch = 1.1;
+    utterance.rate = 1.08; // slightly faster, energetic
+    utterance.pitch = 1.35; // high, cute anime girl pitch!
 
     const voices = this.synth.getVoices();
-    const idVoice = voices.find((v) => v.lang.startsWith('id') || v.lang.startsWith('ID'));
-    if (idVoice) {
-      utterance.voice = idVoice;
+    // Prioritize natural female voices for an anime assistant persona
+    const femaleVoice = voices.find(
+      (v) =>
+        (v.lang.startsWith('id') || v.lang.startsWith('ID') || v.lang.startsWith('ja')) &&
+        (v.name.toLowerCase().includes('gadis') ||
+          v.name.toLowerCase().includes('female') ||
+          v.name.toLowerCase().includes('haruka') ||
+          v.name.toLowerCase().includes('nanami') ||
+          v.name.toLowerCase().includes('natural'))
+    ) || voices.find((v) => v.lang.startsWith('id') || v.lang.startsWith('ID'));
+
+    if (femaleVoice) {
+      utterance.voice = femaleVoice;
     }
 
     utterance.onstart = () => {

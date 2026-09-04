@@ -16,12 +16,51 @@ export interface OpenRouterSettings {
   elevenLabsVoiceId?: string;
 }
 
+export interface VoicePreset {
+  id: string;
+  name: string;
+  character: string;
+  description: string;
+  tier: 'free' | 'paid';
+}
+
+export const ANIME_VOICE_PRESETS: VoicePreset[] = [
+  {
+    id: 'cgSgspJ2msm6clMCkdW9',
+    name: 'Jessica',
+    character: 'Gadis Anime Ceria & Manis (Default)',
+    description: 'Suara paling cocok untuk anime girl imut, ceria, dan ramah. 100% Gratis di ElevenLabs Free Tier.',
+    tier: 'free',
+  },
+  {
+    id: 'FGY2WhTYpPnrIDTdsKH5',
+    name: 'Laura',
+    character: 'Anime Enerjik & Bersemangat',
+    description: 'Nada ceria, lincah, dan penuh antusiasme ala karakter anime shonen/heroine. Gratis.',
+    tier: 'free',
+  },
+  {
+    id: 'hpp4J3VqNfWAUOO0d1Us',
+    name: 'Bella',
+    character: 'Anime Waifu Lembut & Menenangkan',
+    description: 'Intonasi santun, hangat, dan sangat menyejukkan. Gratis.',
+    tier: 'free',
+  },
+  {
+    id: 'EXAVITQu4vr4xnSDxMaL',
+    name: 'Sarah',
+    character: 'Onee-san Anime Dewasa',
+    description: 'Karakter suara kakak perempuan anime yang bijak dan penuh percaya diri. Gratis.',
+    tier: 'free',
+  },
+];
+
 export const DEFAULT_SETTINGS: OpenRouterSettings = {
   apiKey: import.meta.env.VITE_OPENROUTER_API_KEY as string || '',
   model: (import.meta.env.VITE_DEFAULT_MODEL as string) || 'openai/gpt-oss-120b:nitro',
   useBackendProxy: false,
   elevenLabsApiKey: import.meta.env.VITE_ELEVENLABS_API_KEY as string || '',
-  elevenLabsVoiceId: (import.meta.env.VITE_ELEVENLABS_VOICE_ID as string) || 'A4AyGcPAjb1pHgflyZZp',
+  elevenLabsVoiceId: (import.meta.env.VITE_ELEVENLABS_VOICE_ID as string) || 'cgSgspJ2msm6clMCkdW9',
 };
 
 const STORAGE_SETTINGS_KEY = 'healthathon_openrouter_settings';
@@ -32,12 +71,19 @@ export function getStoredSettings(): OpenRouterSettings {
     const raw = localStorage.getItem(STORAGE_SETTINGS_KEY);
     if (!raw) return DEFAULT_SETTINGS;
     const parsed = JSON.parse(raw);
+    
+    // Auto-migrate old non-free voice ID to the working free anime voice
+    let voiceId = parsed.elevenLabsVoiceId || DEFAULT_SETTINGS.elevenLabsVoiceId;
+    if (voiceId === 'A4AyGcPAjb1pHgflyZZp') {
+      voiceId = 'cgSgspJ2msm6clMCkdW9';
+    }
+
     return {
       apiKey: parsed.apiKey || DEFAULT_SETTINGS.apiKey,
       model: parsed.model || DEFAULT_SETTINGS.model,
       useBackendProxy: parsed.useBackendProxy ?? DEFAULT_SETTINGS.useBackendProxy,
       elevenLabsApiKey: parsed.elevenLabsApiKey || DEFAULT_SETTINGS.elevenLabsApiKey,
-      elevenLabsVoiceId: parsed.elevenLabsVoiceId || DEFAULT_SETTINGS.elevenLabsVoiceId,
+      elevenLabsVoiceId: voiceId,
     };
   } catch {
     return DEFAULT_SETTINGS;
@@ -98,8 +144,8 @@ export const AVATAR_EMOTION_TOOLS = [
 
 const SYSTEM_PROMPT = `Kamu adalah asisten virtual BPJS Kesehatan interaktif dengan visual avatar anime 2D yang ramah, santun, cerdas, dan suportif.
 
-INSTRUKSI KHUSUS VOICE GENERATION (ELEVENLABS):
-Jawabanmu WAJIB dioptimalkan agar sangat merdu, hidup, dan alami saat dibacakan oleh model suara ElevenLabs (Voice ID: A4AyGcPAjb1pHgflyZZp).
+INSTRUKSI KHUSUS VOICE GENERATION (ELEVENLABS ANIME):
+Jawabanmu WAJIB dioptimalkan agar sangat merdu, hidup, ceria, dan bersahabat layaknya karakter gadis anime saat dibacakan oleh model suara ElevenLabs.
 1. Gunakan bahasa Indonesia percakapan yang hangat, mengalir seperti manusia berbicara langsung.
 2. Gunakan tanda baca koma (,) dan titik (.) pada tempat yang tepat untuk memberikan jeda nafas dan intonasi yang pas.
 3. DILARANG menggunakan tanda bintang (*), DILARANG menggunakan tanda pagar (#), DILARANG menggunakan bullet points (• atau -), dan DILARANG menggunakan format tabel. Tulis seluruh penjelasan dalam kalimat narasi percakapan yang utuh.
