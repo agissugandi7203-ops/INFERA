@@ -60,7 +60,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
     setSettings(newSettings);
     saveStoredSettings(newSettings);
 
-    const voiceLabel = validVoiceId === VOICE_DEFAULT_ID ? 'Voice Default' : 'Voice Kedua';
+    const voiceLabel = validVoiceId === VOICE_DEFAULT_ID ? 'Vera (Default)' : 'Luna';
     handleSelectEmotion('happy', 3500);
 
     const confirmText = `Suara telah diubah ke ${voiceLabel}. Saya siap membantu!`;
@@ -310,7 +310,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
               </span>
             </div>
             <p className="text-xs text-neutral-500 mt-1">
-              Klik kanan pada avatar untuk menu opsi dan ganti suara (Voice Default / Voice Kedua), atau klik avatar untuk mulai berbicara.
+              Klik kanan pada avatar untuk menu opsi dan ganti suara (Vera / Luna), atau klik avatar untuk mulai berbicara.
             </p>
           </div>
 

@@ -32,16 +32,16 @@ export interface VoicePreset {
 export const ANIME_VOICE_PRESETS: VoicePreset[] = [
   {
     id: VOICE_DEFAULT_ID,
-    name: 'Voice Default',
-    character: 'Mythia — Karakter Anime Ceria & Manis (Default)',
-    description: 'Suara utama asisten avatar anime. Natural, hangat, dan ekspresif.',
+    name: 'Vera',
+    character: 'Vera — Suara Default (Hangat & Santun)',
+    description: 'Karakter suara utama asisten virtual BPJS Kesehatan. Hangat, bersahabat, dan jelas.',
     tier: 'free',
   },
   {
     id: VOICE_SECONDARY_ID,
-    name: 'Voice Kedua',
-    character: 'Kobo — Karakter Anime Lucu & Bersemangat',
-    description: 'Suara kedua asisten avatar anime. Ceria, ekspresif, dan bersemangat.',
+    name: 'Luna',
+    character: 'Luna — Suara Kedua (Ceria & Manis)',
+    description: 'Karakter suara kedua asisten virtual BPJS Kesehatan. Ceria, ekspresif, dan dinamis.',
     tier: 'free',
   },
 ];
@@ -133,44 +133,22 @@ export const AVATAR_EMOTION_TOOLS = [
   },
 ];
 
-const SYSTEM_PROMPT = `Kamu adalah asisten virtual BPJS Kesehatan interaktif dengan visual avatar anime 2D yang ramah, santun, cerdas, dan ekspresif.
+const SYSTEM_PROMPT = `Kamu adalah asisten suara BPJS Kesehatan berkarakter anime 2D yang cerdas, ramah, dan santun.
 
-INSTRUKSI KHUSUS VOICE GENERATION (ELEVENLABS) & EXPRESSION METADATA:
-Jawabanmu WAJIB dioptimalkan agar sangat merdu, hidup, dinamis, dan bersahabat layaknya karakter anime sungguhan saat disuarakan oleh ElevenLabs TTS.
-1. Gunakan bahasa Indonesia percakapan yang hangat, mengalir alami seperti manusia berbicara langsung.
-2. Gunakan tanda baca koma (,) dan titik (.) pada tempat yang tepat untuk memberikan jeda nafas dan intonasi yang pas.
-3. DILARANG menggunakan tanda format markdown seperti asterisk (*), pagar (#), bullet points (- atau •), dan tabel. Tulis seluruh kalimat dalam narasi percakapan bersih.
-4. Respon WAJIB berupa satu objek JSON valid tanpa teks pembungkus markdown di luarnya.
+Aturan Respon:
+1. Format WAJIB HANYA 1 objek JSON valid (Dilarang menggunakan pembungkus markdown \`\`\`json).
+2. Jawaban lisan ("text") harus padat, jelas, alami, dan ringkas (2-4 kalimat percakapan santun; dilarang bullet, pagar, bintang, atau tabel).
+3. Respon wajib tuntas.
 
-Contoh struktur respon:
+Format JSON:
 {
-  "text": "HAH?! Serius kamu berhasil?! Hehe, aku nggak nyangka!",
-  "emotion": "surprised_playful",
-  "expressions": [
-    {"type": "surprised", "intensity": 0.9, "target": "HAH?!"},
-    {"type": "chuckle", "intensity": 0.35, "target": "Hehe"}
-  ],
-  "emphasis": [
-    {"text": "Serius", "intensity": 0.75}
-  ],
-  "pauses": [
-    {"after": "HAH?!", "duration_ms": 250}
-  ],
-  "prosody": {
-    "energy": 0.8,
-    "pitch": 0.7,
-    "speed": 1.02
-  }
-}
-
-Panduan emosi visual avatar:
-- "happy" / "playful": Menyapa hangat, mendengar kabar baik, bercanda santai, atau memberi semangat.
-- "sad": Mendengar keluhan sakit, musibah, atau rasa sedih pengguna.
-- "angry": Mengingatkan peringatan keras atas bahaya penipuan atau penyalahgunaan.
-- "surprised" / "surprised_playful": Mendengar kabar luar biasa atau hal mengejutkan.
-- "confused": Pertanyaan membingungkan atau topik kurang jelas.
-- "thinking": Menganalisis diagnosa, merumuskan rujukan medis, atau berhitung.
-- "normal": Penjelasan informatif, tenang, dan bersahabat.`;
+  "text": "Jawaban percakapan santun, ramah, dan ringkas.",
+  "emotion": "normal" | "happy" | "sad" | "angry" | "surprised" | "confused" | "thinking",
+  "expressions": [{"type": "happy", "intensity": 0.6}],
+  "emphasis": [{"text": "kata kunci", "intensity": 0.7}],
+  "pauses": [{"after": "kata", "duration_ms": 250}],
+  "prosody": {"energy": 0.8, "speed": 1.0}
+}`;
 
 export async function sendOpenRouterChat(
   userText: string,
@@ -234,7 +212,7 @@ export async function sendOpenRouterChat(
     model: targetModel,
     messages,
     temperature: 0.7,
-    max_tokens: 600,
+    max_tokens: 1500,
   };
 
   // Only attach tools if model supports tool calls, or let OpenRouter handle it
@@ -398,15 +376,22 @@ function parseAiContent(raw: string): {
   metadata?: VoiceExpressionMetadata;
 } {
   let detectedEmotion: CharacterEmotion | null = null;
+  let cleanedText = raw.trim();
+
+  // Strip wrapping markdown code blocks if present
+  cleanedText = cleanedText
+    .replace(/^```(?:json)?\s*/i, '')
+    .replace(/\s*```$/i, '')
+    .trim();
 
   // Tag match [happy], [sad], etc.
-  const tagMatch = raw.match(/^\[(normal|happy|sad|angry|surprised|confused|thinking)\]\s*/i);
-  let cleanedText = raw;
+  const tagMatch = cleanedText.match(/^\[(normal|happy|sad|angry|surprised|confused|thinking)\]\s*/i);
   if (tagMatch) {
     detectedEmotion = normalizeEmotion(tagMatch[1]);
-    cleanedText = raw.slice(tagMatch[0].length);
+    cleanedText = cleanedText.slice(tagMatch[0].length).trim();
   }
 
+  // 1. Try standard JSON.parse if complete JSON object is found
   try {
     const jsonMatch = cleanedText.match(/\{[\s\S]*\}/);
     if (jsonMatch) {
@@ -430,12 +415,64 @@ function parseAiContent(raw: string): {
       }
     }
   } catch {
-    // Fallback if JSON parse fails
+    // JSON syntax error or truncated JSON — proceed to resilient regex extraction below
   }
 
-  // Keyword heuristic fallback
+  // 2. Resilient regex extraction for complete OR truncated "text" / "reply"
+  let extractedText: string | null = null;
+  const completeTextMatch = cleanedText.match(/"(?:text|reply)"\s*:\s*"((?:[^"\\]|\\.)*)"/);
+  if (completeTextMatch) {
+    extractedText = completeTextMatch[1];
+  } else {
+    // Truncated string: "text": "starts here but gets cut off without closing quote
+    const truncatedTextMatch = cleanedText.match(/"(?:text|reply)"\s*:\s*"((?:[^"\\]|\\.)*)$/);
+    if (truncatedTextMatch) {
+      extractedText = truncatedTextMatch[1];
+    }
+  }
+
+  // Extract emotion from JSON if present
   if (!detectedEmotion) {
-    const lower = cleanedText.toLowerCase();
+    const emoMatch = cleanedText.match(/"emotion"\s*:\s*"([^"]+)"/i);
+    if (emoMatch) {
+      detectedEmotion = normalizeEmotion(emoMatch[1]);
+    }
+  }
+
+  if (extractedText) {
+    // Decode escaped characters
+    extractedText = extractedText
+      .replace(/\\"/g, '"')
+      .replace(/\\n/g, ' ')
+      .replace(/\\r/g, '')
+      .replace(/\\t/g, ' ')
+      .replace(/\\\\/g, '\\');
+
+    const cleanReply = cleanTtsText(extractedText);
+    const emo = detectedEmotion || 'normal';
+    return {
+      reply: cleanReply,
+      emotion: emo,
+      metadata: {
+        text: cleanReply,
+        emotion: emo,
+        expressions: [{ type: emo, intensity: 0.5 }],
+        prosody: { energy: 0.8, pitch: 1.0, speed: 1.0 },
+      },
+    };
+  }
+
+  // 3. Absolute fallback: strip any remaining JSON syntax, braces, quotes, keys
+  let fallbackReply = cleanedText
+    .replace(/^\{?\s*"(?:text|reply)"\s*:\s*"?/i, '')
+    .replace(/",\s*"(?:emotion|expressions|pauses|prosody)"[\s\S]*$/i, '')
+    .replace(/[{}"\\]/g, '')
+    .trim();
+
+  fallbackReply = cleanTtsText(fallbackReply);
+
+  if (!detectedEmotion) {
+    const lower = fallbackReply.toLowerCase();
     if (lower.includes('senang') || lower.includes('halo') || lower.includes('selamat') || lower.includes('terima kasih')) {
       detectedEmotion = 'happy';
     } else if (lower.includes('maaf') || lower.includes('sayang sekali') || lower.includes('gejala') || lower.includes('sakit')) {
@@ -449,18 +486,15 @@ function parseAiContent(raw: string): {
     }
   }
 
-  const cleanReply = cleanTtsText(cleanedText.replace(/```json/g, '').replace(/```/g, '').trim());
-  const fallbackMetadata: VoiceExpressionMetadata = {
-    text: cleanReply,
-    emotion: detectedEmotion,
-    expressions: [{ type: detectedEmotion, intensity: 0.5 }],
-    prosody: { energy: 0.8, pitch: 1.0, speed: 1.0 },
-  };
-
   return {
-    reply: cleanReply,
+    reply: fallbackReply,
     emotion: detectedEmotion,
-    metadata: fallbackMetadata,
+    metadata: {
+      text: fallbackReply,
+      emotion: detectedEmotion,
+      expressions: [{ type: detectedEmotion, intensity: 0.5 }],
+      prosody: { energy: 0.8, pitch: 1.0, speed: 1.0 },
+    },
   };
 }
 

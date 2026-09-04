@@ -417,7 +417,7 @@ export const FloatingAvatarWidget: React.FC<FloatingAvatarWidgetProps> = ({
                           : 'bg-neutral-300'
                       }`}
                     />
-                    <span>Voice Default</span>
+                    <span>Vera (Default)</span>
                   </div>
                   {(selectedVoiceId || VOICE_DEFAULT_ID) === VOICE_DEFAULT_ID && (
                     <Check className="w-3.5 h-3.5 text-emerald-700 flex-shrink-0" />
@@ -446,7 +446,7 @@ export const FloatingAvatarWidget: React.FC<FloatingAvatarWidgetProps> = ({
                           : 'bg-neutral-300'
                       }`}
                     />
-                    <span>Voice Kedua</span>
+                    <span>Luna</span>
                   </div>
                   {selectedVoiceId === VOICE_SECONDARY_ID && (
                     <Check className="w-3.5 h-3.5 text-emerald-700 flex-shrink-0" />
