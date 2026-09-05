@@ -584,21 +584,23 @@ export const LandingPage: React.FC<LandingPageProps> = ({ userEmail, onOpenAuth 
           background: rgba(255, 255, 255, 0.10);
           backdrop-filter: blur(32px) saturate(190%) brightness(110%);
           -webkit-backdrop-filter: blur(32px) saturate(190%) brightness(110%);
-          border: 1px solid rgba(255, 255, 255, 0.22);
+          border: none;
+          outline: none;
           box-shadow:
             0 18px 45px -10px rgba(0, 0, 0, 0.50),
-            inset 0 1px 1px 0 rgba(255, 255, 255, 0.45),
-            inset 0 -1px 1px 0 rgba(255, 255, 255, 0.10);
-          transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+            inset 0 1px 1px 0 rgba(255, 255, 255, 0.35),
+            inset 0 -1px 1px 0 rgba(255, 255, 255, 0.08);
+          transition: background 0.3s ease, box-shadow 0.3s ease;
         }
 
         .infera-nav-wrapper.scrolled .infera-nav-pill {
           background: rgba(255, 255, 255, 0.14);
-          border-color: rgba(255, 255, 255, 0.30);
+          border: none;
+          outline: none;
           box-shadow:
             0 22px 52px -10px rgba(0, 0, 0, 0.60),
-            inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.55),
-            inset 0 -1px 1px 0 rgba(255, 255, 255, 0.12);
+            inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.45),
+            inset 0 -1px 1px 0 rgba(255, 255, 255, 0.10);
         }
 
         .infera-brand {
