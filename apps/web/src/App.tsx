@@ -15,6 +15,7 @@ const AppContent: React.FC = () => {
   const location = useLocation();
 
   const isDashboard = location.pathname.startsWith('/dashboard');
+  const isLanding = location.pathname === '/';
 
   useEffect(() => {
     if (!supabase) {
@@ -62,7 +63,7 @@ const AppContent: React.FC = () => {
 
   return (
     <div className="flex min-h-screen flex-col bg-white dark:bg-slate-950 text-neutral-900 dark:text-slate-100 selection:bg-neutral-200 dark:selection:bg-slate-800">
-      {!isDashboard && (
+      {!isDashboard && !isLanding && (
         <Navbar
           userEmail={userEmail}
           onOpenAuth={() => setIsAuthOpen(true)}
@@ -70,7 +71,7 @@ const AppContent: React.FC = () => {
         />
       )}
 
-      <main className={isDashboard ? 'flex-1' : 'flex-1 flex items-center justify-center'}>
+      <main className={isDashboard || isLanding ? 'flex-1' : 'flex-1 flex items-center justify-center'}>
         <AppRoutes
           userEmail={userEmail}
           isAuthLoading={isAuthLoading}
@@ -79,7 +80,7 @@ const AppContent: React.FC = () => {
         />
       </main>
 
-      {!isDashboard && <Footer />}
+      {!isDashboard && !isLanding && <Footer />}
 
       <AuthModal
         isOpen={isAuthOpen}
