@@ -155,43 +155,51 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthSuc
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-      <div className="relative w-full max-w-sm rounded-xl border border-neutral-200 bg-white p-6 shadow-xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-md transition-all duration-300">
+      <div className="relative w-full max-w-[485px] rounded-3xl border border-white/15 bg-[#0a0d14]/92 p-7 sm:p-9 shadow-[0_32px_80px_-15px_rgba(0,0,0,0.95),inset_0_1px_0_rgba(255,255,255,0.18)] backdrop-blur-2xl text-white">
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute right-4 top-4 rounded-md p-1 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700 transition"
+          className="absolute right-5 top-5 rounded-xl p-2 text-neutral-400 hover:bg-white/10 hover:text-white transition"
+          aria-label="Tutup modal"
         >
-          <X className="h-4 w-4" />
+          <X className="h-5 w-5" />
         </button>
 
-        {/* Modal Title */}
-        <div className="mb-5">
-          <h2 className="text-lg font-bold text-neutral-900">
-            {view === 'login' && 'Masuk'}
-            {view === 'register' && 'Buat Akun'}
-            {view === 'reset' && 'Reset Password'}
-          </h2>
-          <p className="text-xs text-neutral-500 mt-0.5">
-            {view === 'login' && 'Masukkan email dan password untuk melanjutkan.'}
-            {view === 'register' && 'Daftarkan akun baru Anda.'}
-            {view === 'reset' && 'Masukkan email untuk menerima tautan reset password.'}
-          </p>
+        {/* Modal Brand Header */}
+        <div className="mb-7 flex items-center gap-4">
+          <img
+            src="/infera-logo.png"
+            alt="INFERA Logo"
+            className="h-12 w-12 object-contain drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]"
+          />
+          <div>
+            <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight leading-snug">
+              {view === 'login' && 'Masuk Sistem INFERA'}
+              {view === 'register' && 'Daftar Akun Baru'}
+              {view === 'reset' && 'Reset Kata Sandi'}
+            </h2>
+            <p className="text-xs sm:text-sm text-neutral-400 mt-1">
+              {view === 'login' && 'Verifikasi & mitigasi fraud klaim BPJS'}
+              {view === 'register' && 'Akses analis integritas & audit forensik'}
+              {view === 'reset' && 'Kirim tautan pemulihan ke email terdaftar'}
+            </p>
+          </div>
         </div>
 
         {/* Status Alert */}
         {statusMessage && (
           <div
-            className={`mb-4 flex items-start space-x-2 rounded-lg p-3 text-xs ${
+            className={`mb-5 flex items-start space-x-2.5 rounded-xl p-3.5 text-xs sm:text-sm backdrop-blur-md ${
               statusMessage.type === 'success'
-                ? 'bg-neutral-100 text-neutral-900 border border-neutral-300'
-                : 'bg-neutral-100 text-neutral-900 border border-neutral-300'
+                ? 'bg-emerald-950/40 text-emerald-300 border border-emerald-500/30'
+                : 'bg-rose-950/40 text-rose-300 border border-rose-500/30'
             }`}
           >
             {statusMessage.type === 'success' ? (
-              <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5 text-neutral-800" />
+              <CheckCircle2 className="h-5 w-5 shrink-0 mt-0.5 text-emerald-400" />
             ) : (
-              <AlertCircle className="h-4 w-4 shrink-0 mt-0.5 text-neutral-800" />
+              <AlertCircle className="h-5 w-5 shrink-0 mt-0.5 text-rose-400" />
             )}
             <div>{statusMessage.text}</div>
           </div>
@@ -199,42 +207,42 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthSuc
 
         {/* 1. LOGIN FORM */}
         {view === 'login' && (
-          <form onSubmit={handleLogin} className="space-y-3">
+          <form onSubmit={handleLogin} className="space-y-4 sm:space-y-4.5">
             <div>
-              <label className="block text-xs font-medium text-neutral-700 mb-1">Email</label>
+              <label className="block text-xs sm:text-[13px] font-medium text-neutral-300 mb-1.5">Email Petugas / Verifikator</label>
               <div className="relative">
-                <Mail className="absolute left-3 top-2.5 h-4 w-4 text-neutral-400" />
+                <Mail className="absolute left-3.5 top-3.5 h-5 w-5 text-neutral-400" />
                 <input
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="nama@email.com"
-                  className="w-full rounded-lg border border-neutral-300 pl-9 pr-3 py-2 text-xs text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900"
+                  placeholder="analis@bpjs-kesehatan.go.id"
+                  className="w-full rounded-xl border border-white/10 bg-white/[0.04] pl-11 pr-4 py-3 text-sm text-white placeholder:text-neutral-500 focus:border-white/30 focus:bg-white/[0.07] focus:outline-none focus:ring-1 focus:ring-white/20 transition"
                 />
               </div>
             </div>
 
             <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="block text-xs font-medium text-neutral-700">Password</label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-xs sm:text-[13px] font-medium text-neutral-300">Kata Sandi</label>
                 <button
                   type="button"
                   onClick={() => switchView('reset')}
-                  className="text-[11px] text-neutral-500 hover:text-neutral-900 hover:underline"
+                  className="text-xs sm:text-[13px] text-neutral-400 hover:text-white hover:underline"
                 >
-                  Lupa password?
+                  Lupa kata sandi?
                 </button>
               </div>
               <div className="relative">
-                <Lock className="absolute left-3 top-2.5 h-4 w-4 text-neutral-400" />
+                <Lock className="absolute left-3.5 top-3.5 h-5 w-5 text-neutral-400" />
                 <input
                   type="password"
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full rounded-lg border border-neutral-300 pl-9 pr-3 py-2 text-xs text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900"
+                  className="w-full rounded-xl border border-white/10 bg-white/[0.04] pl-11 pr-4 py-3 text-sm text-white placeholder:text-neutral-500 focus:border-white/30 focus:bg-white/[0.07] focus:outline-none focus:ring-1 focus:ring-white/20 transition"
                 />
               </div>
             </div>
@@ -242,19 +250,19 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthSuc
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-lg bg-neutral-900 py-2.5 text-xs font-semibold text-white hover:bg-neutral-800 disabled:opacity-50 transition"
+              className="w-full rounded-xl bg-gradient-to-r from-neutral-100 to-white py-3.5 text-sm sm:text-base font-semibold text-neutral-950 shadow-[0_4px_16px_rgba(255,255,255,0.15)] hover:from-white hover:to-white hover:shadow-[0_6px_20px_rgba(255,255,255,0.22)] active:scale-[0.99] disabled:opacity-50 transition mt-1"
             >
-              {loading ? 'Memproses...' : 'Masuk'}
+              {loading ? 'Memproses...' : 'Masuk ke Platform'}
             </button>
 
-            <div className="text-center pt-1">
-              <span className="text-xs text-neutral-500">Belum punya akun? </span>
+            <div className="text-center pt-1.5">
+              <span className="text-xs sm:text-sm text-neutral-400">Belum memiliki akun? </span>
               <button
                 type="button"
                 onClick={() => switchView('register')}
-                className="text-xs font-semibold text-neutral-900 hover:underline"
+                className="text-xs sm:text-sm font-semibold text-white hover:underline"
               >
-                Buat Akun
+                Daftar Baru
               </button>
             </div>
           </form>
@@ -262,47 +270,47 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthSuc
 
         {/* 2. REGISTER FORM */}
         {view === 'register' && (
-          <form onSubmit={handleRegister} className="space-y-3">
+          <form onSubmit={handleRegister} className="space-y-4 sm:space-y-4.5">
             <div>
-              <label className="block text-xs font-medium text-neutral-700 mb-1">Nama Lengkap</label>
+              <label className="block text-xs sm:text-[13px] font-medium text-neutral-300 mb-1.5">Nama Lengkap</label>
               <div className="relative">
-                <User className="absolute left-3 top-2.5 h-4 w-4 text-neutral-400" />
+                <User className="absolute left-3.5 top-3.5 h-5 w-5 text-neutral-400" />
                 <input
                   type="text"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  placeholder="Nama Anda"
-                  className="w-full rounded-lg border border-neutral-300 pl-9 pr-3 py-2 text-xs text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900"
+                  placeholder="Dr. Budi Santoso"
+                  className="w-full rounded-xl border border-white/10 bg-white/[0.04] pl-11 pr-4 py-3 text-sm text-white placeholder:text-neutral-500 focus:border-white/30 focus:bg-white/[0.07] focus:outline-none focus:ring-1 focus:ring-white/20 transition"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-neutral-700 mb-1">Email</label>
+              <label className="block text-xs sm:text-[13px] font-medium text-neutral-300 mb-1.5">Email Dinas / Pribadi</label>
               <div className="relative">
-                <Mail className="absolute left-3 top-2.5 h-4 w-4 text-neutral-400" />
+                <Mail className="absolute left-3.5 top-3.5 h-5 w-5 text-neutral-400" />
                 <input
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="nama@email.com"
-                  className="w-full rounded-lg border border-neutral-300 pl-9 pr-3 py-2 text-xs text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900"
+                  placeholder="nama@instansi.go.id"
+                  className="w-full rounded-xl border border-white/10 bg-white/[0.04] pl-11 pr-4 py-3 text-sm text-white placeholder:text-neutral-500 focus:border-white/30 focus:bg-white/[0.07] focus:outline-none focus:ring-1 focus:ring-white/20 transition"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-neutral-700 mb-1">Password</label>
+              <label className="block text-xs sm:text-[13px] font-medium text-neutral-300 mb-1.5">Kata Sandi</label>
               <div className="relative">
-                <Lock className="absolute left-3 top-2.5 h-4 w-4 text-neutral-400" />
+                <Lock className="absolute left-3.5 top-3.5 h-5 w-5 text-neutral-400" />
                 <input
                   type="password"
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Minimal 6 karakter"
-                  className="w-full rounded-lg border border-neutral-300 pl-9 pr-3 py-2 text-xs text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900"
+                  className="w-full rounded-xl border border-white/10 bg-white/[0.04] pl-11 pr-4 py-3 text-sm text-white placeholder:text-neutral-500 focus:border-white/30 focus:bg-white/[0.07] focus:outline-none focus:ring-1 focus:ring-white/20 transition"
                 />
               </div>
             </div>
@@ -310,17 +318,17 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthSuc
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-lg bg-neutral-900 py-2.5 text-xs font-semibold text-white hover:bg-neutral-800 disabled:opacity-50 transition"
+              className="w-full rounded-xl bg-gradient-to-r from-neutral-100 to-white py-3.5 text-sm sm:text-base font-semibold text-neutral-950 shadow-[0_4px_16px_rgba(255,255,255,0.15)] hover:from-white hover:to-white hover:shadow-[0_6px_20px_rgba(255,255,255,0.22)] active:scale-[0.99] disabled:opacity-50 transition mt-1"
             >
-              {loading ? 'Memproses...' : 'Daftar Akun'}
+              {loading ? 'Memproses...' : 'Daftarkan Akun'}
             </button>
 
-            <div className="text-center pt-1">
-              <span className="text-xs text-neutral-500">Sudah punya akun? </span>
+            <div className="text-center pt-1.5">
+              <span className="text-xs sm:text-sm text-neutral-400">Sudah punya akun? </span>
               <button
                 type="button"
                 onClick={() => switchView('login')}
-                className="text-xs font-semibold text-neutral-900 hover:underline"
+                className="text-xs sm:text-sm font-semibold text-white hover:underline"
               >
                 Masuk
               </button>
@@ -330,18 +338,18 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthSuc
 
         {/* 3. RESET PASSWORD FORM */}
         {view === 'reset' && (
-          <form onSubmit={handleResetPassword} className="space-y-3">
+          <form onSubmit={handleResetPassword} className="space-y-4 sm:space-y-4.5">
             <div>
-              <label className="block text-xs font-medium text-neutral-700 mb-1">Email Terdaftar</label>
+              <label className="block text-xs sm:text-[13px] font-medium text-neutral-300 mb-1.5">Email Terdaftar</label>
               <div className="relative">
-                <Mail className="absolute left-3 top-2.5 h-4 w-4 text-neutral-400" />
+                <Mail className="absolute left-3.5 top-3.5 h-5 w-5 text-neutral-400" />
                 <input
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="nama@email.com"
-                  className="w-full rounded-lg border border-neutral-300 pl-9 pr-3 py-2 text-xs text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900"
+                  className="w-full rounded-xl border border-white/10 bg-white/[0.04] pl-11 pr-4 py-3 text-sm text-white placeholder:text-neutral-500 focus:border-white/30 focus:bg-white/[0.07] focus:outline-none focus:ring-1 focus:ring-white/20 transition"
                 />
               </div>
             </div>
@@ -349,16 +357,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthSuc
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-lg bg-neutral-900 py-2.5 text-xs font-semibold text-white hover:bg-neutral-800 disabled:opacity-50 transition"
+              className="w-full rounded-xl bg-gradient-to-r from-neutral-100 to-white py-3.5 text-sm sm:text-base font-semibold text-neutral-950 shadow-[0_4px_16px_rgba(255,255,255,0.15)] hover:from-white hover:to-white active:scale-[0.99] disabled:opacity-50 transition mt-1"
             >
-              {loading ? 'Memproses...' : 'Kirim Link Reset Password'}
+              {loading ? 'Memproses...' : 'Kirim Tautan Pemulihan'}
             </button>
 
-            <div className="text-center pt-1">
+            <div className="text-center pt-1.5">
               <button
                 type="button"
                 onClick={() => switchView('login')}
-                className="text-xs font-semibold text-neutral-900 hover:underline"
+                className="text-xs sm:text-sm font-semibold text-white hover:underline"
               >
                 Kembali ke Masuk
               </button>
@@ -367,12 +375,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthSuc
         )}
 
         {/* DIVIDER */}
-        <div className="relative my-4">
+        <div className="relative my-5">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-neutral-200" />
+            <div className="w-full border-t border-white/10" />
           </div>
-          <div className="relative flex justify-center text-[11px] uppercase">
-            <span className="bg-white px-2 text-neutral-400">atau</span>
+          <div className="relative flex justify-center text-xs uppercase tracking-wider">
+            <span className="bg-[#0a0d14] px-3 text-neutral-500 font-medium">atau masuk dengan</span>
           </div>
         </div>
 
@@ -381,9 +389,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthSuc
           type="button"
           onClick={handleGoogleLogin}
           disabled={loading}
-          className="flex w-full items-center justify-center space-x-2 rounded-lg border border-neutral-300 bg-white py-2 text-xs font-medium text-neutral-800 hover:bg-neutral-50 disabled:opacity-50 transition"
+          className="flex w-full items-center justify-center space-x-3 rounded-xl border border-white/15 bg-white/[0.05] hover:bg-white/[0.10] py-3.5 text-sm sm:text-base font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] transition active:scale-[0.99]"
         >
-          <svg className="h-4 w-4" viewBox="0 0 24 24">
+          <svg className="h-5 w-5 shrink-0" viewBox="0 0 24 24">
             <path
               fill="#4285F4"
               d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -401,7 +409,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthSuc
               d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
             />
           </svg>
-          <span>Login with Google</span>
+          <span className="font-semibold text-neutral-100">Login with Google</span>
         </button>
       </div>
     </div>

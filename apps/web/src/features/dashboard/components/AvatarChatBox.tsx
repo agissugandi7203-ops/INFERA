@@ -1,4 +1,4 @@
-﻿import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   ArrowUp,
   Square,
@@ -7,7 +7,6 @@ import {
   Volume2,
   Trash2,
   Download,
-  ShieldCheck,
   Plus,
   X,
   Copy,
@@ -156,9 +155,11 @@ export const AvatarChatBox: React.FC<AvatarChatBoxProps> = ({
       {/* Header (ChatGPT / Modern SaaS Style) */}
       <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between bg-white shrink-0">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-[#007a3d] text-white flex items-center justify-center shrink-0 shadow-xs">
-            <ShieldCheck className="w-4.5 h-4.5" />
-          </div>
+          <img
+            src="/infera-logo.png"
+            alt="INFERA Logo"
+            className="w-8 h-8 rounded-lg object-contain shrink-0 shadow-xs"
+          />
           <div>
             <h2 className="text-xs font-bold text-slate-900 leading-tight">
               Asisten Regulasi &amp; Risiko JKN
@@ -208,9 +209,11 @@ export const AvatarChatBox: React.FC<AvatarChatBoxProps> = ({
       <div className="flex-1 overflow-y-auto p-4 space-y-5 text-xs">
         {messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-center p-6 space-y-2 select-none">
-            <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-800 mb-1 border border-slate-200/80 shadow-2xs">
-              <ShieldCheck className="w-5 h-5 text-[#007a3d]" />
-            </div>
+            <img
+              src="/infera-logo.png"
+              alt="INFERA Logo"
+              className="w-12 h-12 rounded-xl object-contain mb-1 drop-shadow-md"
+            />
             <h3 className="text-xl font-bold text-slate-900 tracking-tight">
               Ready When You Are
             </h3>
@@ -259,9 +262,11 @@ export const AvatarChatBox: React.FC<AvatarChatBoxProps> = ({
             // AI Response: ChatGPT Style (NO BUBBLE, Clean Prose directly on Canvas)
             return (
               <div key={msg.id} className="flex gap-3 items-start justify-start group">
-                <div className="w-6 h-6 rounded-md bg-[#007a3d] text-white flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
-                  <ShieldCheck className="w-3.5 h-3.5" />
-                </div>
+                <img
+                  src="/infera-logo.png"
+                  alt="INFERA"
+                  className="w-6 h-6 rounded-md object-contain shrink-0 mt-0.5 shadow-2xs"
+                />
 
                 <div className="flex-1 min-w-0 space-y-2">
                   {emotionMeta && (
@@ -325,9 +330,11 @@ export const AvatarChatBox: React.FC<AvatarChatBoxProps> = ({
 
         {isLoading && (
           <div className="flex gap-3 items-start justify-start text-slate-500 text-xs">
-            <div className="w-6 h-6 rounded-md bg-[#007a3d] text-white flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
-              <ShieldCheck className="w-3.5 h-3.5" />
-            </div>
+            <img
+              src="/infera-logo.png"
+              alt="INFERA"
+              className="w-6 h-6 rounded-md object-contain shrink-0 mt-0.5 shadow-2xs"
+            />
             <div className="flex items-center gap-2 py-1 text-xs text-slate-500">
               <div className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce" />
               <div className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce [animation-delay:0.2s]" />

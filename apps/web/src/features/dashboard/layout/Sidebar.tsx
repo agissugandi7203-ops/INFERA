@@ -9,7 +9,6 @@ import {
   Stethoscope,
   Pill,
   BookOpen,
-  ShieldCheck,
   LogOut,
   ChevronLeft,
   Play,
@@ -127,12 +126,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <button
             type="button"
             onClick={isCollapsed ? onToggleCollapse : undefined}
-            className={`w-8 h-8 rounded-lg bg-[#007a3d] text-white flex items-center justify-center shrink-0 ${
+            className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 overflow-hidden ${
               isCollapsed ? 'hover:scale-105 cursor-pointer shadow-xs' : ''
             }`}
             title={isCollapsed ? 'Klik untuk membuka sidebar' : 'INFERA'}
           >
-            <ShieldCheck className="w-4.5 h-4.5" />
+            <img
+              src="/infera-logo.png"
+              alt="INFERA Logo"
+              className="w-8 h-8 rounded-lg object-contain shrink-0 drop-shadow-sm"
+            />
           </button>
           {!isCollapsed && (
             <div className="flex flex-col min-w-0">

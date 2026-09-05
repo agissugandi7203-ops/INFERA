@@ -152,18 +152,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ userEmail, onOpenAuth 
 
   return (
     <div className="infera-page-wrap" id="hero">
-      {/* ── STICKY ELEGANT NAVBAR ────────────────────────────────────────── */}
-      <header className={`infera-nav ${isScrolled ? 'scrolled' : ''}`}>
-        <div className="infera-nav-inner">
+      {/* ── STICKY ELEGANT PILL NAVBAR ───────────────────────────────────── */}
+      <header className={`infera-nav-wrapper ${isScrolled ? 'scrolled' : ''}`}>
+        <div className="infera-nav-pill">
           <input type="checkbox" id="infera-menu" aria-label="Toggle navigation menu" />
 
           {/* BRAND */}
           <div className="infera-brand" onClick={() => scrollTo(0)} role="button" tabIndex={0} aria-label="INFERA Beranda">
-            <svg className="infera-mark" viewBox="0 0 34 34" fill="none" aria-hidden="true">
-              <circle cx="17" cy="17" r="17" fill="#007a3d" />
-              <circle cx="17" cy="17" r="8.6" fill="#FFFFFF" />
-              <circle cx="17" cy="17" r="3.7" fill="#0a0d12" />
-            </svg>
+            <img src="/infera-logo.png" alt="INFERA Logo" className="infera-brand-logo" />
             <div className="infera-brand-text">
               <span className="infera-wordmark">INFERA</span>
               <span className="infera-badge">BPJS Kesehatan</span>
@@ -180,7 +176,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ userEmail, onOpenAuth 
 
           {/* CTA RIGHT */}
           <button type="button" onClick={handleAction} className="infera-cta" aria-label="Masuk ke sistem INFERA">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="infera-cta-icon" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="infera-cta-icon" aria-hidden="true">
               <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
               <polyline points="10 17 15 12 10 7"/>
               <line x1="15" y1="12" x2="3" y2="12"/>
@@ -262,9 +258,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ userEmail, onOpenAuth 
             <div className="infera-card" role="region" aria-label="Simulasi prompt analisis AI">
               <div className="infera-ph">
                 <div className="infera-typing-row">
-                  <span className="infera-typing-dot" title="Agen AI Aktif" />
-                  <span className="infera-prompt-text">{displayedText}</span>
-                  <span className={`infera-caret ${isTyping ? 'typing' : 'blinking'}`} aria-hidden="true" />
+                  <span className="infera-prompt-text">
+                    {displayedText}
+                    <span className={`infera-caret ${isTyping ? 'typing' : 'blinking'}`} aria-hidden="true" />
+                  </span>
                 </div>
               </div>
 
@@ -376,11 +373,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ userEmail, onOpenAuth 
             {/* Left: Brand info */}
             <div className="saas-footer__brand-col">
               <a href="#hero" className="saas-footer__brand" aria-label="INFERA home" onClick={(e) => { e.preventDefault(); scrollTo(0); }}>
-                <svg width="32" height="32" viewBox="0 0 34 34" fill="none" aria-hidden="true">
-                  <circle cx="17" cy="17" r="17" fill="#007a3d" />
-                  <circle cx="17" cy="17" r="8.6" fill="#FFFFFF" />
-                  <circle cx="17" cy="17" r="3.7" fill="#040407" />
-                </svg>
+                <img src="/infera-logo.png" alt="INFERA Logo" className="saas-footer__brand-logo" />
                 <span className="saas-footer__brand-title">INFERA</span>
               </a>
               <p className="saas-footer__tagline">
@@ -547,7 +540,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ userEmail, onOpenAuth 
           display: flex;
           flex-direction: column;
           justify-content: space-between;
-          padding: calc(96 * var(--vu)) calc(225 * var(--u)) calc(var(--inset-bottom) * var(--vu));
+          padding: calc(82 * var(--vu)) calc(225 * var(--u)) calc(var(--inset-bottom) * var(--vu));
           background: radial-gradient(circle at 50% 40%, rgba(10, 13, 18, 0.40) 0%, rgba(10, 13, 18, 0.85) 100%);
         }
 
@@ -555,8 +548,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ userEmail, onOpenAuth 
         .infera-burger { display: none; }
         .infera-sheet { display: none; }
 
-        /* STICKY ELEGANT NAVBAR */
-        header.infera-nav {
+        /* ── STICKY FLOATING PILL NAVBAR ────────────────────────── */
+        /* ── LIQUID GLASS FLOATING NAVBAR (AI CANVAS GLASS INSPIRED) ── */
+        .infera-nav-wrapper {
           position: fixed;
           top: 0;
           left: 0;
@@ -565,143 +559,173 @@ export const LandingPage: React.FC<LandingPageProps> = ({ userEmail, onOpenAuth 
           display: flex;
           justify-content: center;
           align-items: center;
-          padding: calc(24 * var(--u)) calc(50 * var(--u));
-          background: transparent;
-          border-bottom: 1px solid transparent;
-          transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+          padding: calc(18 * var(--u)) calc(32 * var(--u));
+          pointer-events: none;
+          box-sizing: border-box;
         }
 
-        header.infera-nav.scrolled {
-          background: rgba(4, 4, 7, 0.84);
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
-          border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-          box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.6);
-          padding: calc(14 * var(--u)) calc(50 * var(--u));
+        .infera-nav-wrapper.scrolled {
+          padding: calc(18 * var(--u)) calc(32 * var(--u));
         }
 
-        .infera-nav-inner {
+        .infera-nav-pill {
+          pointer-events: auto;
           width: 100%;
-          max-width: calc(1280 * var(--u));
+          max-width: min(1320px, calc(1340 * var(--u)));
+          height: calc(62 * var(--u));
+          min-height: 58px;
           display: flex;
           align-items: center;
           justify-content: space-between;
           position: relative;
+          padding: 0 calc(24 * var(--u));
+          border-radius: calc(20 * var(--u));
+          box-sizing: border-box;
+          background: rgba(255, 255, 255, 0.10);
+          backdrop-filter: blur(32px) saturate(190%) brightness(110%);
+          -webkit-backdrop-filter: blur(32px) saturate(190%) brightness(110%);
+          border: 1px solid rgba(255, 255, 255, 0.22);
+          box-shadow:
+            0 18px 45px -10px rgba(0, 0, 0, 0.50),
+            inset 0 1px 1px 0 rgba(255, 255, 255, 0.45),
+            inset 0 -1px 1px 0 rgba(255, 255, 255, 0.10);
+          transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .infera-nav-wrapper.scrolled .infera-nav-pill {
+          background: rgba(255, 255, 255, 0.14);
+          border-color: rgba(255, 255, 255, 0.30);
+          box-shadow:
+            0 22px 52px -10px rgba(0, 0, 0, 0.60),
+            inset 0 1.5px 1px 0 rgba(255, 255, 255, 0.55),
+            inset 0 -1px 1px 0 rgba(255, 255, 255, 0.12);
         }
 
         .infera-brand {
           display: inline-flex;
           align-items: center;
-          gap: calc(12 * var(--u));
+          gap: calc(14 * var(--u));
           text-decoration: none;
           color: #fff;
           cursor: pointer;
+          user-select: none;
         }
 
-        .infera-mark {
-          width: calc(34 * var(--u));
-          height: calc(34 * var(--u));
+        .infera-brand-logo {
+          width: clamp(36px, calc(40 * var(--u)), 46px);
+          height: clamp(36px, calc(40 * var(--u)), 46px);
+          object-fit: contain;
+          border-radius: calc(10 * var(--u));
+          filter: drop-shadow(0 3px 10px rgba(0, 0, 0, 0.55));
+          transition: transform 0.25s ease, filter 0.25s ease;
+        }
+
+        .infera-brand:hover .infera-brand-logo {
+          transform: scale(1.08);
+          filter: drop-shadow(0 4px 14px rgba(255, 255, 255, 0.25));
         }
 
         .infera-brand-text {
           display: flex;
           align-items: center;
-          gap: calc(8 * var(--u));
+          gap: calc(10 * var(--u));
         }
 
         .infera-wordmark {
           font-family: 'Instrument Serif', Georgia, serif;
           font-style: italic;
-          font-size: calc(25 * var(--u));
-          font-weight: 400;
+          font-size: clamp(28px, calc(32 * var(--u)), 36px);
+          font-weight: 500;
           letter-spacing: -0.01em;
           line-height: 1;
-          text-shadow: 0 calc(1 * var(--u)) calc(10 * var(--u)) rgba(0, 0, 0, .30);
+          color: #ffffff;
+          text-shadow: 0 2px 14px rgba(0, 0, 0, .45);
         }
 
         .infera-badge {
           font-family: 'Plus Jakarta Sans', Inter, sans-serif;
-          font-size: calc(10 * var(--u));
-          font-weight: 500;
-          color: #a1a1aa;
-          border-left: 1px solid rgba(255, 255, 255, 0.2);
-          padding-left: calc(8 * var(--u));
+          font-size: clamp(12px, calc(13 * var(--u)), 14px);
+          font-weight: 600;
+          color: rgba(255, 255, 255, 0.78);
+          border-left: 1.5px solid rgba(255, 255, 255, 0.25);
+          padding-left: calc(10 * var(--u));
           line-height: 1;
+          letter-spacing: 0.01em;
         }
 
-        /* CENTER NAV LINKS */
+        /* CENTER NAV LINKS — LIQUID PILLS */
         .infera-links {
           position: absolute;
           left: 50%;
           transform: translateX(-50%);
           display: flex;
           align-items: center;
-          gap: calc(40 * var(--u));
+          gap: clamp(6px, calc(8 * var(--u)), 14px);
         }
 
         .infera-links a {
           font-family: 'Plus Jakarta Sans', Inter, -apple-system, sans-serif;
-          font-size: calc(13.5 * var(--u));
-          font-weight: 500;
+          font-size: clamp(14.5px, calc(15.5 * var(--u)), 17px);
+          font-weight: 600;
           letter-spacing: -0.01em;
-          color: rgba(255, 255, 255, 0.72);
+          color: rgba(255, 255, 255, 0.85);
           text-decoration: none;
-          transition: all 0.2s ease;
+          padding: calc(8 * var(--u)) calc(16 * var(--u));
+          border-radius: calc(12 * var(--u));
+          transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
           position: relative;
-          padding: calc(4 * var(--u)) 0;
+          border: 1px solid transparent;
         }
 
         .infera-links a:hover {
           color: #ffffff;
-          text-shadow: 0 0 12px rgba(255, 255, 255, 0.35);
+          background: rgba(255, 255, 255, 0.12);
+          border-color: rgba(255, 255, 255, 0.18);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, 0.28),
+            0 4px 14px rgba(0, 0, 0, 0.25);
+          transform: translateY(-1px);
         }
 
-        .infera-links a::after {
-          content: '';
-          position: absolute;
-          bottom: 0;
-          left: 50%;
-          width: 0%;
-          height: 1.5px;
-          background: linear-gradient(90deg, transparent, #ffffff, transparent);
-          transition: all 0.25s ease;
-          transform: translateX(-50%);
-          opacity: 0;
-        }
-
-        .infera-links a:hover::after {
-          width: 100%;
-          opacity: 1;
+        .infera-links a:active {
+          transform: translateY(0) scale(0.97);
+          background: rgba(255, 255, 255, 0.16);
         }
 
         /* LOGIN CTA BUTTON */
         .infera-cta {
-          height: calc(38 * var(--u));
-          padding: 0 calc(18 * var(--u));
-          border-radius: 999px;
+          height: clamp(42px, calc(46 * var(--u)), 50px);
+          padding: 0 clamp(20px, calc(24 * var(--u)), 28px);
+          border-radius: calc(14 * var(--u));
           font-family: 'Plus Jakarta Sans', Inter, sans-serif;
-          font-size: calc(12.5 * var(--u));
-          font-weight: 600;
+          font-size: clamp(14px, calc(15 * var(--u)), 16px);
+          font-weight: 700;
           letter-spacing: -0.01em;
           color: #ffffff;
-          background: linear-gradient(180deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.05) 100%);
-          border: 1px solid rgba(255, 255, 255, 0.20);
-          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 4px 16px rgba(0, 0, 0, 0.35);
+          background: linear-gradient(180deg, rgba(255, 255, 255, 0.24) 0%, rgba(255, 255, 255, 0.08) 100%);
+          border: 1px solid rgba(255, 255, 255, 0.30);
+          box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, 0.50),
+            0 6px 22px rgba(0, 0, 0, 0.45);
           display: inline-flex;
           align-items: center;
-          gap: calc(8 * var(--u));
+          gap: calc(10 * var(--u));
           text-decoration: none;
           cursor: pointer;
           transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-          backdrop-filter: blur(12px);
-          -webkit-backdrop-filter: blur(12px);
+          backdrop-filter: blur(16px);
+          -webkit-backdrop-filter: blur(16px);
         }
 
         .infera-cta:hover {
-          background: linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.09) 100%);
-          border-color: rgba(255, 255, 255, 0.45);
-          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.50), 0 6px 24px rgba(0, 0, 0, 0.50);
-          transform: translateY(-1px);
+          background: linear-gradient(180deg, rgba(255, 255, 255, 0.34) 0%, rgba(255, 255, 255, 0.14) 100%);
+          border-color: rgba(255, 255, 255, 0.55);
+          box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, 0.68),
+            0 10px 30px rgba(0, 0, 0, 0.55);
+          transform: translateY(-1.5px);
           color: #ffffff;
         }
 
@@ -710,14 +734,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ userEmail, onOpenAuth 
         }
 
         .infera-cta-icon {
-          width: calc(13 * var(--u));
-          height: calc(13 * var(--u));
-          opacity: 0.85;
+          width: calc(15 * var(--u));
+          height: calc(15 * var(--u));
+          opacity: 0.92;
           transition: transform 0.2s ease;
         }
 
         .infera-cta:hover .infera-cta-icon {
-          transform: translateX(2px);
+          transform: translateX(2.5px);
           opacity: 1;
         }
 
@@ -728,38 +752,41 @@ export const LandingPage: React.FC<LandingPageProps> = ({ userEmail, onOpenAuth 
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          gap: calc(42 * var(--vu));
-          padding-bottom: calc(4 * var(--vu));
+          gap: calc(52 * var(--vu));
+          padding-top: 0;
+          padding-bottom: calc(12 * var(--vu));
         }
 
         .infera-hero-header {
           display: flex;
           flex-direction: column;
           align-items: center;
-          gap: calc(12 * var(--u));
+          gap: calc(14 * var(--u));
+          margin-top: calc(-36 * var(--vu));
+          margin-bottom: calc(16 * var(--vu));
         }
 
         .infera-pill-label {
           font-family: 'Plus Jakarta Sans', Inter, sans-serif;
-          font-size: calc(11 * var(--u));
-          font-weight: 600;
-          color: rgba(255, 255, 255, 0.65);
-          letter-spacing: 0.24em;
+          font-size: clamp(12.5px, calc(14.5 * var(--u)), 16.5px);
+          font-weight: 700;
+          color: rgba(255, 255, 255, 0.90);
+          letter-spacing: 0.28em;
           padding: 0;
           background: transparent;
           border: none;
           border-radius: 0;
           text-transform: uppercase;
-          text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+          text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
         }
 
         .infera-h1 {
-          font-size: calc(38 * var(--u));
+          font-size: clamp(38px, calc(52 * var(--u)), 66px);
           font-weight: 400;
-          line-height: 1.12;
-          letter-spacing: -0.01em;
+          line-height: 1.14;
+          letter-spacing: -0.015em;
           color: #fff;
-          text-shadow: 0 calc(2 * var(--u)) calc(22 * var(--u)) rgba(0, 0, 0, .35);
+          text-shadow: 0 calc(2 * var(--u)) calc(24 * var(--u)) rgba(0, 0, 0, .45);
           text-align: center;
         }
 
@@ -768,27 +795,28 @@ export const LandingPage: React.FC<LandingPageProps> = ({ userEmail, onOpenAuth 
           font-style: italic;
           font-weight: 400;
           letter-spacing: 0.01em;
-          color: #f1f5f9;
+          color: #f8fafc;
         }
 
-        /* COMPOSER CARD (Exact 708 x 143u geometry) */
+        /* COMPOSER CARD (Enlarged prominent geometry) */
         .infera-card {
-          width: calc(708 * var(--u));
-          height: calc(143 * var(--u));
+          width: min(860px, calc(820 * var(--u)));
+          height: calc(168 * var(--u));
+          min-height: 155px;
           border-radius: calc(26 * var(--u));
           margin-right: calc(3 * var(--u));
-          background: rgba(41, 41, 43, .955);
-          backdrop-filter: blur(calc(26 * var(--u))) saturate(112%);
-          -webkit-backdrop-filter: blur(calc(26 * var(--u))) saturate(112%);
-          box-shadow: inset 0 0 0 1px rgba(214, 228, 255, .14), 0 calc(22 * var(--u)) calc(60 * var(--u)) rgba(0, 0, 0, .30);
+          background: rgba(38, 40, 46, 0.94);
+          backdrop-filter: blur(calc(30 * var(--u))) saturate(120%);
+          -webkit-backdrop-filter: blur(calc(30 * var(--u))) saturate(120%);
+          box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .15), 0 calc(24 * var(--u)) calc(64 * var(--u)) rgba(0, 0, 0, .45);
           position: relative;
         }
 
         .infera-ph {
           position: absolute;
-          left: calc(27 * var(--u));
-          top: calc(28 * var(--u));
-          right: calc(24 * var(--u));
+          left: calc(30 * var(--u));
+          top: calc(30 * var(--u));
+          right: calc(30 * var(--u));
           user-select: none;
         }
 
@@ -799,26 +827,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ userEmail, onOpenAuth 
           width: 100%;
         }
 
-        .infera-typing-dot {
-          width: calc(7 * var(--u));
-          height: calc(7 * var(--u));
-          border-radius: 50%;
-          background: #007a3d;
-          box-shadow: 0 0 calc(8 * var(--u)) rgba(0, 122, 61, 0.7);
-          flex-shrink: 0;
-          animation: infera-pulse 2s infinite ease-in-out;
-        }
-
-        @keyframes infera-pulse {
-          0%, 100% { opacity: 0.4; transform: scale(0.9); }
-          50% { opacity: 1; transform: scale(1.2); }
-        }
-
         .infera-prompt-text {
-          color: rgba(255, 255, 255, 0.90);
+          color: rgba(255, 255, 255, 0.95);
           font-family: 'Plus Jakarta Sans', Inter, sans-serif;
-          font-size: calc(12.5 * var(--u));
-          font-weight: 400;
+          font-size: clamp(14.5px, calc(16 * var(--u)), 18.5px);
+          font-weight: 500;
           line-height: 1.4;
           letter-spacing: 0.005em;
           white-space: nowrap;
@@ -828,10 +841,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ userEmail, onOpenAuth 
 
         .infera-caret {
           display: inline-block;
-          width: 2px;
-          height: calc(14 * var(--u));
+          width: 2.5px;
+          height: 1.15em;
           background: #ffffff;
-          margin-left: 2px;
+          margin-left: 3px;
+          vertical-align: -0.12em;
           flex-shrink: 0;
         }
 
@@ -850,106 +864,116 @@ export const LandingPage: React.FC<LandingPageProps> = ({ userEmail, onOpenAuth 
 
         .infera-tools {
           position: absolute;
-          left: calc(19 * var(--u));
-          top: calc(92 * var(--u));
-          height: calc(30 * var(--u));
-          right: calc(-1 * var(--u));
+          left: calc(24 * var(--u));
+          right: calc(22 * var(--u));
+          top: calc(106 * var(--u));
+          height: calc(42 * var(--u));
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
         }
 
         .infera-chips {
           display: flex;
           align-items: center;
-          gap: calc(6 * var(--u));
+          gap: calc(8 * var(--u));
           height: 100%;
         }
 
         .infera-chip {
-          height: calc(30 * var(--u));
-          border-radius: calc(9 * var(--u));
-          font-size: calc(9.8 * var(--u));
-          font-weight: 500;
-          color: #a1a1aa;
+          height: calc(36 * var(--u));
+          border-radius: calc(10 * var(--u));
+          font-size: clamp(11.5px, calc(12.5 * var(--u)), 14px);
+          font-weight: 600;
+          color: #cbd5e1;
           line-height: 1;
-          background: linear-gradient(180deg, rgba(255, 255, 255, .088) 0%, rgba(255, 255, 255, .050) 45%, rgba(255, 255, 255, .038) 100%);
-          border: 1px solid rgba(255, 255, 255, .06);
-          padding: 0 calc(12 * var(--u));
+          background: linear-gradient(180deg, rgba(255, 255, 255, .10) 0%, rgba(255, 255, 255, .05) 100%);
+          border: 1px solid rgba(255, 255, 255, .12);
+          padding: 0 calc(14 * var(--u));
           display: inline-flex;
           align-items: center;
-          gap: calc(5 * var(--u));
+          gap: calc(7 * var(--u));
           cursor: pointer;
-          transition: all .18s ease;
+          transition: all .2s ease;
           white-space: nowrap;
         }
 
         .infera-chip:hover {
-          background: linear-gradient(180deg, rgba(255, 255, 255, .15), rgba(255, 255, 255, .08));
-          color: #f1f5f9;
-        }
-
-        .infera-chip.active {
-          background: rgba(255, 255, 255, 0.16);
+          background: linear-gradient(180deg, rgba(255, 255, 255, .18), rgba(255, 255, 255, .10));
           color: #ffffff;
           border-color: rgba(255, 255, 255, 0.25);
         }
 
+        .infera-chip.active {
+          background: rgba(255, 255, 255, 0.20);
+          color: #ffffff;
+          border-color: rgba(255, 255, 255, 0.35);
+        }
+
         .infera-chip span {
-          transform: translateY(calc(1 * var(--u)));
+          transform: translateY(calc(0.5 * var(--u)));
         }
 
         /* RIGHT CLUSTER */
         .infera-right {
-          position: absolute;
-          inset: 0;
-          pointer-events: none;
+          position: relative;
+          display: flex;
+          align-items: center;
+          gap: calc(14 * var(--u));
+          margin-left: auto;
+          pointer-events: auto;
         }
 
         .infera-right > * {
-          position: absolute;
+          position: static;
           pointer-events: auto;
         }
 
         .infera-model {
-          left: calc(500 * var(--u));
-          top: calc(15.5 * var(--u));
-          font-size: calc(10.5 * var(--u));
-          font-weight: 400;
-          color: #9ca3af;
+          font-size: clamp(12px, calc(13 * var(--u)), 14.5px);
+          font-weight: 500;
+          color: #cbd5e1;
           line-height: 1;
           display: inline-flex;
           align-items: center;
-          gap: calc(6.2 * var(--u));
-          cursor: pointer;
-        }
-
-        .infera-chev {
-          width: calc(6.8 * var(--u));
-        }
-
-        .infera-attach {
-          left: calc(599.15 * var(--u));
-          top: calc(10.14 * var(--u));
-          color: #9ca3af;
+          gap: calc(6.5 * var(--u));
           cursor: pointer;
           transition: color .18s ease;
         }
 
+        .infera-model:hover {
+          color: #ffffff;
+        }
+
+        .infera-chev {
+          width: calc(7.5 * var(--u));
+        }
+
+        .infera-attach {
+          color: #cbd5e1;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: color .18s ease, transform .15s ease;
+        }
+
         .infera-attach svg {
-          width: calc(19.79 * var(--u));
+          width: calc(22 * var(--u));
           height: auto;
         }
 
         .infera-attach:hover {
           color: #fff;
+          transform: scale(1.08);
         }
 
         .infera-send {
-          left: calc(640 * var(--u));
-          top: calc(2 * var(--u));
-          width: calc(35 * var(--u));
-          height: calc(35 * var(--u));
+          width: calc(40 * var(--u));
+          height: calc(40 * var(--u));
           border-radius: 50%;
           background: linear-gradient(163deg, #FBBC94 0%, #F49D70 46%, #E88654 100%);
-          box-shadow: 0 calc(3 * var(--u)) calc(12 * var(--u)) rgba(210, 110, 60, .34);
+          box-shadow: 0 calc(4 * var(--u)) calc(16 * var(--u)) rgba(210, 110, 60, .45);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -958,13 +982,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ userEmail, onOpenAuth 
         }
 
         .infera-send svg {
-          width: calc(11.66 * var(--u));
+          width: calc(14 * var(--u));
           height: auto;
           color: #fff;
         }
 
         .infera-send:hover {
-          filter: brightness(1.08);
+          filter: brightness(1.1);
+          transform: scale(1.04);
         }
 
         .infera-send:active {
@@ -1093,6 +1118,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ userEmail, onOpenAuth 
           gap: 0.75rem;
           text-decoration: none;
           color: #ffffff;
+        }
+
+        .saas-footer__brand-logo {
+          width: 32px;
+          height: 32px;
+          object-fit: contain;
+          border-radius: 8px;
+          filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4));
         }
 
         .saas-footer__brand-title {
@@ -1302,25 +1335,52 @@ export const LandingPage: React.FC<LandingPageProps> = ({ userEmail, onOpenAuth 
         /* RESPONSIVE: TABLET */
         @media (min-width: 600px) and (max-width: 1180px) and (min-height: 600px) {
           :root { --u: 1px; }
-          .infera-frame { padding: clamp(90px, 12vh, 120px) clamp(28px, 4.2vw, 60px) clamp(26px, 4.4vh, 56px); }
-          .infera-nav { height: auto; padding: 14px 24px; }
-          .infera-nav.scrolled { padding: 12px 24px; }
+          .infera-nav-wrapper,
+          .infera-nav-wrapper.scrolled {
+            padding: 16px 24px;
+          }
+          .infera-nav-pill,
+          .infera-nav-wrapper.scrolled .infera-nav-pill {
+            height: 58px;
+            min-height: 58px;
+            padding: 0 20px;
+            border-radius: 18px;
+          }
           .infera-links { position: static; transform: none; gap: clamp(18px, 2.5vw, 36px); }
           .infera-links a { font-size: clamp(13px, 1.5vw, 15px); }
           .infera-cta { height: 38px; padding: 0 16px; font-size: 13px; align-self: center; margin-top: 0; }
+          main.infera-hero { gap: 28px; }
+          .infera-hero-header { margin-top: 0; margin-bottom: 0; }
           .infera-h1 { font-size: clamp(27px, 4.3vw, 42px); }
           .infera-card {
             width: min(100%, clamp(516px, 74vw, 760px));
             height: auto;
+            min-height: 155px;
             margin-right: 0;
             padding: clamp(15px, 1.9vw, 24px);
             border-radius: clamp(17px, 2.1vw, 26px);
             display: flex;
             flex-direction: column;
-            gap: clamp(20px, 3.2vh, 40px);
+            justify-content: space-between;
+            gap: clamp(16px, 2.5vh, 28px);
           }
-          .infera-ph { position: static; white-space: normal; font-size: 12px; }
-          .infera-prompt-text { white-space: normal; }
+          .infera-ph {
+            position: static;
+            min-height: 52px;
+            display: flex;
+            align-items: flex-start;
+          }
+          .infera-typing-row {
+            width: 100%;
+            min-height: 52px;
+            display: block;
+          }
+          .infera-prompt-text {
+            white-space: normal;
+            font-size: 13px;
+            line-height: 1.45;
+            display: inline;
+          }
           .infera-tools {
             position: static;
             height: auto;
@@ -1346,10 +1406,32 @@ export const LandingPage: React.FC<LandingPageProps> = ({ userEmail, onOpenAuth 
         /* RESPONSIVE: COMPACT / MOBILE */
         @media (max-width: 599px), (max-height: 599px) and (max-width: 1180px) {
           :root { --u: 1px; }
-          .infera-frame { padding: 90px 16px 24px; }
-          .infera-nav { padding: 14px 16px; }
-          .infera-nav.scrolled { padding: 12px 16px; }
-          .infera-links, header.infera-nav .infera-cta { display: none; }
+          .infera-hero-section {
+            height: auto;
+            min-height: 100dvh;
+            overflow: visible;
+          }
+          .infera-frame {
+            position: relative;
+            min-height: 100dvh;
+            padding: 82px 16px 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+          }
+          .infera-nav-wrapper,
+          .infera-nav-wrapper.scrolled {
+            padding: 12px 14px;
+          }
+          .infera-nav-pill,
+          .infera-nav-wrapper.scrolled .infera-nav-pill {
+            width: 100%;
+            height: 52px;
+            min-height: 52px;
+            border-radius: 16px;
+            padding: 0 16px;
+          }
+          .infera-links, .infera-nav-pill > .infera-cta { display: none; }
           .infera-burger {
             display: flex;
             align-items: center;
@@ -1402,19 +1484,56 @@ export const LandingPage: React.FC<LandingPageProps> = ({ userEmail, onOpenAuth 
             border: 1px solid rgba(255, 255, 255, 0.22);
             box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.30);
           }
-          .infera-h1 { font-size: clamp(26px, 7vw, 36px); }
+          main.infera-hero {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            padding: 8px 0;
+            width: 100%;
+          }
+          .infera-hero-header {
+            margin-top: 0;
+            margin-bottom: 0;
+            gap: 8px;
+            text-align: center;
+          }
+          .infera-pill-label { font-size: 10.5px; letter-spacing: 0.18em; }
+          .infera-h1 { font-size: clamp(26px, 7vw, 36px); line-height: 1.18; }
           .infera-card {
             width: 100%;
             height: auto;
+            min-height: 205px;
             margin-right: 0;
             padding: 16px;
             border-radius: 20px;
             display: flex;
             flex-direction: column;
-            gap: 16px;
+            justify-content: space-between;
+            gap: 14px;
+            box-sizing: border-box;
           }
-          .infera-ph { position: static; font-size: 11px; white-space: normal; }
-          .infera-prompt-text { white-space: normal; font-size: 12px; }
+          .infera-ph {
+            position: static;
+            width: 100%;
+            min-height: 60px;
+            display: flex;
+            align-items: flex-start;
+          }
+          .infera-typing-row {
+            width: 100%;
+            min-height: 60px;
+            display: block;
+          }
+          .infera-prompt-text {
+            white-space: normal;
+            font-size: 13px;
+            line-height: 1.45;
+            display: inline;
+            word-break: break-word;
+          }
           .infera-tools {
             position: static;
             height: auto;
@@ -1424,7 +1543,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ userEmail, onOpenAuth 
             gap: 12px;
           }
           .infera-chips { flex-wrap: wrap; gap: 6px; }
-          .infera-chip { height: 28px; font-size: 10px; padding: 0 8px; }
+          .infera-chip { height: 32px; font-size: 11px; padding: 0 10px; }
           .infera-right {
             position: static;
             display: flex;
@@ -1435,6 +1554,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ userEmail, onOpenAuth 
           .infera-right > * { position: static; }
           .infera-attach { margin-left: auto; }
           .infera-send { margin-left: 12px; width: 36px; height: 36px; }
+          .infera-proof {
+            gap: 8px;
+            padding-top: 10px;
+          }
+          .infera-proof-caption { font-size: 11px; }
           .infera-logos { flex-wrap: wrap; justify-content: center; gap: 8px; font-size: 10px; }
         }
       `}</style>
