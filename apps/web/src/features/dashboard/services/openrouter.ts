@@ -232,7 +232,7 @@ export async function sendOpenRouterChat(
         Authorization: `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
         'HTTP-Referer': window.location.origin,
-        'X-Title': 'HealthAthon BPJS Avatar Assistant',
+        'X-Title': 'INFERA BPJS AI Assistant',
       },
       body: JSON.stringify(payload),
       signal: abortController.signal,

@@ -1,8 +1,8 @@
 {
-  "name": "healthathon-bpjs-monorepo",
+  "name": "infera-monorepo",
   "version": "1.0.0",
   "private": true,
-  "description": "Production-grade fullstack monorepo for HealthAthon BPJS with React Vite and Express TypeScript",
+  "description": "INFERA - Integrated Fraud Early-Warning & Risk Analytics Platform for BPJS Kesehatan",
   "workspaces": [
     "packages/*",
     "apps/*"

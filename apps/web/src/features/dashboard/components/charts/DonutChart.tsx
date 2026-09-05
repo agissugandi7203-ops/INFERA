@@ -21,7 +21,7 @@ export const DonutChart: React.FC<DonutChartProps> = ({
   totalLabel = 'Total Anomali',
   totalValue = '1,485',
   title = 'Distribusi Modus Risiko Peserta',
-  subtitle = 'Audit komparatif 4 tipologi Healthkathon 2026',
+  subtitle = 'Audit komparatif 4 tipologi fraud INFERA',
 }) => {
   const [activeSegment, setActiveSegment] = useState<DonutSegment | null>(null);
 

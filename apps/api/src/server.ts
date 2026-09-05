@@ -5,7 +5,7 @@ const app = createApp();
 
 const server = app.listen(env.PORT, () => {
   console.log('====================================================');
-  console.log(`🚀 HealthAthon BPJS API Server running on port ${env.PORT}`);
+  console.log(`🚀 INFERA API Server (BPJS Health Risk Analytics) running on port ${env.PORT}`);
   console.log(`📡 Health Check: http://localhost:${env.PORT}/api/v1/health`);
   console.log(`🌐 Allowed Client: ${env.CLIENT_URL}`);
   console.log(`⚙️  Environment: ${env.NODE_ENV}`);

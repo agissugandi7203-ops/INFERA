@@ -10,7 +10,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({ userEmail, onL
     <header className="border-b border-neutral-200 bg-white">
       <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4 sm:px-6">
         <div className="flex items-center space-x-3">
-          <span className="font-bold text-sm text-neutral-900">HealthAthon BPJS</span>
+          <span className="font-extrabold text-sm text-neutral-900">INFERA</span>
           <span className="rounded bg-neutral-100 px-2 py-0.5 text-[11px] font-medium text-neutral-600">
             Dashboard
           </span>

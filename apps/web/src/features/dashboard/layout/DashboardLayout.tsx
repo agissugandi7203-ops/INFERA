@@ -161,7 +161,7 @@ const DashboardLayoutContent: React.FC<
           id: 'welcome-msg',
           role: 'assistant',
           content:
-            'Halo! Saya asisten pencegahan kecurangan (PK-JKN) BPJS Kesehatan. Anda dapat menanyakan seputar regulasi JKN, memverifikasi anomali peserta, atau berdiskusi langsung dengan suara.',
+            'Halo! Saya asisten AI INFERA (Integrated Fraud Early-Warning & Risk Analytics) BPJS Kesehatan. Anda dapat menanyakan seputar regulasi JKN, memverifikasi anomali klaim peserta, atau berdiskusi langsung dengan suara.',
           emotion: 'happy',
           timestamp: new Date().toISOString(),
         },

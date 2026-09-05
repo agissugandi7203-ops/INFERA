@@ -130,16 +130,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
             className={`w-8 h-8 rounded-lg bg-[#007a3d] text-white flex items-center justify-center shrink-0 ${
               isCollapsed ? 'hover:scale-105 cursor-pointer shadow-xs' : ''
             }`}
-            title={isCollapsed ? 'Klik untuk membuka sidebar' : 'Portal PK-JKN'}
+            title={isCollapsed ? 'Klik untuk membuka sidebar' : 'INFERA'}
           >
             <ShieldCheck className="w-4.5 h-4.5" />
           </button>
           {!isCollapsed && (
             <div className="flex flex-col min-w-0">
-              <span className="font-bold text-slate-900 dark:text-slate-100 text-xs tracking-tight truncate">
-                Portal PK-JKN
+              <span className="font-extrabold text-slate-900 dark:text-slate-100 text-sm tracking-tight truncate">
+                INFERA
               </span>
-              <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium truncate">Healthkathon 2026</span>
+              <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium truncate">Fraud Risk Analytics</span>
             </div>
           )}
         </div>

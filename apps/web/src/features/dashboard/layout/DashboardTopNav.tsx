@@ -33,7 +33,7 @@ export const DashboardTopNav: React.FC<DashboardTopNavProps> = ({
     <header className="h-14 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-6 flex items-center justify-between z-20 shrink-0">
       {/* Clean Enterprise Breadcrumb */}
       <div className="flex items-center gap-1.5 text-xs">
-        <span className="text-slate-400 dark:text-slate-500 font-medium">Portal PK-JKN</span>
+        <span className="text-slate-400 dark:text-slate-500 font-bold tracking-tight">INFERA</span>
         <span className="text-slate-300 dark:text-slate-600">/</span>
         <span className="text-slate-500 dark:text-slate-400 font-medium">{currentRouteInfo.category}</span>
         <span className="text-slate-300 dark:text-slate-600">/</span>

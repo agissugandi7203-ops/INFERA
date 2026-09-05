@@ -11,8 +11,10 @@ export const Navbar: React.FC<NavbarProps> = ({ userEmail, onOpenAuth, onLogout 
     <header className="sticky top-0 z-40 w-full border-b border-neutral-200 bg-white/90 backdrop-blur-sm">
       <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4 sm:px-6">
         {/* Brand */}
-        <div className="font-bold text-neutral-900 text-sm tracking-tight">
-          HealthAthon BPJS
+        <div className="font-extrabold text-neutral-900 dark:text-slate-100 text-sm tracking-tight flex items-center gap-2">
+          <span className="w-2.5 h-2.5 rounded-full bg-[#007a3d]" />
+          <span>INFERA</span>
+          <span className="text-[10px] font-normal text-slate-400 border-l border-slate-300 pl-2">BPJS Kesehatan</span>
         </div>
 
         {/* CTA Atas */}

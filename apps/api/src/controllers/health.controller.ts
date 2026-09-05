@@ -18,7 +18,7 @@ export const getHealth = async (_req: Request, res: Response, next: NextFunction
     const hasIssues = dbHealth.status === 'unreachable';
 
     const healthData: HealthStatus = {
-      service: 'HealthAthon BPJS Express API',
+      service: 'INFERA Express API (BPJS Health Risk Analytics)',
       status: hasIssues ? 'degraded' : 'ok',
       version: '1.0.0',
       uptimeSeconds,
