@@ -23,14 +23,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ userEmail, onOpenAuth 
   return (
     <div className="mx-auto max-w-3xl px-4 py-20 sm:py-28 text-center space-y-8">
       <div className="space-y-3">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-[11px] font-bold font-mono text-emerald-700 dark:text-emerald-400 mb-2">
-          INTEGRATED FRAUD EARLY-WARNING &amp; RISK ANALYTICS
+        <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[11px] font-semibold font-mono text-slate-700 dark:text-slate-300 mb-2">
+          INTELLIGENT FRAUD &amp; RISK ANALYSIS AGENT
         </div>
         <h1 className="text-4xl sm:text-5xl font-black tracking-tight text-neutral-900 dark:text-slate-100">
           INFERA
         </h1>
         <p className="text-sm text-neutral-600 dark:text-slate-400 max-w-lg mx-auto leading-relaxed">
-          Platform AI Kognitif Pengawasan Integritas Klaim &amp; Deteksi Dini Kecurangan Layanan Jaminan Kesehatan Nasional BPJS Kesehatan.
+          Intelligent Fraud &amp; Risk Analysis Agent untuk deteksi anomali, pola kecurangan klaim, dan mitigasi risiko BPJS Kesehatan secara presisi.
         </p>
       </div>
 

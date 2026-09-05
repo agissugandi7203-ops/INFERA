@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "INFERA - Integrated Fraud Early-Warning & Risk Analytics Platform for BPJS Kesehatan",
+  "description": "INFERA - Intelligent Fraud & Risk Analysis Agent for BPJS Kesehatan",
   "workspaces": [
     "packages/*",
     "apps/*"

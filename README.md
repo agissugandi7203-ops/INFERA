@@ -1,5 +1,5 @@
 # 🛡️ INFERA
-### *Integrated Fraud Early-Warning & Risk Analytics*
+### *Intelligent Fraud & Risk Analysis Agent*
 **HealthAthon BPJS Kesehatan**
 
 INFERA adalah platform analitik dan pengawasan integritas klaim kesehatan berbasis AI yang dirancang untuk mendeteksi anomali, indikasi fraud, dan profil risiko peserta BPJS Kesehatan secara *real-time*, dilengkapi dengan **Interactive AI Voice Assistant (Vera & Luna)**.

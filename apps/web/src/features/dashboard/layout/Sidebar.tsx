@@ -139,7 +139,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <span className="font-extrabold text-slate-900 dark:text-slate-100 text-sm tracking-tight truncate">
                 INFERA
               </span>
-              <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium truncate">Fraud Risk Analytics</span>
+              <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium truncate">Fraud &amp; Risk Analysis Agent</span>
             </div>
           )}
         </div>
