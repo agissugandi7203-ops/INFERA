@@ -11,7 +11,7 @@ const envSchema = z.object({
   SUPABASE_ANON_KEY: z.string().optional().default(''),
   SUPABASE_SERVICE_ROLE_KEY: z.string().optional().default(''),
   OPENROUTER_API_KEY: z.string().optional().default(''),
-  OPENROUTER_DEFAULT_MODEL: z.string().default('meta-llama/llama-3.3-70b-instruct:free'),
+  OPENROUTER_DEFAULT_MODEL: z.string().default('openai/gpt-oss-120b:nitro'),
 });
 
 const parsedEnv = envSchema.safeParse(process.env);

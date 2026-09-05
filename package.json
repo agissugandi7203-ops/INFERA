@@ -13,6 +13,10 @@
     "dev:web": "npm --workspace=@healthathon/web run dev",
     "build": "npm --workspace=@healthathon/shared run build && npm --workspace=@healthathon/api run build && npm --workspace=@healthathon/web run build",
     "build:shared": "npm --workspace=@healthathon/shared run build",
+    "build:api": "npm --workspace=@healthathon/shared run build && npm --workspace=@healthathon/api run build",
+    "start:api": "npm --workspace=@healthathon/api run start",
+    "build:web": "npm --workspace=@healthathon/shared run build && npm --workspace=@healthathon/web run build",
+    "start": "npm --workspace=@healthathon/api run start",
     "typecheck": "npm --workspace=@healthathon/shared run typecheck && npm --workspace=@healthathon/api run typecheck && npm --workspace=@healthathon/web run typecheck",
     "clean": "node -e \"fs.rmSync('dist', { recursive: true, force: true })\""
   },

@@ -5,6 +5,7 @@ import { Footer } from './components/common/Footer';
 import { AppRoutes } from './routes';
 import { AuthModal } from './features/auth/AuthModal';
 import { supabase } from './lib/supabase';
+import { ThemeProvider } from './context/ThemeContext';
 
 const AppContent: React.FC = () => {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
@@ -54,7 +55,7 @@ const AppContent: React.FC = () => {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-white text-neutral-900 selection:bg-neutral-200">
+    <div className="flex min-h-screen flex-col bg-white dark:bg-slate-950 text-neutral-900 dark:text-slate-100 selection:bg-neutral-200 dark:selection:bg-slate-800">
       {!isDashboard && (
         <Navbar
           userEmail={userEmail}
@@ -84,9 +85,11 @@ const AppContent: React.FC = () => {
 
 export const App: React.FC = () => {
   return (
-    <BrowserRouter>
-      <AppContent />
-    </BrowserRouter>
+    <ThemeProvider>
+      <BrowserRouter>
+        <AppContent />
+      </BrowserRouter>
+    </ThemeProvider>
   );
 };
 

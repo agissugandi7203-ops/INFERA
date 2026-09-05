@@ -288,6 +288,7 @@ export const FloatingAvatarWidget: React.FC<FloatingAvatarWidgetProps> = ({
             currentEmotion={isListening ? 'listening' : currentEmotion}
             mouthOpenAmount={manualMouthOpen}
             onControllerReady={onControllerReady}
+            isMinimized={isMinimized}
             className="w-full h-full"
           />
         </div>

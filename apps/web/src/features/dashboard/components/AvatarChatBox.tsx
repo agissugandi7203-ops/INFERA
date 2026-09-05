@@ -1,5 +1,18 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Send, Mic, MicOff, Volume2, Trash2, Download, Bot, User, Sparkles, X } from 'lucide-react';
+﻿import React, { useState, useRef, useEffect } from 'react';
+import {
+  ArrowUp,
+  Square,
+  Mic,
+  MicOff,
+  Volume2,
+  Trash2,
+  Download,
+  ShieldCheck,
+  Plus,
+  X,
+  Copy,
+  Check,
+} from 'lucide-react';
 import { ChatMessage } from '../services/openrouter';
 import { CharacterEmotion } from '../avatar/AvatarController';
 import { SpeechService } from '../services/speech';
@@ -15,7 +28,7 @@ interface AvatarChatBoxProps {
 }
 
 const EMOTION_MAP: Record<CharacterEmotion, { label: string; icon: string; bg: string }> = {
-  normal: { label: 'Netral', icon: '😐', bg: 'bg-neutral-100 text-neutral-700' },
+  normal: { label: 'Netral', icon: '😐', bg: 'bg-slate-100 text-slate-700' },
   happy: { label: 'Senang', icon: '😊', bg: 'bg-emerald-100 text-emerald-800' },
   sad: { label: 'Sedih', icon: '😢', bg: 'bg-blue-100 text-blue-800' },
   angry: { label: 'Marah', icon: '😠', bg: 'bg-rose-100 text-rose-800' },
@@ -38,12 +51,15 @@ export const AvatarChatBox: React.FC<AvatarChatBoxProps> = ({
   const [inputText, setInputText] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const [activeAudioMessageId, setActiveAudioMessageId] = useState<string | null>(null);
+  const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const stopListeningRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
+    // Only scroll if there are messages and user isn't actively inspecting older text
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, isLoading]);
+  }, [messages.length, isLoading]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -101,9 +117,7 @@ export const AvatarChatBox: React.FC<AvatarChatBoxProps> = ({
     SpeechService.speak(
       msg.content,
       (openVal) => onTriggerLipSync(openVal),
-      () => {
-        // onStart
-      },
+      () => {},
       () => {
         setActiveAudioMessageId(null);
         onTriggerLipSync(0);
@@ -112,11 +126,17 @@ export const AvatarChatBox: React.FC<AvatarChatBoxProps> = ({
     );
   };
 
+  const handleCopy = (id: string, text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedMessageId(id);
+    setTimeout(() => setCopiedMessageId(null), 2000);
+  };
+
   const handleExportChat = () => {
     const text = messages
       .map(
         (m) =>
-          `[${m.timestamp}] ${m.role === 'user' ? 'User' : 'Avatar'}: ${m.content} ${
+          `[${m.timestamp}] ${m.role === 'user' ? 'Auditor' : 'Asisten JKN'}: ${m.content} ${
             m.emotion ? `(Emotion: ${m.emotion})` : ''
           }`
       )
@@ -126,22 +146,26 @@ export const AvatarChatBox: React.FC<AvatarChatBoxProps> = ({
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `avatar-conversation-${new Date().toISOString().slice(0, 10)}.txt`;
+    a.download = `bap-asisten-jkn-${new Date().toISOString().slice(0, 10)}.txt`;
     a.click();
     URL.revokeObjectURL(url);
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-neutral-200/80 shadow-sm flex flex-col h-[560px] overflow-hidden">
-      {/* Header */}
-      <div className="px-4 py-3 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50">
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-emerald-600/10 text-emerald-600 flex items-center justify-center">
-            <Bot className="w-4 h-4" />
+    <div className="bg-white rounded-2xl border border-slate-200/90 shadow-2xl flex flex-col h-[600px] overflow-hidden font-sans">
+      {/* Header (ChatGPT / Modern SaaS Style) */}
+      <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between bg-white shrink-0">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-lg bg-[#007a3d] text-white flex items-center justify-center shrink-0 shadow-xs">
+            <ShieldCheck className="w-4.5 h-4.5" />
           </div>
           <div>
-            <h2 className="text-xs font-bold text-neutral-900">Percakapan Interaktif</h2>
-            <p className="text-[10px] text-neutral-500">Avatar responsif real-time dengan OpenRouter</p>
+            <h2 className="text-xs font-bold text-slate-900 leading-tight">
+              Asisten Regulasi &amp; Risiko JKN
+            </h2>
+            <p className="text-[10px] text-slate-400">
+              Penalaran hukum &amp; audit analitik klaim
+            </p>
           </div>
         </div>
 
@@ -151,16 +175,16 @@ export const AvatarChatBox: React.FC<AvatarChatBoxProps> = ({
               <button
                 type="button"
                 onClick={handleExportChat}
-                className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 transition-colors"
-                title="Simpan / Download Percakapan"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+                title="Ekspor Percakapan"
               >
                 <Download className="w-3.5 h-3.5" />
               </button>
               <button
                 type="button"
                 onClick={onClearHistory}
-                className="p-1.5 rounded-lg text-neutral-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
-                title="Bersihkan Riwayat"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                title="Bersihkan Percakapan"
               >
                 <Trash2 className="w-3.5 h-3.5" />
               </button>
@@ -171,8 +195,8 @@ export const AvatarChatBox: React.FC<AvatarChatBoxProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="p-1.5 rounded-lg text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 transition-colors ml-1"
-              title="Tutup Percakapan"
+              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors ml-1"
+              title="Tutup Modal"
             >
               <X className="w-4 h-4" />
             </button>
@@ -180,98 +204,135 @@ export const AvatarChatBox: React.FC<AvatarChatBoxProps> = ({
         </div>
       </div>
 
-      {/* Message List */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3.5 text-xs">
+      {/* Message Canvas */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-5 text-xs">
         {messages.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center text-center text-neutral-400 p-6 space-y-2">
-            <Sparkles className="w-8 h-8 text-emerald-500/40 animate-pulse" />
-            <p className="font-medium text-neutral-600 text-xs">Mulai Percakapan dengan Avatar!</p>
-            <p className="text-[11px] text-neutral-400 max-w-xs leading-relaxed">
-              Ketik pesan atau tekan ikon mikrofon untuk berbicara. Karakter akan bereaksi, berbicara
-              dengan lip-sync, dan mengekspresikan emosi secara otomatis.
+          <div className="h-full flex flex-col items-center justify-center text-center p-6 space-y-2 select-none">
+            <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-800 mb-1 border border-slate-200/80 shadow-2xs">
+              <ShieldCheck className="w-5 h-5 text-[#007a3d]" />
+            </div>
+            <h3 className="text-xl font-bold text-slate-900 tracking-tight">
+              Ready When You Are
+            </h3>
+            <p className="text-xs text-slate-500 max-w-xs leading-relaxed">
+              Tanyakan pasal regulasi JKN, investigasi modus fraud, atau verifikasi batasan klaim.
             </p>
+
+            <div className="flex flex-wrap gap-1.5 justify-center max-w-sm pt-4">
+              {[
+                'Sanksi peminjaman kartu',
+                'Batas supply PRB 30 hari',
+                'Indikator Doctor Shopping',
+              ].map((prompt) => (
+                <button
+                  key={prompt}
+                  type="button"
+                  onClick={() => onSendMessage(prompt)}
+                  className="px-3 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200/80 text-[11px] text-slate-700 font-medium transition-colors border border-slate-200/70"
+                >
+                  {prompt}
+                </button>
+              ))}
+            </div>
           </div>
         ) : (
           messages.map((msg) => {
             const isUser = msg.role === 'user';
             const emotionMeta = msg.emotion ? EMOTION_MAP[msg.emotion] : null;
 
-            return (
-              <div
-                key={msg.id}
-                className={`flex gap-2.5 ${isUser ? 'justify-end' : 'justify-start'}`}
-              >
-                {!isUser && (
-                  <div className="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0 mt-0.5 text-[11px]">
-                    🤖
+            if (isUser) {
+              return (
+                <div key={msg.id} className="flex justify-end">
+                  <div className="max-w-[82%] bg-[#f4f4f4] text-slate-900 rounded-2xl px-4 py-2.5 shadow-2xs border border-slate-200/60">
+                    <p className="leading-relaxed whitespace-pre-wrap text-xs">{msg.content}</p>
+                    <div className="text-[9px] text-right font-mono text-slate-400 mt-1">
+                      {new Date(msg.timestamp).toLocaleTimeString([], {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </div>
                   </div>
-                )}
+                </div>
+              );
+            }
 
-                <div
-                  className={`max-w-[82%] rounded-2xl p-3 shadow-xs space-y-1.5 ${
-                    isUser
-                      ? 'bg-emerald-600 text-white rounded-tr-xs'
-                      : 'bg-neutral-100/90 text-neutral-800 rounded-tl-xs border border-neutral-200/50'
-                  }`}
-                >
-                  {!isUser && emotionMeta && (
-                    <div className="flex items-center justify-between gap-2 pb-0.5 border-b border-neutral-200/40">
-                      <span
-                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold ${emotionMeta.bg}`}
-                      >
-                        <span>{emotionMeta.icon}</span>
-                        <span>{emotionMeta.label}</span>
-                      </span>
+            // AI Response: ChatGPT Style (NO BUBBLE, Clean Prose directly on Canvas)
+            return (
+              <div key={msg.id} className="flex gap-3 items-start justify-start group">
+                <div className="w-6 h-6 rounded-md bg-[#007a3d] text-white flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                </div>
 
-                      <button
-                        type="button"
-                        onClick={() => handlePlayMessageAudio(msg)}
-                        className={`p-1 rounded-md transition-colors ${
-                          activeAudioMessageId === msg.id
-                            ? 'bg-emerald-200 text-emerald-800 animate-pulse'
-                            : 'text-neutral-500 hover:bg-neutral-200/60'
-                        }`}
-                        title="Dengarkan Kembali dengan Lip-Sync"
-                      >
-                        <Volume2 className="w-3 h-3" />
-                      </button>
+                <div className="flex-1 min-w-0 space-y-2">
+                  {emotionMeta && (
+                    <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-slate-100 text-slate-700 border border-slate-200/60">
+                      <span>{emotionMeta.icon}</span>
+                      <span>{emotionMeta.label}</span>
                     </div>
                   )}
 
-                  <p className="leading-relaxed whitespace-pre-wrap text-[12px]">{msg.content}</p>
+                  <div className="text-xs text-slate-800 leading-relaxed whitespace-pre-wrap font-sans">
+                    {msg.content}
+                  </div>
 
-                  <div
-                    className={`text-[9px] text-right font-mono ${
-                      isUser ? 'text-emerald-100/80' : 'text-neutral-400'
-                    }`}
-                  >
-                    {new Date(msg.timestamp).toLocaleTimeString([], {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
+                  {/* Action Bar under AI Response */}
+                  <div className="flex items-center gap-2 pt-1 text-[10px] text-slate-400">
+                    <button
+                      type="button"
+                      onClick={() => handlePlayMessageAudio(msg)}
+                      className={`flex items-center gap-1 px-2 py-1 rounded-md transition-colors ${
+                        activeAudioMessageId === msg.id
+                          ? 'bg-emerald-50 text-emerald-700 font-semibold'
+                          : 'hover:bg-slate-100 text-slate-500'
+                      }`}
+                      title="Dengarkan Suara Avatar"
+                    >
+                      <Volume2 className="w-3 h-3" />
+                      <span>{activeAudioMessageId === msg.id ? 'Memutar...' : 'Dengarkan'}</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleCopy(msg.id, msg.content)}
+                      className="flex items-center gap-1 px-2 py-1 rounded-md hover:bg-slate-100 text-slate-500 transition-colors"
+                      title="Salin Teks"
+                    >
+                      {copiedMessageId === msg.id ? (
+                        <>
+                          <Check className="w-3 h-3 text-emerald-600" />
+                          <span className="text-emerald-600 font-medium">Tersalin</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3 h-3" />
+                          <span>Salin</span>
+                        </>
+                      )}
+                    </button>
+
+                    <span className="font-mono text-[9px] ml-auto">
+                      {new Date(msg.timestamp).toLocaleTimeString([], {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </span>
                   </div>
                 </div>
-
-                {isUser && (
-                  <div className="w-6 h-6 rounded-full bg-neutral-200 text-neutral-700 flex items-center justify-center shrink-0 mt-0.5 text-[11px]">
-                    <User className="w-3.5 h-3.5" />
-                  </div>
-                )}
               </div>
             );
           })
         )}
 
         {isLoading && (
-          <div className="flex gap-2.5 justify-start items-center text-neutral-500 text-xs">
-            <div className="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0 text-[11px]">
-              🤖
+          <div className="flex gap-3 items-start justify-start text-slate-500 text-xs">
+            <div className="w-6 h-6 rounded-md bg-[#007a3d] text-white flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
+              <ShieldCheck className="w-3.5 h-3.5" />
             </div>
-            <div className="bg-neutral-100 rounded-2xl px-3.5 py-2 flex items-center gap-1.5 border border-neutral-200/50">
-              <div className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-bounce" />
-              <div className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-bounce [animation-delay:0.2s]" />
-              <div className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-bounce [animation-delay:0.4s]" />
-              <span className="text-[11px] text-neutral-500 ml-1">Avatar sedang berpikir...</span>
+            <div className="flex items-center gap-2 py-1 text-xs text-slate-500">
+              <div className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce" />
+              <div className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce [animation-delay:0.2s]" />
+              <div className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-bounce [animation-delay:0.4s]" />
+              <span className="text-[11px] text-slate-400 ml-1">Menyusun penalaran regulasi...</span>
             </div>
           </div>
         )}
@@ -279,42 +340,81 @@ export const AvatarChatBox: React.FC<AvatarChatBoxProps> = ({
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Area */}
-      <form
-        onSubmit={handleSubmit}
-        className="p-2.5 bg-neutral-50/70 border-t border-neutral-100 flex items-center gap-2"
-      >
-        <button
-          type="button"
-          onClick={handleVoiceToggle}
-          className={`p-2.5 rounded-xl transition-all ${
-            isRecording
-              ? 'bg-rose-600 text-white ring-4 ring-rose-500/20 animate-pulse'
-              : 'bg-neutral-100 hover:bg-neutral-200 text-neutral-700'
-          }`}
-          title={isRecording ? 'Berhenti Merekam' : 'Bicara lewat Mikrofon (Voice Input)'}
+      {/* ChatGPT Modern Composer Layout */}
+      <div className="p-3 bg-white border-t border-slate-100 shrink-0">
+        <form
+          onSubmit={handleSubmit}
+          className="rounded-2xl border border-slate-200 bg-[#f4f4f4] focus-within:border-slate-400 focus-within:bg-white shadow-2xs transition-all p-2 flex flex-col gap-1.5"
         >
-          {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-        </button>
+          {/* Multiline input */}
+          <textarea
+            ref={textareaRef}
+            value={inputText}
+            onChange={(e) => setInputText(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSubmit(e);
+              }
+            }}
+            placeholder={isRecording ? 'Mendengarkan suara Anda...' : 'Tanyakan apa saja...'}
+            rows={1}
+            disabled={isLoading}
+            className="w-full bg-transparent border-none text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none resize-none px-2 pt-1 max-h-28 min-h-[28px]"
+          />
 
-        <input
-          type="text"
-          value={inputText}
-          onChange={(e) => setInputText(e.target.value)}
-          placeholder={isRecording ? 'Mendengarkan suara Anda...' : 'Ketik pertanyaan atau sapa avatar...'}
-          disabled={isLoading}
-          className="flex-1 bg-white border border-neutral-200 rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
-        />
+          {/* Action Row */}
+          <div className="flex items-center justify-between pt-0.5">
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => setInputText((prev) => (prev ? prev + ' (analisis Permenkes 16/2019)' : 'Analisis sesuai Permenkes 16/2019'))}
+                className="p-1 rounded-full hover:bg-slate-200/80 text-slate-400 hover:text-slate-700 transition-colors"
+                title="Tambahkan konteks regulasi"
+              >
+                <Plus className="w-4 h-4" />
+              </button>
+              <span className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-slate-200/60 text-slate-600 font-mono">
+                RAG Aktif
+              </span>
+            </div>
 
-        <button
-          type="submit"
-          disabled={!inputText.trim() || isLoading}
-          className="p-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl shadow-xs transition-all"
-          title="Kirim Pesan"
-        >
-          <Send className="w-4 h-4" />
-        </button>
-      </form>
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={handleVoiceToggle}
+                className={`p-1.5 rounded-full transition-all ${
+                  isRecording
+                    ? 'bg-rose-500 text-white animate-pulse ring-2 ring-rose-200'
+                    : 'text-slate-500 hover:bg-slate-200/80'
+                }`}
+                title={isRecording ? 'Berhenti dikte' : 'Mulai dikte suara'}
+              >
+                {isRecording ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
+              </button>
+
+              <button
+                type="submit"
+                disabled={!inputText.trim() && !isLoading}
+                className={`w-7 h-7 rounded-full flex items-center justify-center transition-all ${
+                  isLoading
+                    ? 'bg-slate-900 text-white cursor-pointer hover:bg-slate-800'
+                    : inputText.trim()
+                    ? 'bg-slate-900 text-white hover:bg-slate-800 shadow-2xs cursor-pointer'
+                    : 'bg-slate-300 text-slate-400 cursor-not-allowed'
+                }`}
+                title={isLoading ? 'Hentikan jawaban' : 'Kirim pesan'}
+              >
+                {isLoading ? (
+                  <Square className="w-2.5 h-2.5 fill-current" />
+                ) : (
+                  <ArrowUp className="w-3.5 h-3.5 stroke-[2.5]" />
+                )}
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
     </div>
   );
 };

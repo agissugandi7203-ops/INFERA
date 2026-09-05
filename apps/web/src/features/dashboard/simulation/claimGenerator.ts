@@ -44,7 +44,7 @@ function generateNik(): string {
 }
 
 /**
- * Generate a Normal Claim (No Fraud)
+ * Generate a Normal Claim (No Fraud - Verified Clean Claim)
  */
 export function generateNormalClaim(): JknClaimRecord {
   const faskes = randomItem(HOSPITALS);
@@ -55,38 +55,74 @@ export function generateNormalClaim(): JknClaimRecord {
   const normalCases = [
     {
       diagAwal: 'I10',
-      namaDiag: 'Essential (primary) hypertension',
+      namaDiag: 'Essential (primary) hypertension - Kontrol Rutin',
       cbgCode: 'I-4-17-I',
-      cbgTariff: 3200000,
-      tarifRs: 3100000,
+      cbgTariff: 2800000,
+      tarifRs: 2750000,
       prosedur: ['89.07'],
       sekunder: []
     },
     {
       diagAwal: 'E11.9',
-      namaDiag: 'Type 2 diabetes mellitus without complications',
+      namaDiag: 'Type 2 diabetes mellitus without complications (PRB Patuh)',
       cbgCode: 'E-4-10-I',
-      cbgTariff: 2850000,
-      tarifRs: 2750000,
+      cbgTariff: 2450000,
+      tarifRs: 2390000,
       prosedur: ['90.59'],
       sekunder: ['K30']
     },
     {
       diagAwal: 'K29.7',
-      namaDiag: 'Gastritis, unspecified',
+      namaDiag: 'Gastritis, unspecified (Terapi PPI Sesuai Formularium)',
       cbgCode: 'K-4-17-I',
-      cbgTariff: 2400000,
-      tarifRs: 2350000,
+      cbgTariff: 1950000,
+      tarifRs: 1900000,
       prosedur: [],
       sekunder: []
     },
     {
       diagAwal: 'K35.8',
-      namaDiag: 'Acute appendicitis, other and unspecified',
+      namaDiag: 'Acute appendicitis (Apendektomi Sesuai Indikasi Akut)',
       cbgCode: 'K-1-12-I',
       cbgTariff: 7800000,
       tarifRs: 7600000,
       prosedur: ['47.09'],
+      sekunder: []
+    },
+    {
+      diagAwal: 'N18.5',
+      namaDiag: 'Chronic kidney disease, stage 5 (Hemodialisis Terjadwal Rutin)',
+      cbgCode: 'N-3-13-0',
+      cbgTariff: 825000,
+      tarifRs: 825000,
+      prosedur: ['39.95'],
+      sekunder: ['I10']
+    },
+    {
+      diagAwal: 'O82.0',
+      namaDiag: 'Delivery by caesarean section (Partograf Lengkap & CPD Terverifikasi)',
+      cbgCode: 'O-6-10-I',
+      cbgTariff: 7450000,
+      tarifRs: 7200000,
+      prosedur: ['74.1'],
+      sekunder: []
+    },
+    {
+      diagAwal: 'H25.0',
+      namaDiag: 'Senile incipient cataract (Fakoemulsifikasi Visus < 6/60 Valid)',
+      cbgCode: 'H-1-30-I',
+      cbgTariff: 5800000,
+      tarifRs: 5650000,
+      prosedur: ['13.41'],
+      sekunder: []
+    },
+    {
+      diagAwal: 'A91',
+      namaDiag: 'Dengue haemorrhagic fever (Trombosit < 100k, Rawat Inap Sesuai Kriteria)',
+      cbgCode: 'A-4-13-I',
+      cbgTariff: 4100000,
+      tarifRs: 3950000,
+      prosedur: ['90.59'],
       sekunder: []
     }
   ];
@@ -122,10 +158,57 @@ export function generateNormalClaim(): JknClaimRecord {
     hasPreOpDiagnosticImage: true,
     auditTrailStatus: 'verified',
     isAnomaly: false,
-    fraudRiskScore: randomInt(5, 20),
+    fraudRiskScore: randomInt(4, 16),
     riskLevel: 'LOW',
     fraudTypology: 'NORMAL',
+    anomalyTitle: 'Klaim Wajar & Terverifikasi (Lolos VEDIKA)',
+    anomalyDescription: 'Seluruh rekam medis elektronik, kepatuhan tarif INA-CBG, dan indikasi klinis terverifikasi absah sesuai regulasi JKN.',
     recommendedAction: 'Klaim terverifikasi wajar oleh VEDIKA (Memenuhi Syarat Pembayaran DJS)'
+  };
+}
+
+/**
+ * Generate a Borderline Administrative Review Claim (Non-fraud, needs documentation check)
+ */
+export function generateAdministrativeReviewClaim(): JknClaimRecord {
+  const faskes = randomItem(HOSPITALS);
+  const patient = randomItem(PATIENT_NAMES);
+  const today = new Date().toISOString().slice(0, 10);
+
+  return {
+    id: `CLM-REV-${Date.now()}-${randomInt(100, 999)}`,
+    noSep: generateSepNumber(faskes.code),
+    noKartu: generateBpjsCard(),
+    namaPeserta: patient,
+    nik: generateNik(),
+    tglSep: today,
+    ppkPelayanan: faskes.code,
+    namaFaskes: faskes.name,
+    kelasFaskes: faskes.kelas,
+    jnsPelayanan: 2,
+    klsRawat: '3',
+    lamaHariRawat: 0,
+    ruangPerawatan: 'RawatJalan',
+    diagAwal: 'M54.5',
+    namaDiagnosaAwal: 'Low back pain (Konsultasi Poli Saraf)',
+    diagnosaSekunder: [],
+    prosedur: ['89.07'],
+    tarifRs: 480000,
+    cbgCode: 'M-4-10-I',
+    cbgTariff: 450000,
+    severityLevel: 'I',
+    isHariLibur: false,
+    hasElectronicMedicalRecord: true,
+    hasDigitalSignature: true,
+    hasPreOpDiagnosticImage: false,
+    auditTrailStatus: 'verified',
+    isAnomaly: false,
+    fraudRiskScore: randomInt(22, 36),
+    riskLevel: 'LOW',
+    fraudTypology: 'NORMAL',
+    anomalyTitle: 'Verifikasi Administratif: Sinkronisasi Rujukan Digital',
+    anomalyDescription: 'Klaim secara klinis wajar. Menunggu sinkronisasi berkas rujukan berjenjang dari FKTP tingkat pertama ke poli spesialis.',
+    recommendedAction: 'Klaim Wajar Bersyarat: Loloskan pembayaran setelah verifikasi berkas rujukan digital di VClaim.'
   };
 }
 
@@ -420,10 +503,221 @@ export function generateMonopolisticReferralClaim(): JknClaimRecord {
 }
 
 /**
+ * Generate Scenario: Participant Identity Sharing (Impossible Travel)
+ */
+export function generateParticipantIdentitySharingClaim(): JknClaimRecord {
+  const patient = 'Budi Santoso (Kartu Dipinjamkan)';
+  const today = new Date().toISOString().slice(0, 10);
+  return {
+    id: `CLM-ID-SHARE-${Date.now()}-${randomInt(100, 999)}`,
+    noSep: `1101R0050926V${randomInt(1000, 9999)}`,
+    noKartu: '0001847291038',
+    namaPeserta: patient,
+    nik: '3374**********01',
+    tglSep: today,
+    ppkPelayanan: '1101R005',
+    namaFaskes: 'RS Mitra Husada Semarang',
+    kelasFaskes: 'B',
+    jnsPelayanan: 2,
+    klsRawat: '2',
+    lamaHariRawat: 0,
+    ruangPerawatan: 'RawatJalan',
+    diagAwal: 'M54.5',
+    namaDiagnosaAwal: 'Low back pain',
+    diagnosaSekunder: [],
+    prosedur: ['89.07'],
+    tarifRs: 350000,
+    cbgCode: 'M-4-10-I',
+    cbgTariff: 320000,
+    severityLevel: 'I',
+    isHariLibur: false,
+    hasElectronicMedicalRecord: true,
+    hasDigitalSignature: true,
+    hasPreOpDiagnosticImage: false,
+    auditTrailStatus: 'missing',
+    isAnomaly: true,
+    fraudRiskScore: 96,
+    riskLevel: 'CRITICAL',
+    fraudTypology: 'SERVICES_UNBUNDLING', // Will be treated as IDENTITY_SHARING in participant risk
+    anomalyTitle: 'Anomali Impossible Travel: Kartu Digunakan Bersamaan di Surakarta & Semarang',
+    anomalyDescription: 'Kartu 0001847291038 terbit SEP di RSUD Moewardi Surakarta pk 08.30 WIB lalu terbit kembali di RS Mitra Husada Semarang pk 09.15 WIB (selang 45 menit, jarak 63.5 km). Indikasi peminjaman kartu BPJS ke kerabat.',
+    legalCitations: [
+      {
+        regulation: 'Peraturan BPJS Kesehatan No. 6 Tahun 2020',
+        article: 'Pasal Penanganan Kecurangan Peserta',
+        summary: 'Larangan meminjamkan identitas jaminan kepada pihak ketiga yang tidak berhak.'
+      },
+      {
+        regulation: 'KUHP Pasal 263',
+        article: 'Pemalsuan Surat',
+        summary: 'Tindak pidana pemalsuan identitas untuk memperoleh penjaminan pembiayaan.'
+      }
+    ],
+    recommendedAction: 'BATALKAN SEP BERJALAN: Bekukan eligibilitas kartu dan tagih ganti rugi biaya rawat ke peserta.'
+  };
+}
+
+/**
+ * Generate Scenario: Participant Doctor Shopping
+ */
+export function generateParticipantDoctorShoppingClaim(): JknClaimRecord {
+  const patient = 'Hendra Wijaya';
+  const today = new Date().toISOString().slice(0, 10);
+  return {
+    id: `CLM-DOC-SHOP-${Date.now()}-${randomInt(100, 999)}`,
+    noSep: `0112R0050926V${randomInt(1000, 9999)}`,
+    noKartu: '0002938471920',
+    namaPeserta: patient,
+    nik: '3273**********88',
+    tglSep: today,
+    ppkPelayanan: '0112R005',
+    namaFaskes: 'RS Advent Bandung',
+    kelasFaskes: 'B',
+    jnsPelayanan: 2,
+    klsRawat: '3',
+    lamaHariRawat: 0,
+    ruangPerawatan: 'RawatJalan',
+    diagAwal: 'R42',
+    namaDiagnosaAwal: 'Dizziness and giddiness (Vertigo)',
+    diagnosaSekunder: [],
+    prosedur: ['87.03'],
+    tarifRs: 1550000,
+    cbgCode: 'R-4-10-I',
+    cbgTariff: 1450000,
+    severityLevel: 'I',
+    isHariLibur: false,
+    hasElectronicMedicalRecord: true,
+    hasDigitalSignature: true,
+    hasPreOpDiagnosticImage: false,
+    auditTrailStatus: 'missing',
+    isAnomaly: true,
+    fraudRiskScore: 88,
+    riskLevel: 'HIGH',
+    fraudTypology: 'NO_MEDICAL_NECESSITY',
+    anomalyTitle: 'Doctor Shopping: 3 Kunjungan Redundan Diagnosa Identik (R42) dalam 5 Hari',
+    anomalyDescription: 'Peserta mendatangi 3 faskes berbeda di Bandung dalam rentang 5 hari untuk keluhan pusing vertigo demi meminta pemeriksaan CT-Scan kepala berulang tanpa indikasi kedaruratan medis.',
+    legalCitations: [
+      {
+        regulation: 'Permenkes No. 16 Tahun 2019',
+        article: 'Pasal 5 ayat (3)',
+        summary: 'Pemanfaatan hak pelayanan berulang yang tidak berindikasi medis (unnecessary utilization).'
+      }
+    ],
+    recommendedAction: 'KUNCI RUJUKAN POLI: Batasi rujukan spesialis mandiri dan kembalikan ke dokter keluarga FKTP.'
+  };
+}
+
+/**
+ * Generate Scenario: Participant PRB Resale
+ */
+export function generateParticipantPrbResaleClaim(): JknClaimRecord {
+  const patient = 'Nurul Hidayati';
+  const today = new Date().toISOString().slice(0, 10);
+  return {
+    id: `CLM-PRB-RESALE-${Date.now()}-${randomInt(100, 999)}`,
+    noSep: `0201R0120926V${randomInt(1000, 9999)}`,
+    noKartu: '0003847192834',
+    namaPeserta: patient,
+    nik: '1271**********54',
+    tglSep: today,
+    ppkPelayanan: '0201R012',
+    namaFaskes: 'Apotek Kimia Farma Rujukan Medan',
+    kelasFaskes: 'FKTP',
+    jnsPelayanan: 2,
+    klsRawat: '3',
+    lamaHariRawat: 0,
+    ruangPerawatan: 'RawatJalan',
+    diagAwal: 'E11.9',
+    namaDiagnosaAwal: 'Type 2 diabetes mellitus (PRB)',
+    diagnosaSekunder: ['I10'],
+    prosedur: [],
+    tarifRs: 1200000,
+    cbgCode: 'E-4-10-I',
+    cbgTariff: 1200000,
+    severityLevel: 'I',
+    isHariLibur: false,
+    hasElectronicMedicalRecord: true,
+    hasDigitalSignature: true,
+    hasPreOpDiagnosticImage: false,
+    auditTrailStatus: 'missing',
+    isAnomaly: true,
+    fraudRiskScore: 94,
+    riskLevel: 'CRITICAL',
+    fraudTypology: 'SERVICES_UNBUNDLING',
+    anomalyTitle: 'Penyalahgunaan Obat PRB: Resale Arbitrage (Prescription Overlap 190%)',
+    anomalyDescription: 'Peserta Program Rujuk Balik mengambil suplai 90 hari Insulin Glargine dan Amlodipine hanya dalam waktu 22 hari di 3 apotek jejaring berbeda Kota Medan.',
+    legalCitations: [
+      {
+        regulation: 'Panduan Klinis PRB & Permenkes 16/2019',
+        article: 'Ketentuan Batas Maksimal Peresepan 30 Hari',
+        summary: 'Larangan penimbunan dan pemindahtanganan obat yang dibiayai Dana Jaminan Sosial.'
+      }
+    ],
+    recommendedAction: 'BLOKIR AKSES APOTEK MITRA: Kunci penebusan obat di luar FKTP induk dan audit kepatuhan konsumsi.'
+  };
+}
+
+/**
+ * Generate Scenario: Gender Discordance
+ */
+export function generateParticipantIdentityFalsifyClaim(): JknClaimRecord {
+  const patient = 'Agus Pratama (Identitas Disalahgunakan)';
+  const today = new Date().toISOString().slice(0, 10);
+  return {
+    id: `CLM-ID-FALSIFY-${Date.now()}-${randomInt(100, 999)}`,
+    noSep: `3578R0040926V${randomInt(1000, 9999)}`,
+    noKartu: '0004928172938',
+    namaPeserta: patient,
+    nik: '3578**********11',
+    tglSep: today,
+    ppkPelayanan: '3578R004',
+    namaFaskes: 'RS Ibu dan Anak Surabaya',
+    kelasFaskes: 'C',
+    jnsPelayanan: 1,
+    klsRawat: '2',
+    lamaHariRawat: 3,
+    ruangPerawatan: 'Bangsal',
+    diagAwal: 'O82.0',
+    namaDiagnosaAwal: 'Delivery by elective caesarean section',
+    diagnosaSekunder: [],
+    prosedur: ['74.1'],
+    tarifRs: 13100000,
+    cbgCode: 'O-6-10-I',
+    cbgTariff: 12800000,
+    severityLevel: 'I',
+    isHariLibur: false,
+    hasElectronicMedicalRecord: false,
+    hasDigitalSignature: false,
+    hasPreOpDiagnosticImage: false,
+    auditTrailStatus: 'missing',
+    isAnomaly: true,
+    fraudRiskScore: 99,
+    riskLevel: 'CRITICAL',
+    fraudTypology: 'PHANTOM_BILLING',
+    anomalyTitle: 'Diskordansi Gender: Peserta Pria Terbit SEP Persalinan Seksio Sesarea',
+    anomalyDescription: 'Nomor kartu peserta dengan data kependudukan LAKI-LAKI terbit SEP persalinan Seksio Sesarea Rp 12.800.000 di RSIA Surabaya. Identitas diduga kuat dipakai oleh pihak lain.',
+    legalCitations: [
+      {
+        regulation: 'KUHP Pasal 263 & Permenkes No. 16 Tahun 2019',
+        article: 'Pasal 6 ayat (2) Pemalsuan Identitas',
+        summary: 'Pemalsuan surat/identitas kepesertaan jaminan sosial untuk menanggung biaya persalinan faskes.'
+      }
+    ],
+    recommendedAction: 'TOLAK PENJAMINAN 100%: Alihkan biaya menjadi tagihan mandiri pasien dan buat Berita Acara Pelanggaran.'
+  };
+}
+
+/**
  * Master Generator based on selected scenario preset
  */
 export function generateClaimByScenario(scenario: SimulationScenarioPreset): JknClaimRecord {
   switch (scenario) {
+    case 'PARTICIPANT_IDENTITY_SHARING':
+      return Math.random() > 0.2 ? generateParticipantIdentitySharingClaim() : generateNormalClaim();
+    case 'PARTICIPANT_DOCTOR_SHOPPING':
+      return Math.random() > 0.2 ? generateParticipantDoctorShoppingClaim() : generateNormalClaim();
+    case 'PARTICIPANT_PRB_RESALE':
+      return Math.random() > 0.2 ? generateParticipantPrbResaleClaim() : generateNormalClaim();
     case 'KPK_PHYSIOTHERAPY_PHANTOM':
       return Math.random() > 0.3 ? generateKpkPhysiotherapyClaim() : generateNormalClaim();
     case 'KPK_CATARACT_UPCODING':
@@ -437,12 +731,17 @@ export function generateClaimByScenario(scenario: SimulationScenarioPreset): Jkn
     case 'ALL_RANDOM':
     default: {
       const dice = Math.random();
-      if (dice < 0.45) return generateNormalClaim();
-      if (dice < 0.60) return generateKpkPhysiotherapyClaim();
-      if (dice < 0.75) return generateKpkCataractClaim();
-      if (dice < 0.85) return generateSectioCesareanClaim();
-      if (dice < 0.93) return generateReadmissionClaim();
-      return generateMonopolisticReferralClaim();
+      // 88% Normal Clean Claims (Unbiased: legitimate healthcare needs are approved)
+      if (dice < 0.88) return generateNormalClaim();
+      // 6% Administrative Review / Clarification (Non-fraud documentation checks)
+      if (dice < 0.94) return generateAdministrativeReviewClaim();
+      // 6% Genuine Outliers & Participant Fraud Anomalies
+      const anomalyDice = Math.random();
+      if (anomalyDice < 0.35) return generateParticipantIdentitySharingClaim();
+      if (anomalyDice < 0.65) return generateParticipantDoctorShoppingClaim();
+      if (anomalyDice < 0.85) return generateParticipantPrbResaleClaim();
+      return generateParticipantIdentityFalsifyClaim();
     }
   }
 }
+
