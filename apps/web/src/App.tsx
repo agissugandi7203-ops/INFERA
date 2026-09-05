@@ -10,18 +10,23 @@ import { ThemeProvider } from './context/ThemeContext';
 const AppContent: React.FC = () => {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
 
   const isDashboard = location.pathname.startsWith('/dashboard');
 
   useEffect(() => {
-    if (!supabase) return;
+    if (!supabase) {
+      setIsAuthLoading(false);
+      return;
+    }
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user?.email) {
         setUserEmail(session.user.email);
       }
+      setIsAuthLoading(false);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
@@ -33,6 +38,7 @@ const AppContent: React.FC = () => {
       } else {
         setUserEmail(null);
       }
+      setIsAuthLoading(false);
     });
 
     return () => {
@@ -67,6 +73,7 @@ const AppContent: React.FC = () => {
       <main className={isDashboard ? 'flex-1' : 'flex-1 flex items-center justify-center'}>
         <AppRoutes
           userEmail={userEmail}
+          isAuthLoading={isAuthLoading}
           onOpenAuth={() => setIsAuthOpen(true)}
           onLogout={handleLogout}
         />

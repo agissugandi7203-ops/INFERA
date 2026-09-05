@@ -48,11 +48,17 @@ const PageSkeleton: React.FC = () => (
 
 interface AppRoutesProps {
   userEmail: string | null;
+  isAuthLoading?: boolean;
   onOpenAuth: () => void;
   onLogout: () => void;
 }
 
-export const AppRoutes: React.FC<AppRoutesProps> = ({ userEmail, onOpenAuth, onLogout }) => {
+export const AppRoutes: React.FC<AppRoutesProps> = ({
+  userEmail,
+  isAuthLoading,
+  onOpenAuth,
+  onLogout,
+}) => {
   return (
     <Routes>
       <Route
@@ -69,7 +75,7 @@ export const AppRoutes: React.FC<AppRoutesProps> = ({ userEmail, onOpenAuth, onL
       <Route
         path="/dashboard"
         element={
-          <ProtectedRoute userEmail={userEmail}>
+          <ProtectedRoute userEmail={userEmail} isLoading={isAuthLoading}>
             <DashboardLayout
               userEmail={userEmail}
               onLogout={onLogout}
