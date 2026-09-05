@@ -2,6 +2,7 @@
   "name": "infera-monorepo",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "description": "INFERA - Integrated Fraud Early-Warning & Risk Analytics Platform for BPJS Kesehatan",
   "workspaces": [
     "packages/*",

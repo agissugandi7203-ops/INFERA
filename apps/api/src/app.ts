@@ -36,8 +36,8 @@ export const createApp = (): Application => {
   app.use(express.json({ limit: '2mb' }));
   app.use(express.urlencoded({ extended: true, limit: '2mb' }));
 
-  // Root welcome route
-  app.get('/', (_req, res) => {
+  // Root welcome route for both '/' and '/api'
+  app.get(['/', '/api'], (_req, res) => {
     res.json({
       name: 'INFERA API Service',
       version: '1.0.0',
