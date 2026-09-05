@@ -11,11 +11,29 @@ const AppContent: React.FC = () => {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
+  const [oauthError, setOauthError] = useState<string | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
 
   const isDashboard = location.pathname.startsWith('/dashboard');
   const isLanding = location.pathname === '/';
+
+  // Tangkap pesan error jika dialihkan kembali dari OAuth provider (Google/Supabase)
+  useEffect(() => {
+    const hash = window.location.hash ? window.location.hash.substring(1) : '';
+    const hashParams = new URLSearchParams(hash);
+    const searchParams = new URLSearchParams(window.location.search);
+
+    const errDesc = hashParams.get('error_description') || searchParams.get('error_description');
+    const errCode = hashParams.get('error') || searchParams.get('error');
+
+    if (errDesc || errCode) {
+      const decoded = decodeURIComponent((errDesc || errCode || '').replace(/\+/g, ' '));
+      setOauthError(decoded);
+      setIsAuthOpen(true);
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+  }, []);
 
   useEffect(() => {
     if (!supabase) {
@@ -84,8 +102,12 @@ const AppContent: React.FC = () => {
 
       <AuthModal
         isOpen={isAuthOpen}
-        onClose={() => setIsAuthOpen(false)}
+        onClose={() => {
+          setIsAuthOpen(false);
+          setOauthError(null);
+        }}
         onAuthSuccess={handleAuthSuccess}
+        initialError={oauthError}
       />
     </div>
   );

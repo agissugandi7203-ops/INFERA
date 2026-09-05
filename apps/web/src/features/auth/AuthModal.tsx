@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Lock, Mail, User, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 
@@ -6,17 +6,29 @@ interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAuthSuccess?: (userEmail: string) => void;
+  initialError?: string | null;
 }
 
 type AuthView = 'login' | 'register' | 'reset';
 
-export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthSuccess }) => {
+export const AuthModal: React.FC<AuthModalProps> = ({
+  isOpen,
+  onClose,
+  onAuthSuccess,
+  initialError,
+}) => {
   const [view, setView] = useState<AuthView>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [loading, setLoading] = useState(false);
   const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  useEffect(() => {
+    if (initialError) {
+      setStatusMessage({ type: 'error', text: initialError });
+    }
+  }, [initialError]);
 
   if (!isOpen) return null;
 
@@ -129,7 +141,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthSuc
   };
 
   const handleGoogleLogin = async () => {
-    if (!supabase) return;
+    if (!supabase) {
+      setStatusMessage({
+        type: 'error',
+        text: 'Layanan autentikasi Supabase belum terkonfigurasi pada file .env.',
+      });
+      return;
+    }
     setLoading(true);
     setStatusMessage(null);
 
@@ -138,6 +156,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthSuc
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/dashboard`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
         },
       });
 
