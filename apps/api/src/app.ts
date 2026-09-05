@@ -17,10 +17,10 @@ export const createApp = (): Application => {
   // Security headers
   app.use(helmet());
 
-  // CORS configuration
+  // CORS configuration (allow Vercel domains, custom domains, and local dev)
   app.use(
     cors({
-      origin: [env.CLIENT_URL, 'http://localhost:5173', 'http://127.0.0.1:5173'],
+      origin: true,
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
       allowedHeaders: ['Content-Type', 'Authorization'],
@@ -39,15 +39,18 @@ export const createApp = (): Application => {
   // Root welcome route
   app.get('/', (_req, res) => {
     res.json({
-      name: 'HealthAthon BPJS API Service',
+      name: 'INFERA API Service',
       version: '1.0.0',
       status: 'online',
       docs: `${API_PREFIX}/health`,
     });
   });
 
-  // Mount API Router under /api/v1
+  // Mount API Router under /api/v1, /v1, and /api for Vercel serverless routing
   app.use(API_PREFIX, apiRouter);
+  app.use('/api', apiRouter);
+  app.use('/v1', apiRouter);
+  app.use(apiRouter);
 
   // 404 and Global Error handling
   app.use(notFoundHandler);
