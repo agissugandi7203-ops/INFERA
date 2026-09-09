@@ -62,7 +62,7 @@ export const ANIME_VOICE_PRESETS: VoicePreset[] = [
 export const DEFAULT_SETTINGS: OpenRouterSettings = {
   apiKey: (import.meta.env.VITE_OPENROUTER_API_KEY as string) || '',
   model: (import.meta.env.VITE_DEFAULT_MODEL as string) || 'openai/gpt-oss-120b:nitro',
-  useBackendProxy: false,
+  useBackendProxy: true,
   elevenLabsApiKey: (import.meta.env.VITE_ELEVENLABS_API_KEY as string) || '',
   elevenLabsVoiceId: (import.meta.env.VITE_ELEVENLABS_VOICE_ID as string) || VOICE_DEFAULT_ID,
 };
