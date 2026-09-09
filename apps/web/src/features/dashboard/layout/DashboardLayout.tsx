@@ -20,6 +20,8 @@ import { SpeechService } from '../services/speech';
 import {
   VOICE_DEFAULT_ID,
   VOICE_SECONDARY_ID,
+  VOICE_CHAT_DEFAULT_ID,
+  VOICE_CHAT_SECONDARY_ID,
   TTSProcessor,
 } from '../services/tts-processor';
 import { UserCheck, ShieldAlert, X } from 'lucide-react';
@@ -126,14 +128,18 @@ const DashboardLayoutContent: React.FC<
 
   const handleSelectVoice = (voiceId: string) => {
     const validVoiceId = voiceId === VOICE_SECONDARY_ID ? VOICE_SECONDARY_ID : VOICE_DEFAULT_ID;
-    const newSettings = { ...settings, elevenLabsVoiceId: validVoiceId };
+    const newSettings = {
+      ...settings,
+      elevenLabsVoiceId: validVoiceId,
+      avatarVoiceId: validVoiceId,
+    };
     setSettings(newSettings);
     saveStoredSettings(newSettings);
 
-    const voiceLabel = validVoiceId === VOICE_DEFAULT_ID ? 'Vera (Default)' : 'Luna';
+    const voiceLabel = validVoiceId === VOICE_DEFAULT_ID ? 'Vera (AI Kanan)' : 'Luna (AI Kanan)';
     handleSelectEmotion('happy', 3500);
 
-    const confirmText = `Suara telah diubah ke ${voiceLabel}. Saya siap membantu!`;
+    const confirmText = `Suara avatar AI Kanan telah diubah ke ${voiceLabel}. Saya siap membantu!`;
     const confirmSettings = TTSProcessor.computeVoiceSettings({
       text: confirmText,
       emotion: 'happy',
@@ -156,6 +162,14 @@ const DashboardLayoutContent: React.FC<
       validVoiceId,
       confirmSettings
     );
+  };
+
+  const handleSelectChatVoice = (voiceId: string) => {
+    const validVoiceId =
+      voiceId === VOICE_CHAT_SECONDARY_ID ? VOICE_CHAT_SECONDARY_ID : VOICE_CHAT_DEFAULT_ID;
+    const newSettings = { ...settings, chatVoiceId: validVoiceId };
+    setSettings(newSettings);
+    saveStoredSettings(newSettings);
   };
 
   // Load chat history from localStorage
@@ -256,7 +270,7 @@ const DashboardLayoutContent: React.FC<
       const speechText = TTSProcessor.extractSpokenSummary(reply, metadata, 220);
 
       const el11Key = settings.elevenLabsApiKey || DEFAULT_SETTINGS.elevenLabsApiKey;
-      const el11Voice = settings.elevenLabsVoiceId || DEFAULT_SETTINGS.elevenLabsVoiceId || VOICE_DEFAULT_ID;
+      const el11Voice = settings.avatarVoiceId || settings.elevenLabsVoiceId || VOICE_DEFAULT_ID;
 
       SpeechService.speak(
         speechText,
@@ -489,7 +503,7 @@ const DashboardLayoutContent: React.FC<
   const handleTriggerSpeechFromPage = React.useCallback((text: string, emotion: string) => {
     handleSelectEmotion(emotion as CharacterEmotion, 6000);
     const el11Key = settings.elevenLabsApiKey || DEFAULT_SETTINGS.elevenLabsApiKey;
-    const el11Voice = settings.elevenLabsVoiceId || DEFAULT_SETTINGS.elevenLabsVoiceId || VOICE_DEFAULT_ID;
+    const el11Voice = settings.avatarVoiceId || settings.elevenLabsVoiceId || VOICE_DEFAULT_ID;
 
     SpeechService.speak(
       text,
@@ -506,7 +520,7 @@ const DashboardLayoutContent: React.FC<
       el11Key,
       el11Voice
     );
-  }, [settings.elevenLabsApiKey, settings.elevenLabsVoiceId]);
+  }, [settings.elevenLabsApiKey, settings.avatarVoiceId, settings.elevenLabsVoiceId]);
 
   const outletContextValue = React.useMemo(
     () => ({
@@ -516,14 +530,19 @@ const DashboardLayoutContent: React.FC<
       onSendMessage: handleStreamChat,
       onClearHistory: handleClearHistory,
       onSelectEmotion: handleSelectEmotion,
-      selectedVoiceId: settings.elevenLabsVoiceId || VOICE_DEFAULT_ID,
+      selectedVoiceId: settings.avatarVoiceId || settings.elevenLabsVoiceId || VOICE_DEFAULT_ID,
       onSelectVoice: handleSelectVoice,
+      selectedChatVoiceId: settings.chatVoiceId || VOICE_CHAT_DEFAULT_ID,
+      onSelectChatVoice: handleSelectChatVoice,
       isListening,
       isSoundDetected,
       onToggleClickToSpeak: handleToggleClickToSpeak,
       onStopSpeaking: () => SpeechService.stopSpeaking(),
       onToggleMobileSidebar: () => setIsMobileSidebarOpen((prev) => !prev),
       onToggleSettings: () => setShowSettingsModal((prev) => !prev),
+      // Voice separation: AI Kanan uses avatarVoiceId, Inti AI Chat uses chatVoiceId
+      chatVoiceId: settings.chatVoiceId || VOICE_CHAT_DEFAULT_ID,
+      elevenLabsApiKey: settings.elevenLabsApiKey || DEFAULT_SETTINGS.elevenLabsApiKey,
     }),
     [
       handleTriggerSpeechFromPage,
@@ -532,8 +551,12 @@ const DashboardLayoutContent: React.FC<
       handleStreamChat,
       handleClearHistory,
       handleSelectEmotion,
+      settings.avatarVoiceId,
       settings.elevenLabsVoiceId,
+      settings.chatVoiceId,
+      settings.elevenLabsApiKey,
       handleSelectVoice,
+      handleSelectChatVoice,
       isListening,
       isSoundDetected,
     ]
@@ -581,7 +604,7 @@ const DashboardLayoutContent: React.FC<
         {location.pathname !== '/dashboard/ai-report' && (
           <DashboardTopNav
             onToggleSettings={() => setShowSettingsModal(!showSettingsModal)}
-            selectedVoiceId={settings.elevenLabsVoiceId || VOICE_DEFAULT_ID}
+            selectedVoiceId={settings.avatarVoiceId || settings.elevenLabsVoiceId || VOICE_DEFAULT_ID}
             onSelectVoice={handleSelectVoice}
             onToggleMobileSidebar={() => setIsMobileSidebarOpen((prev) => !prev)}
           />
@@ -682,7 +705,7 @@ const DashboardLayoutContent: React.FC<
         onOpenChat={() => navigate('/dashboard/ai-report')}
         onMinimize={() => setIsMinimized(true)}
         isMinimized={isMinimized || location.pathname === '/dashboard/ai-report'}
-        selectedVoiceId={settings.elevenLabsVoiceId || VOICE_DEFAULT_ID}
+        selectedVoiceId={settings.avatarVoiceId || settings.elevenLabsVoiceId || VOICE_DEFAULT_ID}
         onSelectVoice={handleSelectVoice}
       />
 

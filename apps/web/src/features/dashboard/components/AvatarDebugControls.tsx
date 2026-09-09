@@ -2,7 +2,12 @@ import React, { useState } from 'react';
 import { CharacterEmotion } from '../avatar/AvatarController';
 import { OpenRouterSettings } from '../services/openrouter';
 import { SpeechService } from '../services/speech';
-import { VOICE_DEFAULT_ID, VOICE_SECONDARY_ID } from '../services/tts-processor';
+import {
+  VOICE_DEFAULT_ID,
+  VOICE_SECONDARY_ID,
+  VOICE_CHAT_DEFAULT_ID,
+  VOICE_CHAT_SECONDARY_ID,
+} from '../services/tts-processor';
 import { Check, Volume2, Play, Square, Cpu } from 'lucide-react';
 
 interface AvatarDebugControlsProps {
@@ -24,9 +29,14 @@ const AVAILABLE_MODELS = [
   { id: 'anthropic/claude-3.5-haiku', name: 'Claude 3.5 Haiku', desc: 'Anthropic' },
 ];
 
-const VOICE_OPTIONS = [
-  { id: VOICE_DEFAULT_ID, name: 'Vera', desc: 'Suara default — jernih & natural' },
-  { id: VOICE_SECONDARY_ID, name: 'Luna', desc: 'Suara alternatif — lebih lembut' },
+const AVATAR_VOICE_OPTIONS = [
+  { id: VOICE_DEFAULT_ID, name: 'Vera (AI Kanan)', desc: 'Avatar 2D — Ramah, hangat & interaktif' },
+  { id: VOICE_SECONDARY_ID, name: 'Luna (AI Kanan)', desc: 'Avatar 2D — Ceria, ekspresif & lembut' },
+];
+
+const CHAT_VOICE_OPTIONS = [
+  { id: VOICE_CHAT_DEFAULT_ID, name: 'Auditor Sistem', desc: 'Inti AI Chat — Formal, wibawa & tegas' },
+  { id: VOICE_CHAT_SECONDARY_ID, name: 'Analis Sistem', desc: 'Inti AI Chat — Netral, analitik & presisi' },
 ];
 
 const EMOTIONS: { id: CharacterEmotion; label: string }[] = [
@@ -51,33 +61,64 @@ export const AvatarDebugControls: React.FC<AvatarDebugControlsProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<'model' | 'voice' | 'emotion'>('model');
   const [selectedModel, setSelectedModel] = useState(settings.model || 'openai/gpt-oss-120b:nitro');
-  const [selectedVoiceId, setSelectedVoiceId] = useState<string>(
-    settings.elevenLabsVoiceId === VOICE_SECONDARY_ID ? VOICE_SECONDARY_ID : VOICE_DEFAULT_ID
+  const [selectedAvatarVoiceId, setSelectedAvatarVoiceId] = useState<string>(
+    settings.avatarVoiceId || settings.elevenLabsVoiceId || VOICE_DEFAULT_ID
   );
-  const [isPlayingPreview, setIsPlayingPreview] = useState(false);
+  const [selectedChatVoiceId, setSelectedChatVoiceId] = useState<string>(
+    settings.chatVoiceId || VOICE_CHAT_DEFAULT_ID
+  );
+  const [previewingVoice, setPreviewingVoice] = useState<'avatar' | 'chat' | null>(null);
   const [savedSuccess, setSavedSuccess] = useState(false);
 
-  const handleTestVoice = async () => {
-    if (isPlayingPreview) {
+  const handleTestAvatarVoice = async () => {
+    if (previewingVoice === 'avatar') {
       SpeechService.stopSpeaking();
-      setIsPlayingPreview(false);
+      setPreviewingVoice(null);
       return;
     }
-    setIsPlayingPreview(true);
-    const sampleText = 'Halo! Sistem analisis risiko peserta JKN siap digunakan.';
+    setPreviewingVoice('avatar');
+    const sampleText = 'Halo! Saya asisten avatar AI Kanan BPJS Kesehatan siap berdialog dengan Anda.';
+    await SpeechService.speak(
+      sampleText,
+      onMouthOpenChange,
+      () => setPreviewingVoice('avatar'),
+      () => {
+        setPreviewingVoice(null);
+        onMouthOpenChange(0);
+      },
+      settings.elevenLabsApiKey,
+      selectedAvatarVoiceId
+    );
+  };
+
+  const handleTestChatVoice = async () => {
+    if (previewingVoice === 'chat') {
+      SpeechService.stopSpeaking();
+      setPreviewingVoice(null);
+      return;
+    }
+    setPreviewingVoice('chat');
+    const sampleText =
+      'Laporan audit investigasi INFERA: Indikasi anomali klaim berisiko tinggi telah terdeteksi.';
     await SpeechService.speak(
       sampleText,
       () => {},
-      () => setIsPlayingPreview(true),
-      () => setIsPlayingPreview(false),
+      () => setPreviewingVoice('chat'),
+      () => setPreviewingVoice(null),
       settings.elevenLabsApiKey,
-      selectedVoiceId
+      selectedChatVoiceId
     );
   };
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
-    onSaveSettings({ ...settings, model: selectedModel, elevenLabsVoiceId: selectedVoiceId });
+    onSaveSettings({
+      ...settings,
+      model: selectedModel,
+      avatarVoiceId: selectedAvatarVoiceId,
+      elevenLabsVoiceId: selectedAvatarVoiceId,
+      chatVoiceId: selectedChatVoiceId,
+    });
     setSavedSuccess(true);
     setTimeout(() => setSavedSuccess(false), 2500);
   };
@@ -152,52 +193,100 @@ export const AvatarDebugControls: React.FC<AvatarDebugControlsProps> = ({
 
       {/* Voice Tab */}
       {activeTab === 'voice' && (
-        <form onSubmit={handleSave} className="space-y-3">
-          <div className="flex items-center gap-1.5 font-semibold text-slate-700 mb-1">
-            <Volume2 className="w-3.5 h-3.5 text-[#007a3d]" />
-            <span>Suara AI</span>
-          </div>
-          <div className="space-y-1.5">
-            {VOICE_OPTIONS.map((v) => (
+        <form onSubmit={handleSave} className="space-y-4">
+          {/* 1. Suara AI Kanan (Avatar Karakter 2D) */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5 font-semibold text-slate-700 dark:text-slate-200">
+                <Volume2 className="w-3.5 h-3.5 text-[#007a3d]" />
+                <span>Suara AI Kanan (Avatar 2D)</span>
+              </div>
               <button
-                key={v.id}
                 type="button"
-                onClick={() => setSelectedVoiceId(v.id)}
-                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl border text-left transition-colors ${
-                  selectedVoiceId === v.id
-                    ? 'border-slate-900 bg-slate-900 text-white'
-                    : 'border-slate-200 bg-slate-50 hover:bg-white hover:border-slate-300 text-slate-700'
-                }`}
+                onClick={handleTestAvatarVoice}
+                className="flex items-center gap-1 px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-white text-slate-700 dark:text-slate-300 text-[10px] font-medium transition-colors cursor-pointer"
               >
-                <div>
-                  <div className="font-semibold text-xs">{v.name}</div>
-                  <div className={`text-[10px] mt-0.5 ${selectedVoiceId === v.id ? 'text-slate-300' : 'text-slate-400'}`}>
-                    {v.desc}
-                  </div>
-                </div>
-                {selectedVoiceId === v.id && <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />}
+                {previewingVoice === 'avatar' ? (
+                  <><Square className="w-2.5 h-2.5 fill-current" /><span>Stop</span></>
+                ) : (
+                  <><Play className="w-2.5 h-2.5 fill-current" /><span>Tes Avatar</span></>
+                )}
               </button>
-            ))}
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {AVATAR_VOICE_OPTIONS.map((v) => (
+                <button
+                  key={v.id}
+                  type="button"
+                  onClick={() => setSelectedAvatarVoiceId(v.id)}
+                  className={`p-2.5 rounded-xl border text-left transition-colors cursor-pointer ${
+                    selectedAvatarVoiceId === v.id
+                      ? 'border-[#007a3d] bg-emerald-50/60 dark:bg-emerald-950/30 text-emerald-900 dark:text-emerald-200 font-semibold'
+                      : 'border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 hover:bg-white text-slate-700 dark:text-slate-300'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs">{v.name}</span>
+                    {selectedAvatarVoiceId === v.id && <Check className="w-3 h-3 text-[#007a3d]" />}
+                  </div>
+                  <div className="text-[10px] text-slate-400 font-normal mt-0.5 leading-tight">{v.desc}</div>
+                </button>
+              ))}
+            </div>
           </div>
-          <button
-            type="button"
-            onClick={handleTestVoice}
-            className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-white text-slate-700 text-xs font-medium transition-colors"
-          >
-            {isPlayingPreview ? (
-              <><Square className="w-3 h-3 fill-slate-700" /><span>Hentikan</span></>
-            ) : (
-              <><Play className="w-3 h-3 fill-slate-700" /><span>Coba Suara</span></>
-            )}
-          </button>
-          <div className="flex items-center justify-between pt-1">
+
+          {/* 2. Suara Inti AI Chat (Narator Sistem INFERA) */}
+          <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5 font-semibold text-slate-700 dark:text-slate-200">
+                <Volume2 className="w-3.5 h-3.5 text-blue-600" />
+                <span>Suara Inti AI Chat (Narator INFERA)</span>
+              </div>
+              <button
+                type="button"
+                onClick={handleTestChatVoice}
+                className="flex items-center gap-1 px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-white text-slate-700 dark:text-slate-300 text-[10px] font-medium transition-colors cursor-pointer"
+              >
+                {previewingVoice === 'chat' ? (
+                  <><Square className="w-2.5 h-2.5 fill-current" /><span>Stop</span></>
+                ) : (
+                  <><Play className="w-2.5 h-2.5 fill-current" /><span>Tes Chat</span></>
+                )}
+              </button>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {CHAT_VOICE_OPTIONS.map((v) => (
+                <button
+                  key={v.id}
+                  type="button"
+                  onClick={() => setSelectedChatVoiceId(v.id)}
+                  className={`p-2.5 rounded-xl border text-left transition-colors cursor-pointer ${
+                    selectedChatVoiceId === v.id
+                      ? 'border-blue-600 bg-blue-50/60 dark:bg-blue-950/30 text-blue-900 dark:text-blue-200 font-semibold'
+                      : 'border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 hover:bg-white text-slate-700 dark:text-slate-300'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs">{v.name}</span>
+                    {selectedChatVoiceId === v.id && <Check className="w-3 h-3 text-blue-600" />}
+                  </div>
+                  <div className="text-[10px] text-slate-400 font-normal mt-0.5 leading-tight">{v.desc}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
             {savedSuccess ? (
               <span className="flex items-center gap-1 text-emerald-600 font-medium">
-                <Check className="w-3.5 h-3.5" /> Tersimpan
+                <Check className="w-3.5 h-3.5" /> Konfigurasi Tersimpan
               </span>
             ) : <span />}
-            <button type="submit" className="px-4 py-2 bg-[#007a3d] hover:bg-[#006834] text-white rounded-xl text-xs font-semibold transition-colors">
-              Simpan
+            <button
+              type="submit"
+              className="px-4 py-2 bg-[#007a3d] hover:bg-[#006834] text-white rounded-xl text-xs font-semibold transition-colors cursor-pointer"
+            >
+              Simpan Konfigurasi
             </button>
           </div>
         </form>

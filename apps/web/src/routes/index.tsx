@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { LandingPage } from '../features/landing/LandingPage';
 import { ProtectedRoute } from '../components/common/ProtectedRoute';
 import { DashboardLayout } from '../features/dashboard/layout/DashboardLayout';
@@ -156,6 +156,16 @@ export const AppRoutes: React.FC<AppRoutesProps> = ({
           }
         />
       </Route>
+
+      {/* Direct route aliases redirecting cleanly to /dashboard/* to prevent 404 */}
+      <Route path="/identity-risk" element={<Navigate to="/dashboard/identity-risk" replace />} />
+      <Route path="/cases" element={<Navigate to="/dashboard/cases" replace />} />
+      <Route path="/regulations" element={<Navigate to="/dashboard/regulations" replace />} />
+      <Route path="/unnecessary-services" element={<Navigate to="/dashboard/unnecessary-services" replace />} />
+      <Route path="/pharmacy-alkes" element={<Navigate to="/dashboard/pharmacy-alkes" replace />} />
+      <Route path="/ai-report" element={<Navigate to="/dashboard/ai-report" replace />} />
+      <Route path="/transactions" element={<Navigate to="/dashboard/transactions" replace />} />
+      <Route path="/master-data" element={<Navigate to="/dashboard/master-data" replace />} />
 
       <Route
         path="*"

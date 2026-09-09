@@ -2,6 +2,8 @@ import { CharacterEmotion } from '../avatar/AvatarController';
 import {
   VOICE_DEFAULT_ID,
   VOICE_SECONDARY_ID,
+  VOICE_CHAT_DEFAULT_ID,
+  VOICE_CHAT_SECONDARY_ID,
   VoiceExpressionMetadata,
 } from './tts-processor';
 import type { RagSearchResult, ActionRecommendation, ToolProgressStep } from '@healthathon/shared';
@@ -35,7 +37,9 @@ export interface OpenRouterSettings {
   model: string;
   useBackendProxy: boolean;
   elevenLabsApiKey?: string;
-  elevenLabsVoiceId?: string;
+  avatarVoiceId?: string; // Khusus AI Kanan (Avatar Karakter Virtual: Vera / Luna)
+  chatVoiceId?: string;   // Khusus Inti AI Chat (Narator Sistem Resmi: Auditor / Analis)
+  elevenLabsVoiceId?: string; // Kompatibilitas mundur untuk avatarVoiceId
 }
 
 export interface VoicePreset {
@@ -46,29 +50,53 @@ export interface VoicePreset {
   tier: 'free' | 'paid';
 }
 
-export const ANIME_VOICE_PRESETS: VoicePreset[] = [
+// 1. Suara untuk AI Kanan (Avatar Karakter Virtual 2D)
+export const AVATAR_VOICE_PRESETS: VoicePreset[] = [
   {
     id: VOICE_DEFAULT_ID,
     name: 'Vera',
-    character: 'Vera — Suara Default (Hangat & Santun)',
-    description: 'Karakter suara utama asisten virtual BPJS Kesehatan. Hangat, bersahabat, dan jelas.',
+    character: 'Vera (AI Kanan — Avatar Hangat & Ramah)',
+    description: 'Karakter suara utama asisten virtual 2D. Interaktif, bersahabat, dan santun.',
     tier: 'free',
   },
   {
     id: VOICE_SECONDARY_ID,
     name: 'Luna',
-    character: 'Luna — Suara Kedua (Ceria & Manis)',
-    description: 'Karakter suara kedua asisten virtual BPJS Kesehatan. Ceria, ekspresif, dan dinamis.',
+    character: 'Luna (AI Kanan — Avatar Ceria & Manis)',
+    description: 'Karakter suara alternatif asisten virtual 2D. Ceria, ekspresif, dan lembut.',
     tier: 'free',
   },
 ];
 
+// 2. Suara untuk Inti AI Chat (INFERA System Audio / Auditor Narator)
+export const CHAT_SYSTEM_VOICE_PRESETS: VoicePreset[] = [
+  {
+    id: VOICE_CHAT_DEFAULT_ID,
+    name: 'Narator Auditor INFERA',
+    character: 'INFERA Audio (Inti AI Chat — Suara Formal & Wibawa)',
+    description: 'Suara resmi narator laporan audit investigasi integritas klaim BPJS Kesehatan.',
+    tier: 'free',
+  },
+  {
+    id: VOICE_CHAT_SECONDARY_ID,
+    name: 'Narator Analis INFERA',
+    character: 'INFERA Audio (Inti AI Chat — Suara Netral & Presisi)',
+    description: 'Suara sistem analitik berintonasi lugas, terstruktur, dan objektif.',
+    tier: 'free',
+  },
+];
+
+// Backward-compat alias
+export const ANIME_VOICE_PRESETS = AVATAR_VOICE_PRESETS;
+
 export const DEFAULT_SETTINGS: OpenRouterSettings = {
-  apiKey: (import.meta.env.VITE_OPENROUTER_API_KEY as string) || '',
-  model: (import.meta.env.VITE_DEFAULT_MODEL as string) || 'openai/gpt-oss-120b:nitro',
+  apiKey: (import.meta.env?.VITE_OPENROUTER_API_KEY as string) || '',
+  model: (import.meta.env?.VITE_DEFAULT_MODEL as string) || 'openai/gpt-oss-120b:nitro',
   useBackendProxy: true,
-  elevenLabsApiKey: (import.meta.env.VITE_ELEVENLABS_API_KEY as string) || '',
-  elevenLabsVoiceId: (import.meta.env.VITE_ELEVENLABS_VOICE_ID as string) || VOICE_DEFAULT_ID,
+  elevenLabsApiKey: (import.meta.env?.VITE_ELEVENLABS_API_KEY as string) || '',
+  avatarVoiceId: (import.meta.env?.VITE_ELEVENLABS_VOICE_ID as string) || VOICE_DEFAULT_ID,
+  chatVoiceId: VOICE_CHAT_DEFAULT_ID,
+  elevenLabsVoiceId: (import.meta.env?.VITE_ELEVENLABS_VOICE_ID as string) || VOICE_DEFAULT_ID,
 };
 
 const STORAGE_SETTINGS_KEY = 'healthathon_openrouter_settings';
@@ -80,10 +108,16 @@ export function getStoredSettings(): OpenRouterSettings {
     if (!raw) return DEFAULT_SETTINGS;
     const parsed = JSON.parse(raw);
     
-    // Only allow either VOICE_DEFAULT_ID or VOICE_SECONDARY_ID, defaulting to VOICE_DEFAULT_ID
-    let voiceId = parsed.elevenLabsVoiceId;
-    if (voiceId !== VOICE_DEFAULT_ID && voiceId !== VOICE_SECONDARY_ID) {
-      voiceId = VOICE_DEFAULT_ID;
+    // Validate avatarVoiceId (AI Kanan)
+    let avatarVoice = parsed.avatarVoiceId || parsed.elevenLabsVoiceId;
+    if (avatarVoice !== VOICE_DEFAULT_ID && avatarVoice !== VOICE_SECONDARY_ID) {
+      avatarVoice = VOICE_DEFAULT_ID;
+    }
+
+    // Validate chatVoiceId (Inti AI Chat)
+    let chatVoice = parsed.chatVoiceId;
+    if (chatVoice !== VOICE_CHAT_DEFAULT_ID && chatVoice !== VOICE_CHAT_SECONDARY_ID) {
+      chatVoice = VOICE_CHAT_DEFAULT_ID;
     }
 
     return {
@@ -91,7 +125,9 @@ export function getStoredSettings(): OpenRouterSettings {
       model: parsed.model || DEFAULT_SETTINGS.model,
       useBackendProxy: parsed.useBackendProxy ?? DEFAULT_SETTINGS.useBackendProxy,
       elevenLabsApiKey: parsed.elevenLabsApiKey || DEFAULT_SETTINGS.elevenLabsApiKey,
-      elevenLabsVoiceId: voiceId,
+      avatarVoiceId: avatarVoice,
+      chatVoiceId: chatVoice,
+      elevenLabsVoiceId: avatarVoice,
     };
   } catch {
     return DEFAULT_SETTINGS;
@@ -150,6 +186,96 @@ export const AVATAR_EMOTION_TOOLS = [
   },
 ];
 
+/**
+ * Clean any accidental JSON wrappers returned by LLM models
+ * to ensure that raw JSON is never rendered inside chat bubbles.
+ */
+export function cleanRawAiResponse(raw: string): string {
+  if (!raw) return '';
+  let trimmed = raw.trim();
+
+  // Strip wrapping markdown code blocks if present (```json ... ``` or ``` ...)
+  const codeBlockMatch = trimmed.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/i);
+  if (codeBlockMatch) {
+    trimmed = codeBlockMatch[1].trim();
+  }
+
+  // Check if it starts with JSON object
+  if (trimmed.startsWith('{')) {
+    try {
+      const jsonMatch = trimmed.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        if (parsed.text && typeof parsed.text === 'string') {
+          return parsed.text.trim();
+        }
+        if (parsed.reply && typeof parsed.reply === 'string') {
+          return parsed.reply.trim();
+        }
+      }
+    } catch {
+      // Resilient regex extraction if JSON syntax was partial or malformed
+      const textMatch = trimmed.match(/"(?:text|reply)"\s*:\s*"((?:[^"\\]|\\.)*)"/);
+      if (textMatch) {
+        return textMatch[1]
+          .replace(/\\"/g, '"')
+          .replace(/\\n/g, '\n')
+          .replace(/\\r/g, '')
+          .replace(/\\t/g, '\t')
+          .replace(/\\\\/g, '\\')
+          .trim();
+      }
+    }
+  }
+
+  // Fallback cleanup if the model generated literal "text": "..." syntax
+  if (trimmed.startsWith('{"text":') || trimmed.startsWith('{"reply":')) {
+    return trimmed
+      .replace(/^\{?\s*"(?:text|reply)"\s*:\s*"?/i, '')
+      .replace(/",\s*"(?:emotion|expressions|pauses|prosody|shortcuts)"[\s\S]*$/i, '')
+      .replace(/"\s*\}?$/i, '')
+      .trim();
+  }
+
+  return raw;
+}
+
+/**
+ * Returns clean visible text during progressive streaming
+ */
+export function getStreamingVisibleText(raw: string): string {
+  const trimmed = raw.trimStart();
+  if (trimmed.startsWith('{') || trimmed.startsWith('```json')) {
+    const cleaned = cleanRawAiResponse(raw);
+    if (cleaned !== raw) {
+      return cleaned;
+    }
+    const match = raw.match(/"(?:text|reply)"\s*:\s*"((?:[^"\\]|\\.)*)$/);
+    if (match) {
+      return match[1]
+        .replace(/\\"/g, '"')
+        .replace(/\\n/g, '\n')
+        .replace(/\\r/g, '')
+        .replace(/\\t/g, '\t');
+    }
+  }
+  return raw;
+}
+
+export const CHAT_STREAM_SYSTEM_PROMPT = `Anda adalah INFERA AI, Asisten Investigasi Fraud & Analisis Risiko Cerdas BPJS Kesehatan.
+
+Peran & Tanggung Jawab:
+1. Memberikan analisis hukum regulasi JKN (Permenkes No. 16/2019 tentang Pencegahan Kecurangan, UU PDP No. 27/2022, UU No. 24/2011 BPJS).
+2. Membantu auditor memverifikasi 4 tipologi anomali klaim:
+   - Modus 1 & 2: Identitas & Impossible Travel (kartu pinjaman & diskordansi biologi)
+   - Modus 3: Doctor Shopping (indeks DSI tinggi pada rawat jalan/FKTP berulang)
+   - Modus 4: Resale Obat PRB & Klaim Alat Kesehatan (kacamata 2 thn, alat bantu dengar 5 thn)
+3. Jawaban WAJIB disajikan secara profesional langsung dalam format Markdown semantik terstruktur (Judul #, ##, temuan fakta, bukti data, rujukan pasal hukum JKN, dan rekomendasi auditor).
+4. ATURAN FORMAT SANGAT KETAT:
+   - JANGAN PERNAH membungkus jawaban dalam format JSON atau format objek apapun!
+   - JANGAN gunakan sintaks '{"text": ...}'.
+   - Langsung sajikan teks Markdown naratif investigasi yang elegan dan mudah dibaca oleh auditor.`;
+
 const SYSTEM_PROMPT = `Anda adalah INFERA AI, Asisten Investigasi Fraud & Analisis Risiko Cerdas BPJS Kesehatan.
 
 Peran & Tanggung Jawab:
@@ -195,7 +321,8 @@ export async function streamOpenRouterChat(
   settings: OpenRouterSettings,
   mode: 'chat' | 'voice' = 'chat',
   callbacks?: StreamChatCallbacks,
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  systemPromptOverride?: string
 ): Promise<string> {
   const backendUrl = import.meta.env.VITE_API_URL || '/api/v1';
   let accumulated = '';
@@ -257,12 +384,14 @@ export async function streamOpenRouterChat(
               } else if (currentEvent === 'delta') {
                 if (data.content) {
                   accumulated += data.content;
-                  callbacks?.onDelta?.(data.content, accumulated);
+                  const visible = getStreamingVisibleText(accumulated);
+                  callbacks?.onDelta?.(data.content, visible);
                 }
               } else if (currentEvent === 'done') {
-                const shortcuts = extractShortcuts(accumulated);
-                callbacks?.onDone?.(accumulated, shortcuts);
-                return accumulated;
+                const cleanFinal = cleanRawAiResponse(accumulated);
+                const shortcuts = extractShortcuts(cleanFinal);
+                callbacks?.onDone?.(cleanFinal, shortcuts);
+                return cleanFinal;
               } else if (currentEvent === 'error') {
                 throw new Error(data.message || 'Stream error from server');
               }
@@ -274,13 +403,14 @@ export async function streamOpenRouterChat(
       }
 
       if (accumulated.trim()) {
-        const shortcuts = extractShortcuts(accumulated);
-        callbacks?.onDone?.(accumulated, shortcuts);
-        return accumulated;
+        const cleanFinal = cleanRawAiResponse(accumulated);
+        const shortcuts = extractShortcuts(cleanFinal);
+        callbacks?.onDone?.(cleanFinal, shortcuts);
+        return cleanFinal;
       }
     }
   } catch (err) {
-    if (signal?.aborted) return accumulated;
+    if (signal?.aborted) return cleanRawAiResponse(accumulated);
     console.warn('[Stream Client] Backend stream unavailable, attempting direct OpenRouter fallback:', err);
   }
 
@@ -315,9 +445,10 @@ export async function streamOpenRouterChat(
         : '';
 
     const systemPrompt =
-      mode === 'voice'
+      systemPromptOverride ||
+      (mode === 'voice'
         ? 'Anda adalah asisten suara INFERA BPJS Kesehatan. Jawab maksimal 2-3 kalimat santun tanpa markdown.' + ragContextBlock
-        : SYSTEM_PROMPT + ragContextBlock;
+        : CHAT_STREAM_SYSTEM_PROMPT + ragContextBlock);
 
     const targetModel = settings.model || (mode === 'voice' ? 'google/gemini-2.0-flash-001' : 'openai/gpt-oss-120b:nitro');
     const fallbackModels =
@@ -340,7 +471,7 @@ export async function streamOpenRouterChat(
           ...history.slice(-8).map((m) => ({ role: m.role, content: m.content })),
           { role: 'user', content: userText },
         ],
-        temperature: mode === 'voice' ? 0.7 : 0.5,
+        temperature: mode === 'voice' ? 0.7 : 0.4,
         max_tokens: mode === 'voice' ? 220 : 2500,
         stream: true,
         provider: { allow_fallbacks: true },
@@ -379,7 +510,8 @@ export async function streamOpenRouterChat(
             const delta = parsed.choices?.[0]?.delta?.content;
             if (delta) {
               accumulated += delta;
-              callbacks?.onDelta?.(delta, accumulated);
+              const visible = getStreamingVisibleText(accumulated);
+              callbacks?.onDelta?.(delta, visible);
             }
           } catch {
             // Ignore partial lines
@@ -388,9 +520,10 @@ export async function streamOpenRouterChat(
       }
     }
 
-    const shortcuts = extractShortcuts(accumulated);
-    callbacks?.onDone?.(accumulated, shortcuts);
-    return accumulated;
+    const cleanFinal = cleanRawAiResponse(accumulated);
+    const shortcuts = extractShortcuts(cleanFinal);
+    callbacks?.onDone?.(cleanFinal, shortcuts);
+    return cleanFinal;
   } catch (directErr) {
     const errorObj = directErr instanceof Error ? directErr : new Error('Gagal memproses streaming AI.');
     callbacks?.onError?.(errorObj);
@@ -654,7 +787,17 @@ function normalizeEmotion(raw: string): CharacterEmotion {
 
 export function extractShortcuts(text: string, existingShortcuts?: AiShortcut[]): AiShortcut[] {
   if (Array.isArray(existingShortcuts) && existingShortcuts.length > 0) {
-    return existingShortcuts;
+    return existingShortcuts.map((sc) => {
+      const rawRoute = sc.route || sc.path || '';
+      const normalized = rawRoute.startsWith('/dashboard')
+        ? rawRoute
+        : `/dashboard${rawRoute.startsWith('/') ? '' : '/'}${rawRoute}`;
+      return {
+        ...sc,
+        route: normalized,
+        path: normalized,
+      };
+    });
   }
 
   const shortcuts: AiShortcut[] = [];

@@ -2,6 +2,7 @@ import {
   ActionRecommendation,
   ToolProgressStep,
   RagSearchResult,
+  InvestigationRiskLevel,
 } from '@healthathon/shared';
 import {
   INFERA_TOOL_DEFINITIONS,
@@ -14,6 +15,8 @@ import {
   OpenRouterSettings,
   AiShortcut,
   extractShortcuts,
+  cleanRawAiResponse,
+  getStreamingVisibleText,
   streamOpenRouterChat,
 } from './openrouter';
 
@@ -50,13 +53,14 @@ Kebijakan Penggunaan Tools (Function Calling):
 3. JIKA PERLU KUTIPAN HUKUM & PASAL:
    - Panggil tool "search_regulations_rag" untuk mengambil pasal Permenkes No. 16/2019, Permenkes No. 3/2023, UU BPJS No. 24/2011, atau KUHP 263.
 4. TINDAKAN ADMINISTRATIF / REKOMENDASI:
-   - Anda TIDAK BOLEH mengeksekusi sanksi atau suspensi secara sepihak.
+   - Anda TIDAK BOLEH mengeksekusi sanksi atau suspensi secara sepihak tanpa persetujuan manusia.
    - Gunakan tool "propose_participant_suspension" jika kasus terbukti kritis (skor >= 85) untuk diserahkan ke persetujuan auditor.
    - Gunakan tool "propose_warning_letter" jika merekomendasikan penerbitan surat klarifikasi/peringatan.
    - Gunakan tool "propose_case_review" untuk merekomendasikan audit manual pada halaman visualisasi spesifik.
 
 Format Respon Akhir:
-- Sajikan penjelasan terstruktur dengan format Markdown semantik (Judul, temuan bukti, analisis matematis jika ada, dasar hukum resmi JKN, dan kesimpulan rekomendasi).
+- Sajikan penjelasan terstruktur dengan format Markdown semantik (Judul #, temuan bukti, analisis matematis jika ada, dasar hukum resmi JKN, dan kesimpulan rekomendasi).
+- SANGAT PENTING: JANGAN PERNAH MEMBUNGKUS RESPON DALAM FORMAT JSON atau format objek {"text":...}. Langsung sajikan teks Markdown naratif investigasi murni!
 - Gunakan bahasa yang objektif dan berimbang: katakan "indikasi", "potensi risiko", atau "anomali terdeteksi" dan jangan membuat vonis pidana otomatis tanpa putusan pengadilan.`;
 
 const AGENT_FALLBACK_MODELS = [
@@ -99,20 +103,20 @@ function planInvestigationTools(
     participantName = 'Budi Santoso';
     noKartu = '0001847291038';
     caseCode = 'CASE-001';
-  } else if (clean.includes('hendra') || clean.includes('0001928471920') || clean.includes('case-002') || clean.includes('shopping') || clean.includes('dsi')) {
+  } else if (clean.includes('hendra') || clean.includes('0002938471920') || clean.includes('0001928471920') || clean.includes('case-002') || clean.includes('shopping') || clean.includes('dsi')) {
     targetQuery = 'Hendra Wijaya';
     participantName = 'Hendra Wijaya';
-    noKartu = '0001928471920';
+    noKartu = '0002938471920';
     caseCode = 'CASE-002';
-  } else if (clean.includes('nurul') || clean.includes('0001738291029') || clean.includes('case-003') || clean.includes('prb') || clean.includes('insulin')) {
+  } else if (clean.includes('nurul') || clean.includes('0003847192834') || clean.includes('0001738291029') || clean.includes('case-003') || clean.includes('prb') || clean.includes('insulin')) {
     targetQuery = 'Nurul Hidayati';
     participantName = 'Nurul Hidayati';
-    noKartu = '0001738291029';
+    noKartu = '0003847192834';
     caseCode = 'CASE-003';
-  } else if (clean.includes('agus') || clean.includes('0001639201948') || clean.includes('case-004') || clean.includes('biologi') || clean.includes('sesar') || clean.includes('caesar')) {
+  } else if (clean.includes('agus') || clean.includes('0004928172938') || clean.includes('0001639201948') || clean.includes('case-004') || clean.includes('biologi') || clean.includes('sesar') || clean.includes('caesar')) {
     targetQuery = 'Agus Pratama';
     participantName = 'Agus Pratama';
-    noKartu = '0001639201948';
+    noKartu = '0004928172938';
     caseCode = 'CASE-004';
   } else if (context?.selectedClaim) {
     targetQuery = context.selectedClaim.namaPeserta || context.selectedClaim.noKartu;
@@ -254,17 +258,9 @@ function planInvestigationTools(
   }
 
   // 6. Plan Action Recommendations (Two-Phase Model)
-  if (
-    targetQuery &&
-    (clean.includes('rekomendasi') ||
-      clean.includes('tindakan') ||
-      clean.includes('sanksi') ||
-      clean.includes('suspensi') ||
-      clean.includes('peringatan') ||
-      clean.includes('audit') ||
-      caseCode)
-  ) {
-    if (caseCode === 'CASE-001' || clean.includes('suspensi') || clean.includes('travel')) {
+  // Always plan actionable recommendations & workflow routes when a participant or case is audited
+  if (targetQuery || caseCode || context?.selectedClaim) {
+    if (caseCode === 'CASE-001' || clean.includes('travel') || clean.includes('budi')) {
       tools.push({
         name: 'propose_participant_suspension',
         args: {
@@ -287,12 +283,12 @@ function planInvestigationTools(
           target_workflow_route: '/dashboard/identity-risk',
         },
       });
-    } else if (caseCode === 'CASE-002' || clean.includes('shopping') || clean.includes('dsi')) {
+    } else if (caseCode === 'CASE-002' || clean.includes('shopping') || clean.includes('dsi') || clean.includes('hendra')) {
       tools.push({
         name: 'propose_warning_letter',
         args: {
           recipient_type: 'PESERTA',
-          recipient_id: noKartu || '0001928471920',
+          recipient_id: noKartu || '0002938471920',
           recipient_name: participantName || 'Hendra Wijaya',
           letter_type: 'PERINGATAN',
           violation_details:
@@ -311,12 +307,12 @@ function planInvestigationTools(
           target_workflow_route: '/dashboard/unnecessary-services',
         },
       });
-    } else if (caseCode === 'CASE-003' || clean.includes('prb') || clean.includes('obat')) {
+    } else if (caseCode === 'CASE-003' || clean.includes('prb') || clean.includes('obat') || clean.includes('nurul')) {
       tools.push({
         name: 'propose_warning_letter',
         args: {
           recipient_type: 'PESERTA',
-          recipient_id: noKartu || '0001738291029',
+          recipient_id: noKartu || '0003847192834',
           recipient_name: participantName || 'Nurul Hidayati',
           letter_type: 'TAGIHAN',
           violation_details:
@@ -335,11 +331,11 @@ function planInvestigationTools(
           target_workflow_route: '/dashboard/pharmacy-alkes',
         },
       });
-    } else if (caseCode === 'CASE-004' || clean.includes('biologi') || clean.includes('sesar')) {
+    } else if (caseCode === 'CASE-004' || clean.includes('biologi') || clean.includes('sesar') || clean.includes('agus')) {
       tools.push({
         name: 'propose_participant_suspension',
         args: {
-          participant_id: noKartu || '0001639201948',
+          participant_id: noKartu || '0004928172938',
           participant_name: participantName || 'Agus Pratama',
           reason:
             'Diskordansi Biologis Mutlak: Peserta Laki-Laki terbit SEP Rawat Inap persalinan Seksio Sesarea (O82.0) di RSUD Kota.',
@@ -356,6 +352,17 @@ function planInvestigationTools(
           reason: 'Verifikasi identitas kepesertaan dan konfirmasi klaim faskes persalinan.',
           priority: 'CRITICAL',
           target_workflow_route: '/dashboard/identity-risk',
+        },
+      });
+    } else {
+      tools.push({
+        name: 'propose_case_review',
+        args: {
+          case_id: caseCode || 'CASE-AUDIT',
+          patient_name: participantName || targetQuery || 'Peserta Terindikasi',
+          reason: 'Tinjau bukti anomali klaim dan rekam jejak kepatuhan JKN.',
+          priority: 'HIGH',
+          target_workflow_route: '/dashboard/cases',
         },
       });
     }
@@ -739,10 +746,11 @@ export async function runAgentInvestigationStream(
       }
 
       if (fullAccumulatedText.trim()) {
-        const shortcuts = extractShortcuts(fullAccumulatedText);
-        callbacks?.onDone?.(fullAccumulatedText, collectedRecommendations, shortcuts);
+        const cleanReply = cleanRawAiResponse(fullAccumulatedText);
+        const shortcuts = extractShortcuts(cleanReply);
+        callbacks?.onDone?.(cleanReply, collectedRecommendations, shortcuts);
         return {
-          reply: fullAccumulatedText,
+          reply: cleanReply,
           recommendations: collectedRecommendations,
           shortcuts,
           toolSteps: completedSteps,
@@ -759,6 +767,57 @@ export async function runAgentInvestigationStream(
   // 4. Deterministic Local & Backend Hybrid Agent Execution
   // Run all planned analytical and recommendation tools
   await runLocalPlannedTools();
+
+  // 4.1 Safety Net: If tools ran but collectedRecommendations is empty, synthesize based on analysis results
+  if (collectedRecommendations.length === 0 && executedToolSummaries.length > 0) {
+    const participantData = executedToolSummaries.find((s) => s.name === 'analyze_participant')?.data as any;
+    const riskData = executedToolSummaries.find((s) => s.name === 'calculate_risk_score')?.data as any;
+    const targetName = participantData?.patient_name || (plannedTools[0]?.args?.participant_query as string) || '';
+
+    if (targetName) {
+      const score = riskData?.score || participantData?.risk_score || 85;
+      const level: InvestigationRiskLevel = score >= 85 ? 'CRITICAL' : score >= 70 ? 'HIGH' : 'MEDIUM';
+
+      let route = '/dashboard/cases';
+      const tLower = targetName.toLowerCase();
+      if (tLower.includes('budi') || tLower.includes('travel')) {
+        route = '/dashboard/identity-risk';
+      } else if (tLower.includes('hendra') || tLower.includes('shopping')) {
+        route = '/dashboard/unnecessary-services';
+      } else if (tLower.includes('nurul') || tLower.includes('prb')) {
+        route = '/dashboard/pharmacy-alkes';
+      } else if (tLower.includes('agus') || tLower.includes('biologi')) {
+        route = '/dashboard/identity-risk';
+      }
+
+      const autoRec: ActionRecommendation = {
+        id: `rec-auto-${Date.now()}`,
+        title: `Tinjau Investigasi Kasus: ${targetName}`,
+        description: `Buka modul investigasi forensik untuk verifikasi log SEP dan pembuktian anomali secara komparatif.`,
+        riskScore: score,
+        riskLevel: level,
+        reason: participantData?.anomaly_title || 'Indikasi anomali klaim memerlukan verifikasi auditor.',
+        signals: [
+          {
+            type: 'MANUAL_REVIEW_FLAG',
+            label: 'Verifikasi Investigasi Auditor',
+            severity: level,
+            description: participantData?.anomaly_title || 'Temuan anomali data klaim.',
+          },
+        ],
+        actionLabel: 'Buka Modus Investigasi',
+        actionType: 'NAVIGATE',
+        targetId: participantData?.no_kartu || participantData?.no_sep || `target-${Date.now()}`,
+        targetName,
+        targetRoute: route,
+        requiresConfirmation: false,
+        timestamp: new Date().toISOString(),
+      };
+
+      collectedRecommendations.push(autoRec);
+      callbacks?.onRecommendation?.(autoRec);
+    }
+  }
 
   // 5. Stream Narrative Generation
   // Prepare factual evidence dossier for backend prompt grounding
@@ -786,11 +845,13 @@ export async function runAgentInvestigationStream(
       {
         onMetadata: callbacks?.onMetadata,
         onDelta: (delta, acc) => {
-          fullAccumulatedText = acc;
-          callbacks?.onDelta?.(delta, acc);
+          const visible = getStreamingVisibleText(acc);
+          fullAccumulatedText = visible;
+          callbacks?.onDelta?.(delta, visible);
         },
       },
-      signal
+      signal,
+      AGENT_SYSTEM_PROMPT
     );
 
     if (
@@ -798,7 +859,7 @@ export async function runAgentInvestigationStream(
       streamResult.trim() &&
       !streamResult.includes('Halo! Ini adalah respon simulasi')
     ) {
-      fullAccumulatedText = streamResult;
+      fullAccumulatedText = cleanRawAiResponse(streamResult);
       streamSuccess = true;
     }
   } catch (backendErr) {
@@ -826,11 +887,12 @@ export async function runAgentInvestigationStream(
     }
   }
 
-  const shortcuts = extractShortcuts(fullAccumulatedText);
-  callbacks?.onDone?.(fullAccumulatedText, collectedRecommendations, shortcuts);
+  const cleanFinal = cleanRawAiResponse(fullAccumulatedText);
+  const shortcuts = extractShortcuts(cleanFinal);
+  callbacks?.onDone?.(cleanFinal, collectedRecommendations, shortcuts);
 
   return {
-    reply: fullAccumulatedText,
+    reply: cleanFinal,
     recommendations: collectedRecommendations,
     shortcuts,
     toolSteps: completedSteps,

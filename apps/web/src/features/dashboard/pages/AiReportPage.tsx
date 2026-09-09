@@ -27,10 +27,13 @@ import {
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { ChatMessage, AiShortcut } from '../services/openrouter';
+import { ChatMessage, AiShortcut, getStoredSettings } from '../services/openrouter';
 import { CharacterEmotion } from '../avatar/AvatarController';
 import { SpeechService } from '../services/speech';
-import { VOICE_DEFAULT_ID, VOICE_SECONDARY_ID } from '../services/tts-processor';
+import {
+  VOICE_CHAT_DEFAULT_ID,
+  VOICE_CHAT_SECONDARY_ID,
+} from '../services/tts-processor';
 import { useSimulationStream } from '../simulation/SimulationContext';
 import { FALLBACK_CASES } from '../../../services/participantRiskApi';
 import { AIRecommendationCard } from '../components/AIRecommendationCard';
@@ -46,8 +49,12 @@ interface DashboardOutletContextType {
   onSendMessage: (text: string) => void;
   onClearHistory: () => void;
   onSelectEmotion?: (emo: CharacterEmotion, timedownMs?: number) => void;
-  selectedVoiceId?: string;
+  selectedVoiceId?: string; // AI Kanan (Avatar)
   onSelectVoice?: (voiceId: string) => void;
+  selectedChatVoiceId?: string; // Inti AI Chat (Narator INFERA)
+  onSelectChatVoice?: (voiceId: string) => void;
+  chatVoiceId?: string;
+  elevenLabsApiKey?: string;
   isListening?: boolean;
   isSoundDetected?: boolean;
   onToggleClickToSpeak?: () => void;
@@ -129,6 +136,7 @@ class MarkdownErrorBoundary extends React.Component<{ children: React.ReactNode;
 }
 
 const MarkdownRenderer: React.FC<{ content: string }> = ({ content }) => {
+  const navigate = useNavigate();
   return (
     <MarkdownErrorBoundary rawContent={content}>
       <ReactMarkdown
@@ -173,15 +181,34 @@ const MarkdownRenderer: React.FC<{ content: string }> = ({ content }) => {
           <td className="px-3 py-2 border-t border-slate-100 dark:border-slate-800 text-slate-800 dark:text-slate-200 text-xs" {...props} />
         ),
         code: CodeBlock as any,
-        a: ({ node, href, ...props }) => (
-          <a
-            href={href}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-emerald-600 dark:text-emerald-400 hover:underline font-medium inline-flex items-center gap-0.5"
-            {...props}
-          />
-        ),
+        a: ({ node, href, ...props }) => {
+          const isInternal = href && (href.startsWith('/') || href.startsWith('#'));
+          if (isInternal && href) {
+            return (
+              <a
+                href={href}
+                onClick={(e) => {
+                  e.preventDefault();
+                  const target = href.startsWith('/dashboard')
+                    ? href
+                    : `/dashboard${href.startsWith('/') ? '' : '/'}${href}`;
+                  navigate(target);
+                }}
+                className="text-emerald-600 dark:text-emerald-400 hover:underline font-semibold cursor-pointer"
+                {...props}
+              />
+            );
+          }
+          return (
+            <a
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-emerald-600 dark:text-emerald-400 hover:underline font-medium inline-flex items-center gap-0.5"
+              {...props}
+            />
+          );
+        },
         hr: () => <hr className="my-4 border-slate-200 dark:border-slate-800" />,
       }}
     >
@@ -263,7 +290,10 @@ export const AiReportPage: React.FC = () => {
 
   const handleExecuteRecommendation = (rec: ActionRecommendation) => {
     if (rec.targetRoute) {
-      navigate(rec.targetRoute);
+      const target = rec.targetRoute.startsWith('/dashboard')
+        ? rec.targetRoute
+        : `/dashboard${rec.targetRoute.startsWith('/') ? '' : '/'}${rec.targetRoute}`;
+      navigate(target);
     }
   };
 
@@ -437,6 +467,14 @@ export const AiReportPage: React.FC = () => {
       outletContext.onSelectEmotion(msg.emotion, 10000);
     }
 
+    const storedSettings = getStoredSettings();
+    const apiKey = outletContext?.elevenLabsApiKey || storedSettings.elevenLabsApiKey;
+    const chatVoice =
+      outletContext?.selectedChatVoiceId ||
+      outletContext?.chatVoiceId ||
+      storedSettings.chatVoiceId ||
+      VOICE_CHAT_DEFAULT_ID;
+
     SpeechService.speak(
       msg.content,
       () => {},
@@ -446,14 +484,19 @@ export const AiReportPage: React.FC = () => {
         if (outletContext?.onSelectEmotion) {
           outletContext.onSelectEmotion('normal', 0);
         }
-      }
+      },
+      apiKey,
+      chatVoice
     );
   };
 
   const handleExecuteShortcut = (shortcut: AiShortcut) => {
-    const targetRoute = shortcut.route || shortcut.path;
-    if (targetRoute) {
-      navigate(targetRoute);
+    const rawRoute = shortcut.route || shortcut.path;
+    if (rawRoute) {
+      const target = rawRoute.startsWith('/dashboard')
+        ? rawRoute
+        : `/dashboard${rawRoute.startsWith('/') ? '' : '/'}${rawRoute}`;
+      navigate(target);
     } else if (shortcut.action) {
       onSendMessage(shortcut.action);
     }
@@ -499,7 +542,7 @@ export const AiReportPage: React.FC = () => {
       title: 'Audit Dugaan Kasus Doctor Shopping',
       icon: <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />,
       prompt:
-        'Tolong analisis riwayat klaim pasien Hendra Wijaya (0001928471920) terkait indikasi Doctor Shopping dan peresepan obat berulang di faskes berbeda.',
+        'Tolong analisis riwayat klaim pasien Hendra Wijaya (0002938471920) terkait indikasi Doctor Shopping dan peresepan obat berulang di faskes berbeda.',
     },
   ];
 
@@ -560,55 +603,66 @@ export const AiReportPage: React.FC = () => {
 
         {/* Header Right Actions */}
         <div className="flex items-center gap-1 sm:gap-2">
-          {/* Voice Switcher Dropdown */}
+          {/* Chat Narator Voice Switcher Dropdown (Inti AI Chat) */}
           <div className="relative" ref={voiceDropdownRef}>
             <button
               type="button"
               onClick={() => setIsVoiceOpen(!isVoiceOpen)}
               className="flex items-center gap-1.5 px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-medium transition-colors cursor-pointer"
-              title="Ganti Suara AI (Vera / Luna)"
+              title="Ganti Suara Narator Inti AI Chat (Auditor / Analis)"
             >
               <Volume2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
               <span className="text-[11px] font-semibold">
-                {outletContext?.selectedVoiceId === VOICE_SECONDARY_ID ? 'Luna' : 'Vera'}
+                {(outletContext?.selectedChatVoiceId ?? VOICE_CHAT_DEFAULT_ID) === VOICE_CHAT_SECONDARY_ID
+                  ? 'Analis'
+                  : 'Auditor'}
               </span>
               <ChevronDown className="w-3 h-3 text-slate-400" />
             </button>
 
             {isVoiceOpen && (
-              <div className="absolute right-0 top-full mt-1.5 w-44 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl py-1 z-50 animate-in fade-in zoom-in-95 duration-100">
+              <div className="absolute right-0 top-full mt-1.5 w-52 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl py-1 z-50 animate-in fade-in zoom-in-95 duration-100">
+                <div className="px-3 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 dark:border-slate-800">
+                  Suara Inti AI Chat
+                </div>
                 <button
                   type="button"
                   onClick={() => {
-                    outletContext?.onSelectVoice?.(VOICE_DEFAULT_ID);
+                    outletContext?.onSelectChatVoice?.(VOICE_CHAT_DEFAULT_ID);
                     setIsVoiceOpen(false);
                   }}
-                  className={`w-full px-3 py-1.5 text-left text-xs flex items-center justify-between hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-colors ${
-                    (outletContext?.selectedVoiceId ?? VOICE_DEFAULT_ID) === VOICE_DEFAULT_ID
+                  className={`w-full px-3 py-2 text-left text-xs flex items-center justify-between hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-colors ${
+                    (outletContext?.selectedChatVoiceId ?? VOICE_CHAT_DEFAULT_ID) === VOICE_CHAT_DEFAULT_ID
                       ? 'text-emerald-700 dark:text-emerald-400 font-bold'
                       : 'text-slate-700 dark:text-slate-300'
                   }`}
                 >
-                  <span>Vera (Warna Hangat)</span>
-                  {(outletContext?.selectedVoiceId ?? VOICE_DEFAULT_ID) === VOICE_DEFAULT_ID && (
-                    <Check className="w-3.5 h-3.5" />
+                  <div>
+                    <div className="font-semibold text-xs">Auditor Sistem</div>
+                    <div className="text-[10px] text-slate-400">Formal, Wibawa & Tegas</div>
+                  </div>
+                  {(outletContext?.selectedChatVoiceId ?? VOICE_CHAT_DEFAULT_ID) === VOICE_CHAT_DEFAULT_ID && (
+                    <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
                   )}
                 </button>
                 <button
                   type="button"
                   onClick={() => {
-                    outletContext?.onSelectVoice?.(VOICE_SECONDARY_ID);
+                    outletContext?.onSelectChatVoice?.(VOICE_CHAT_SECONDARY_ID);
                     setIsVoiceOpen(false);
                   }}
-                  className={`w-full px-3 py-1.5 text-left text-xs flex items-center justify-between hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-colors ${
-                    outletContext?.selectedVoiceId === VOICE_SECONDARY_ID
+                  className={`w-full px-3 py-2 text-left text-xs flex items-center justify-between hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-colors ${
+                    outletContext?.selectedChatVoiceId === VOICE_CHAT_SECONDARY_ID
                       ? 'text-emerald-700 dark:text-emerald-400 font-bold'
                       : 'text-slate-700 dark:text-slate-300'
                   }`}
                 >
-                  <span>Luna (Formal / Jelas)</span>
-                  {outletContext?.selectedVoiceId === VOICE_SECONDARY_ID && (
-                    <Check className="w-3.5 h-3.5" />
+                  <div>
+                    <div className="font-semibold text-xs">Analis Sistem</div>
+                    <div className="text-[10px] text-slate-400">Netral, Terstruktur & Presisi</div>
+                  </div>
+                  {outletContext?.selectedChatVoiceId === VOICE_CHAT_SECONDARY_ID && (
+                    <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
                   )}
                 </button>
               </div>

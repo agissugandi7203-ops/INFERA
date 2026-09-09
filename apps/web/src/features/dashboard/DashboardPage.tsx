@@ -56,11 +56,15 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
 
   const handleSelectVoice = (voiceId: string) => {
     const validVoiceId = voiceId === VOICE_SECONDARY_ID ? VOICE_SECONDARY_ID : VOICE_DEFAULT_ID;
-    const newSettings = { ...settings, elevenLabsVoiceId: validVoiceId };
+    const newSettings = {
+      ...settings,
+      elevenLabsVoiceId: validVoiceId,
+      avatarVoiceId: validVoiceId,
+    };
     setSettings(newSettings);
     saveStoredSettings(newSettings);
 
-    const voiceLabel = validVoiceId === VOICE_DEFAULT_ID ? 'Vera (Default)' : 'Luna';
+    const voiceLabel = validVoiceId === VOICE_DEFAULT_ID ? 'Vera (AI Kanan)' : 'Luna (AI Kanan)';
     handleSelectEmotion('happy', 3500);
 
     const confirmText = `Suara telah diubah ke ${voiceLabel}. Saya siap membantu!`;
@@ -251,7 +255,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
 
       // Speak using ElevenLabs TTS — always prefer ElevenLabs key
       const el11Key = settings.elevenLabsApiKey || DEFAULT_SETTINGS.elevenLabsApiKey;
-      const el11Voice = settings.elevenLabsVoiceId || DEFAULT_SETTINGS.elevenLabsVoiceId || VOICE_DEFAULT_ID;
+      const el11Voice = settings.avatarVoiceId || settings.elevenLabsVoiceId || VOICE_DEFAULT_ID;
 
       SpeechService.speak(
         speechText,
@@ -384,7 +388,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
         onOpenChat={() => setIsChatOpen(true)}
         onMinimize={() => setIsMinimized(true)}
         isMinimized={isMinimized}
-        selectedVoiceId={settings.elevenLabsVoiceId || VOICE_DEFAULT_ID}
+        selectedVoiceId={settings.avatarVoiceId || settings.elevenLabsVoiceId || VOICE_DEFAULT_ID}
         onSelectVoice={handleSelectVoice}
       />
 
