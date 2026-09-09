@@ -21,10 +21,13 @@ import {
   ChevronDown,
   FileText,
   X,
+  Menu,
+  Settings as SettingsIcon,
 } from 'lucide-react';
 import { ChatMessage, AiShortcut } from '../services/openrouter';
 import { CharacterEmotion } from '../avatar/AvatarController';
 import { SpeechService } from '../services/speech';
+import { VOICE_DEFAULT_ID, VOICE_SECONDARY_ID } from '../services/tts-processor';
 import { useSimulationStream } from '../simulation/SimulationContext';
 import { FALLBACK_CASES } from '../../../services/participantRiskApi';
 
@@ -41,6 +44,8 @@ interface DashboardOutletContextType {
   isSoundDetected?: boolean;
   onToggleClickToSpeak?: () => void;
   onStopSpeaking?: () => void;
+  onToggleMobileSidebar?: () => void;
+  onToggleSettings?: () => void;
 }
 
 // Markdown renderer without heavy external deps
@@ -243,12 +248,40 @@ export const AiReportPage: React.FC = () => {
   const [isDeepThinking, setIsDeepThinking] = useState(true);
   const [activeSpeechMsgId, setActiveSpeechMsgId] = useState<string | null>(null);
   const [copiedMsgId, setCopiedMsgId] = useState<string | null>(null);
-  const [userFeedback, setUserFeedback] = useState<Record<string, 'up' | 'down'>>({});
   const [showCaseSelector, setShowCaseSelector] = useState(false);
   const [showAttachMenu, setShowAttachMenu] = useState(false);
+  const [isVoiceOpen, setIsVoiceOpen] = useState(false);
+  const [userFeedback, setUserFeedback] = useState<Record<string, 'up' | 'down'>>({});
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const voiceDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close voice dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (voiceDropdownRef.current && !voiceDropdownRef.current.contains(e.target as Node)) {
+        setIsVoiceOpen(false);
+      }
+    };
+    if (isVoiceOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isVoiceOpen]);
+
+  const handleDownloadBAP = () => {
+    const content = messages
+      .map((m) => `[${m.role.toUpperCase()}] (${m.timestamp})\n${m.content}\n`)
+      .join('\n---\n\n');
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `bap-infera-chat-${new Date().toISOString().slice(0, 10)}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   // Auto-scroll on new messages
   useEffect(() => {
@@ -392,38 +425,105 @@ export const AiReportPage: React.FC = () => {
 
   return (
     <div className="flex flex-col h-full w-full bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 overflow-hidden relative">
-      {/* Top Header Toolbar */}
-      <header className="px-4 sm:px-6 py-2.5 border-b border-slate-100 dark:border-slate-800/80 flex items-center justify-between bg-white/80 dark:bg-slate-950/80 backdrop-blur-md shrink-0 z-10">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center shadow-xs">
-            <Sparkles className="w-4 h-4" />
-          </div>
-          <div>
+      {/* Single Unified Header (Compact h-12 / 48px, gives maximum vertical chat space) */}
+      <header className="h-12 px-3 sm:px-4 border-b border-slate-100 dark:border-slate-800/80 flex items-center justify-between bg-white/90 dark:bg-slate-950/90 backdrop-blur-md shrink-0 z-20">
+        <div className="flex items-center gap-2 sm:gap-3">
+          {/* Mobile hamburger button to open sidebar */}
+          <button
+            type="button"
+            onClick={outletContext?.onToggleMobileSidebar}
+            className="md:hidden p-1.5 -ml-1 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            title="Menu Navigasi"
+            aria-label="Buka Menu"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+
+          {/* Official INFERA "F" Logo */}
+          <div className="flex items-center gap-2">
+            <img
+              src="/infera-logo.png"
+              alt="INFERA Logo"
+              className="w-7 h-7 object-contain rounded-lg drop-shadow-xs shrink-0"
+            />
             <div className="flex items-center gap-2">
-              <h1 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100">
-                INFERA AI Assistant
-              </h1>
+              <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 tracking-tight">
+                INFERA AI
+              </span>
               <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800/60">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 Online
               </span>
             </div>
-            <p className="text-[10px] text-slate-400 dark:text-slate-500">
-              Audit Integritas JKN &amp; Penalaran Regulasi
-            </p>
           </div>
         </div>
 
         {/* Header Right Actions */}
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1 sm:gap-2">
+          {/* Voice Switcher Dropdown */}
+          <div className="relative" ref={voiceDropdownRef}>
+            <button
+              type="button"
+              onClick={() => setIsVoiceOpen(!isVoiceOpen)}
+              className="flex items-center gap-1.5 px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-medium transition-colors cursor-pointer"
+              title="Ganti Suara AI (Vera / Luna)"
+            >
+              <Volume2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+              <span className="text-[11px] font-semibold">
+                {outletContext?.selectedVoiceId === VOICE_SECONDARY_ID ? 'Luna' : 'Vera'}
+              </span>
+              <ChevronDown className="w-3 h-3 text-slate-400" />
+            </button>
+
+            {isVoiceOpen && (
+              <div className="absolute right-0 top-full mt-1.5 w-44 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl py-1 z-50 animate-in fade-in zoom-in-95 duration-100">
+                <button
+                  type="button"
+                  onClick={() => {
+                    outletContext?.onSelectVoice?.(VOICE_DEFAULT_ID);
+                    setIsVoiceOpen(false);
+                  }}
+                  className={`w-full px-3 py-1.5 text-left text-xs flex items-center justify-between hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-colors ${
+                    (outletContext?.selectedVoiceId ?? VOICE_DEFAULT_ID) === VOICE_DEFAULT_ID
+                      ? 'text-emerald-700 dark:text-emerald-400 font-bold'
+                      : 'text-slate-700 dark:text-slate-300'
+                  }`}
+                >
+                  <span>Vera (Warna Hangat)</span>
+                  {(outletContext?.selectedVoiceId ?? VOICE_DEFAULT_ID) === VOICE_DEFAULT_ID && (
+                    <Check className="w-3.5 h-3.5" />
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    outletContext?.onSelectVoice?.(VOICE_SECONDARY_ID);
+                    setIsVoiceOpen(false);
+                  }}
+                  className={`w-full px-3 py-1.5 text-left text-xs flex items-center justify-between hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-colors ${
+                    outletContext?.selectedVoiceId === VOICE_SECONDARY_ID
+                      ? 'text-emerald-700 dark:text-emerald-400 font-bold'
+                      : 'text-slate-700 dark:text-slate-300'
+                  }`}
+                >
+                  <span>Luna (Formal / Jelas)</span>
+                  {outletContext?.selectedVoiceId === VOICE_SECONDARY_ID && (
+                    <Check className="w-3.5 h-3.5" />
+                  )}
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Pilih Kasus Button */}
           <button
             type="button"
             onClick={() => setShowCaseSelector(!showCaseSelector)}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-medium transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 px-2 py-1 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-medium transition-colors cursor-pointer"
             title="Pilih berkas klaim riil untuk diaudit"
           >
             <FileText className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-            <span className="hidden sm:inline">Pilih Kasus</span>
+            <span className="hidden sm:inline text-[11px]">Pilih Kasus</span>
             <ChevronDown className="w-3 h-3 text-slate-400" />
           </button>
 
@@ -431,22 +531,11 @@ export const AiReportPage: React.FC = () => {
             <>
               <button
                 type="button"
-                onClick={() => {
-                  const content = messages
-                    .map((m) => `[${m.role.toUpperCase()}] (${m.timestamp})\n${m.content}\n`)
-                    .join('\n---\n\n');
-                  const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
-                  const url = URL.createObjectURL(blob);
-                  const a = document.createElement('a');
-                  a.href = url;
-                  a.download = `bap-infera-chat-${new Date().toISOString().slice(0, 10)}.txt`;
-                  a.click();
-                  URL.revokeObjectURL(url);
-                }}
+                onClick={handleDownloadBAP}
                 className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
                 title="Unduh Berita Acara Percakapan (BAP)"
               >
-                <Download className="w-4 h-4" />
+                <Download className="w-3.5 h-3.5" />
               </button>
               <button
                 type="button"
@@ -454,9 +543,21 @@ export const AiReportPage: React.FC = () => {
                 className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
                 title="Bersihkan Percakapan"
               >
-                <Trash2 className="w-4 h-4" />
+                <Trash2 className="w-3.5 h-3.5" />
               </button>
             </>
+          )}
+
+          {/* Settings Modal Toggle */}
+          {outletContext?.onToggleSettings && (
+            <button
+              type="button"
+              onClick={outletContext.onToggleSettings}
+              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+              title="Pengaturan AI & Parameter"
+            >
+              <SettingsIcon className="w-3.5 h-3.5" />
+            </button>
           )}
         </div>
       </header>
@@ -504,6 +605,11 @@ export const AiReportPage: React.FC = () => {
         {!hasMessages || (messages.length === 1 && messages[0].id === 'welcome-init') ? (
           /* Empty / Welcome State (Exact match to ChatGPT media_1788920242379.png) */
           <div className="flex-1 flex flex-col items-center justify-center max-w-2xl mx-auto w-full px-4 text-center my-auto pb-12">
+            <img
+              src="/infera-logo.png"
+              alt="INFERA Logo"
+              className="w-14 h-14 object-contain mb-4 drop-shadow-md mx-auto"
+            />
             <h2 className="text-2xl sm:text-3xl font-semibold text-slate-800 dark:text-slate-100 mb-8 tracking-tight">
               Saya siap kapan pun Anda siap.
             </h2>
@@ -606,9 +712,11 @@ export const AiReportPage: React.FC = () => {
 
               return (
                 <div key={msg.id} className="flex items-start gap-3 sm:gap-4 group">
-                  <div className="w-7 h-7 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center shrink-0 mt-1 shadow-2xs">
-                    <Sparkles className="w-3.5 h-3.5" />
-                  </div>
+                  <img
+                    src="/infera-logo.png"
+                    alt="INFERA AI"
+                    className="w-7 h-7 object-contain rounded-lg shrink-0 mt-1 drop-shadow-xs"
+                  />
 
                   <div className="flex-1 min-w-0 space-y-3">
                     {/* Rendered Markdown Body */}
@@ -743,9 +851,11 @@ export const AiReportPage: React.FC = () => {
             {/* Assistant Loading Indicator */}
             {isLoading && (
               <div className="flex items-start gap-3 sm:gap-4">
-                <div className="w-7 h-7 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center shrink-0 mt-1 shadow-2xs animate-pulse">
-                  <Sparkles className="w-3.5 h-3.5" />
-                </div>
+                <img
+                  src="/infera-logo.png"
+                  alt="INFERA AI"
+                  className="w-7 h-7 object-contain rounded-lg shrink-0 mt-1 drop-shadow-xs animate-pulse"
+                />
                 <div className="flex items-center gap-2 py-2 px-3 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800">
                   <div className="flex gap-1">
                     <span className="w-2 h-2 rounded-full bg-emerald-500 animate-bounce" style={{ animationDelay: '0ms' }} />

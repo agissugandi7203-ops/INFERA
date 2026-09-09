@@ -364,6 +364,8 @@ const DashboardLayoutContent: React.FC<
       isSoundDetected,
       onToggleClickToSpeak: handleToggleClickToSpeak,
       onStopSpeaking: () => SpeechService.stopSpeaking(),
+      onToggleMobileSidebar: () => setIsMobileSidebarOpen((prev) => !prev),
+      onToggleSettings: () => setShowSettingsModal((prev) => !prev),
     }),
     [
       handleTriggerSpeechFromPage,
@@ -417,12 +419,15 @@ const DashboardLayoutContent: React.FC<
 
       {/* Main App Content Area */}
       <div className="flex-1 flex flex-col h-full overflow-hidden min-w-0">
-        <DashboardTopNav
-          onToggleSettings={() => setShowSettingsModal(!showSettingsModal)}
-          selectedVoiceId={settings.elevenLabsVoiceId || VOICE_DEFAULT_ID}
-          onSelectVoice={handleSelectVoice}
-          onToggleMobileSidebar={() => setIsMobileSidebarOpen((prev) => !prev)}
-        />
+        {/* TopNav is only displayed for other pages; on Chat AI, AiReportPage provides the single unified minimal header */}
+        {location.pathname !== '/dashboard/ai-report' && (
+          <DashboardTopNav
+            onToggleSettings={() => setShowSettingsModal(!showSettingsModal)}
+            selectedVoiceId={settings.elevenLabsVoiceId || VOICE_DEFAULT_ID}
+            onSelectVoice={handleSelectVoice}
+            onToggleMobileSidebar={() => setIsMobileSidebarOpen((prev) => !prev)}
+          />
+        )}
 
         {/* Live Anomaly Toast (top-right, compact with smooth slide-up exit) */}
         {latestAnomalyAlert && (
