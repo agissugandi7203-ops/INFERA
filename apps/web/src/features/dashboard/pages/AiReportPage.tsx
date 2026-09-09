@@ -23,7 +23,10 @@ import {
   X,
   Menu,
   Settings as SettingsIcon,
+  ArrowDown,
 } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { ChatMessage, AiShortcut } from '../services/openrouter';
 import { CharacterEmotion } from '../avatar/AvatarController';
 import { SpeechService } from '../services/speech';
@@ -48,155 +51,117 @@ interface DashboardOutletContextType {
   onToggleSettings?: () => void;
 }
 
-// Markdown renderer without heavy external deps
-const renderFormattedContent = (content: string) => {
-  const lines = content.split('\n');
-  const elements: React.ReactNode[] = [];
+interface CodeBlockProps {
+  inline?: boolean;
+  className?: string;
+  children?: React.ReactNode;
+}
 
-  let inList = false;
-  let listItems: React.ReactNode[] = [];
+const CodeBlock: React.FC<CodeBlockProps> = ({ inline, className, children, ...props }) => {
+  const [copied, setCopied] = useState(false);
+  const match = /language-(\w+)/.exec(className || '');
+  const language = match ? match[1] : '';
+  const codeString = String(children).replace(/\n$/, '');
 
-  const flushList = () => {
-    if (inList && listItems.length > 0) {
-      elements.push(
-        <ul key={`ul-${elements.length}`} className="space-y-1.5 my-2.5 ml-1">
-          {listItems}
-        </ul>
-      );
-      listItems = [];
-      inList = false;
-    }
-  };
-
-  const formatInline = (text: string) => {
-    // Split by bold (**text**)
-    const parts = text.split(/(\*\*.*?\*\*)/g);
-    return parts.map((part, i) => {
-      if (part.startsWith('**') && part.endsWith('**')) {
-        return (
-          <strong key={i} className="font-semibold text-slate-900 dark:text-slate-100">
-            {part.slice(2, -2)}
-          </strong>
-        );
-      }
-      // Inline code
-      if (part.startsWith('`') && part.endsWith('`')) {
-        return (
-          <code
-            key={i}
-            className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-mono text-xs"
-          >
-            {part.slice(1, -1)}
-          </code>
-        );
-      }
-      return part;
-    });
-  };
-
-  lines.forEach((line, idx) => {
-    const trimmed = line.trim();
-
-    if (!trimmed) {
-      flushList();
-      elements.push(<div key={`space-${idx}`} className="h-2" />);
-      return;
-    }
-
-    // Heading 3: ###
-    if (trimmed.startsWith('### ')) {
-      flushList();
-      elements.push(
-        <h3
-          key={`h3-${idx}`}
-          className="text-sm sm:text-base font-bold text-slate-900 dark:text-slate-100 mt-4 mb-2 flex items-center gap-2"
-        >
-          {formatInline(trimmed.slice(4))}
-        </h3>
-      );
-      return;
-    }
-
-    // Heading 2: ##
-    if (trimmed.startsWith('## ')) {
-      flushList();
-      elements.push(
-        <h2
-          key={`h2-${idx}`}
-          className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 mt-4 mb-2"
-        >
-          {formatInline(trimmed.slice(3))}
-        </h2>
-      );
-      return;
-    }
-
-    // Heading 1: #
-    if (trimmed.startsWith('# ')) {
-      flushList();
-      elements.push(
-        <h1
-          key={`h1-${idx}`}
-          className="text-lg sm:text-xl font-bold text-slate-900 dark:text-slate-100 mt-5 mb-2.5"
-        >
-          {formatInline(trimmed.slice(2))}
-        </h1>
-      );
-      return;
-    }
-
-    // Blockquote: >
-    if (trimmed.startsWith('> ')) {
-      flushList();
-      elements.push(
-        <blockquote
-          key={`quote-${idx}`}
-          className="border-l-4 border-emerald-500/80 pl-3.5 py-1.5 my-2.5 bg-emerald-50/40 dark:bg-emerald-950/20 text-slate-700 dark:text-slate-300 rounded-r-lg text-xs sm:text-sm italic"
-        >
-          {formatInline(trimmed.slice(2))}
-        </blockquote>
-      );
-      return;
-    }
-
-    // Unordered List item: - or *
-    if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
-      inList = true;
-      listItems.push(
-        <li key={`li-${idx}`} className="flex items-start gap-2 text-xs sm:text-sm text-slate-800 dark:text-slate-200">
-          <span className="text-emerald-600 dark:text-emerald-400 mt-1 text-xs">•</span>
-          <span className="flex-1 leading-relaxed">{formatInline(trimmed.slice(2))}</span>
-        </li>
-      );
-      return;
-    }
-
-    // Numbered List: e.g. 1.
-    const numMatch = trimmed.match(/^(\d+)\.\s+(.*)$/);
-    if (numMatch) {
-      flushList();
-      elements.push(
-        <div key={`num-${idx}`} className="flex items-start gap-2.5 my-1 text-xs sm:text-sm text-slate-800 dark:text-slate-200">
-          <span className="font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5">
-            {numMatch[1]}.
-          </span>
-          <span className="flex-1 leading-relaxed">{formatInline(numMatch[2])}</span>
-        </div>
-      );
-      return;
-    }
-
-    // Normal paragraph
-    flushList();
-    elements.push(
-      <p key={`p-${idx}`} className="text-xs sm:text-sm leading-relaxed text-slate-800 dark:text-slate-200 my-1">
-        {formatInline(trimmed)}
-      </p>
+  if (inline) {
+    return (
+      <code
+        className="px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-emerald-700 dark:text-emerald-400 font-mono text-xs font-medium"
+        {...props}
+      >
+        {children}
+      </code>
     );
-  });
+  }
 
-  flushList();
-  return elements;
+  const handleCopy = () => {
+    navigator.clipboard.writeText(codeString);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="relative my-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-900 text-slate-100 overflow-hidden shadow-xs">
+      <div className="flex items-center justify-between px-3.5 py-1.5 bg-slate-950/80 border-b border-slate-800/80 text-xs font-mono text-slate-400">
+        <span className="uppercase text-[11px] font-semibold tracking-wider text-slate-300">
+          {language || 'code'}
+        </span>
+        <button
+          type="button"
+          onClick={handleCopy}
+          className="flex items-center gap-1 text-[11px] hover:text-white transition-colors cursor-pointer"
+          title="Salin Kode"
+        >
+          {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+          <span>{copied ? 'Tersalin' : 'Salin'}</span>
+        </button>
+      </div>
+      <div className="p-3.5 overflow-x-auto text-xs font-mono leading-relaxed">
+        <pre>{children}</pre>
+      </div>
+    </div>
+  );
+};
+
+const MarkdownRenderer: React.FC<{ content: string }> = ({ content }) => {
+  return (
+    <ReactMarkdown
+      remarkPlugins={[remarkGfm]}
+      components={{
+        h1: ({ node, ...props }) => (
+          <h1 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-slate-100 mt-5 mb-2.5 pb-1 border-b border-slate-100 dark:border-slate-800" {...props} />
+        ),
+        h2: ({ node, ...props }) => (
+          <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 mt-4 mb-2" {...props} />
+        ),
+        h3: ({ node, ...props }) => (
+          <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-slate-100 mt-3 mb-1.5" {...props} />
+        ),
+        p: ({ node, ...props }) => (
+          <p className="text-xs sm:text-sm leading-relaxed text-slate-800 dark:text-slate-200 my-1.5" {...props} />
+        ),
+        ul: ({ node, ...props }) => (
+          <ul className="list-disc pl-5 space-y-1 my-2 text-xs sm:text-sm text-slate-800 dark:text-slate-200" {...props} />
+        ),
+        ol: ({ node, ...props }) => (
+          <ol className="list-decimal pl-5 space-y-1 my-2 text-xs sm:text-sm text-slate-800 dark:text-slate-200" {...props} />
+        ),
+        li: ({ node, ...props }) => (
+          <li className="leading-relaxed pl-0.5" {...props} />
+        ),
+        blockquote: ({ node, ...props }) => (
+          <blockquote className="border-l-4 border-emerald-500 pl-3.5 py-1.5 my-2.5 bg-emerald-50/40 dark:bg-emerald-950/20 text-slate-700 dark:text-slate-300 rounded-r-lg text-xs sm:text-sm italic" {...props} />
+        ),
+        table: ({ node, ...props }) => (
+          <div className="my-3 overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xs">
+            <table className="min-w-full text-xs text-left divide-y divide-slate-200 dark:divide-slate-800" {...props} />
+          </div>
+        ),
+        thead: ({ node, ...props }) => (
+          <thead className="bg-slate-100 dark:bg-slate-800/90" {...props} />
+        ),
+        th: ({ node, ...props }) => (
+          <th className="px-3 py-2 text-[11px] font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider whitespace-nowrap" {...props} />
+        ),
+        td: ({ node, ...props }) => (
+          <td className="px-3 py-2 border-t border-slate-100 dark:border-slate-800 text-slate-800 dark:text-slate-200 text-xs" {...props} />
+        ),
+        code: CodeBlock as any,
+        a: ({ node, href, ...props }) => (
+          <a
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-emerald-600 dark:text-emerald-400 hover:underline font-medium inline-flex items-center gap-0.5"
+            {...props}
+          />
+        ),
+        hr: () => <hr className="my-4 border-slate-200 dark:border-slate-800" />,
+      }}
+    >
+      {content}
+    </ReactMarkdown>
+  );
 };
 
 export const AiReportPage: React.FC = () => {
@@ -256,6 +221,9 @@ export const AiReportPage: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const voiceDropdownRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [isUserScrolledUp, setIsUserScrolledUp] = useState(false);
+  const [hasNewUnseenResponse, setHasNewUnseenResponse] = useState(false);
 
   // Close voice dropdown on outside click
   useEffect(() => {
@@ -283,10 +251,31 @@ export const AiReportPage: React.FC = () => {
     URL.revokeObjectURL(url);
   };
 
-  // Auto-scroll on new messages
+  // Intelligent Scroll Handler: detect whether user is actively reading higher up
+  const handleScroll = () => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    const isNearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 140;
+    setIsUserScrolledUp(!isNearBottom);
+    if (isNearBottom) {
+      setHasNewUnseenResponse(false);
+    }
+  };
+
+  const scrollToBottom = (smooth = true) => {
+    messagesEndRef.current?.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto' });
+    setIsUserScrolledUp(false);
+    setHasNewUnseenResponse(false);
+  };
+
+  // Intelligent Auto-scroll on incoming stream chunks
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages.length, isLoading]);
+    if (!isUserScrolledUp) {
+      scrollToBottom(false);
+    } else {
+      setHasNewUnseenResponse(true);
+    }
+  }, [messages, isLoading]);
 
   // Adjust textarea height dynamically
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -312,6 +301,7 @@ export const AiReportPage: React.FC = () => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
     }
+    setTimeout(() => scrollToBottom(true), 60);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -422,6 +412,7 @@ export const AiReportPage: React.FC = () => {
   ];
 
   const hasMessages = messages.length > 0;
+  const isChatActive = hasMessages && !(messages.length === 1 && messages[0].id === 'welcome-init');
 
   return (
     <div className="flex flex-col h-full w-full bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 overflow-hidden relative">
@@ -601,8 +592,12 @@ export const AiReportPage: React.FC = () => {
       )}
 
       {/* Main Content Area */}
-      <div className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col justify-between">
-        {!hasMessages || (messages.length === 1 && messages[0].id === 'welcome-init') ? (
+      <div
+        ref={scrollContainerRef}
+        onScroll={handleScroll}
+        className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col justify-between relative scroll-smooth"
+      >
+        {!isChatActive ? (
           /* Empty / Welcome State (Exact match to ChatGPT media_1788920242379.png) */
           <div className="flex-1 flex flex-col items-center justify-center max-w-2xl mx-auto w-full px-4 text-center my-auto pb-12">
             <img
@@ -719,9 +714,12 @@ export const AiReportPage: React.FC = () => {
                   />
 
                   <div className="flex-1 min-w-0 space-y-3">
-                    {/* Rendered Markdown Body */}
+                    {/* Rendered Markdown Body with GFM & Table support */}
                     <div className="text-sm leading-relaxed text-slate-900 dark:text-slate-100 font-sans break-words">
-                      {renderFormattedContent(msg.content)}
+                      <MarkdownRenderer content={msg.content} />
+                      {msg.isStreaming && (
+                        <span className="inline-block w-1.5 h-4 bg-emerald-500 animate-pulse ml-1 align-middle rounded-xs" />
+                      )}
                     </div>
 
                     {/* RAG Brain Injected Regulatory Citations */}
@@ -729,14 +727,14 @@ export const AiReportPage: React.FC = () => {
                       <div className="pt-1">
                         <div className="flex items-center gap-1.5 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 mb-1.5">
                           <Scale className="w-3.5 h-3.5" />
-                          <span>Rujukan Regulasi Terverifikasi (RAG Otak AI):</span>
+                          <span>Rujukan Regulasi Terverifikasi (RAG Grounding):</span>
                         </div>
                         <div className="flex flex-wrap gap-1.5">
                           {msg.citations.map((cit, cIdx) => (
                             <div
                               key={cIdx}
-                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-[11px] text-slate-700 dark:text-slate-300"
-                              title={cit.content}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-[11px] text-slate-700 dark:text-slate-300 shadow-2xs hover:border-emerald-400 dark:hover:border-emerald-600 transition-colors"
+                              title={`${cit.title}\n\n${cit.content}`}
                             >
                               <span className="font-semibold text-emerald-600 dark:text-emerald-400">
                                 {cit.regulation}
@@ -744,6 +742,11 @@ export const AiReportPage: React.FC = () => {
                               {cit.article && (
                                 <span className="font-mono text-[10px] text-slate-500">
                                   {cit.article}
+                                </span>
+                              )}
+                              {cit.similarity && (
+                                <span className="text-[9px] px-1 py-0.2 rounded-full bg-emerald-100/70 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 font-semibold ml-0.5">
+                                  {(cit.similarity * 100).toFixed(0)}%
                                 </span>
                               )}
                             </div>
@@ -874,8 +877,20 @@ export const AiReportPage: React.FC = () => {
         )}
       </div>
 
+      {/* Floating "Respons Baru di Bawah" indicator */}
+      {hasNewUnseenResponse && isUserScrolledUp && (
+        <button
+          type="button"
+          onClick={() => scrollToBottom(true)}
+          className="fixed bottom-24 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5 px-4 py-2 rounded-full bg-slate-900/95 dark:bg-white/95 text-white dark:text-slate-900 shadow-2xl hover:scale-105 transition-all text-xs font-semibold cursor-pointer border border-slate-700/50 dark:border-slate-300 animate-in fade-in slide-in-from-bottom-2 duration-150"
+        >
+          <ArrowDown className="w-3.5 h-3.5 animate-bounce" />
+          <span>Respons Baru di Bawah</span>
+        </button>
+      )}
+
       {/* Pinned Bottom Bar (when in chat thread state) */}
-      {hasMessages && messages.length > 1 && (
+      {isChatActive && (
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-white via-white dark:from-slate-950 dark:via-slate-950 to-transparent pt-6 pb-4 px-4 pointer-events-none">
           <div className="max-w-3xl mx-auto w-full pointer-events-auto">
             <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-3xl shadow-lg hover:shadow-xl transition-shadow px-4 py-2.5 flex items-end gap-2.5">

@@ -23,6 +23,7 @@ export interface ChatMessage {
   shortcuts?: AiShortcut[];
   citations?: RagSearchResult[];
   timestamp: string;
+  isStreaming?: boolean;
 }
 
 export interface OpenRouterSettings {
@@ -167,10 +168,237 @@ Format Output WAJIB JSON:
   ]
 }`;
 
+export interface StreamChatCallbacks {
+  onMetadata?: (meta: {
+    model: string;
+    provider?: string;
+    citations: RagSearchResult[];
+    mode: 'chat' | 'voice';
+    requestId?: string;
+  }) => void;
+  onDelta?: (deltaText: string, fullAccumulatedText: string) => void;
+  onDone?: (fullText: string, shortcuts: AiShortcut[]) => void;
+  onError?: (error: Error) => void;
+}
+
+/**
+ * End-to-End SSE Streaming Client
+ * Connects to Backend SSE /api/v1/ai/chat/stream, with fallback to OpenRouter direct streaming
+ */
+export async function streamOpenRouterChat(
+  userText: string,
+  history: ChatMessage[],
+  settings: OpenRouterSettings,
+  mode: 'chat' | 'voice' = 'chat',
+  callbacks?: StreamChatCallbacks,
+  signal?: AbortSignal
+): Promise<string> {
+  const backendUrl = import.meta.env.VITE_API_URL || '/api/v1';
+  let accumulated = '';
+  let citations: RagSearchResult[] = [];
+
+  // 1. Try Backend SSE Stream first
+  try {
+    const res = await fetch(`${backendUrl}/ai/chat/stream`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        messages: [
+          ...history.slice(-8).map((m) => ({ role: m.role, content: m.content })),
+          { role: 'user', content: userText },
+        ],
+        mode,
+        model: settings.model || (mode === 'voice' ? 'google/gemini-2.0-flash-001' : 'openai/gpt-oss-120b:nitro'),
+      }),
+      signal,
+    });
+
+    if (res.ok && res.body) {
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder('utf-8');
+      let buffer = '';
+
+      while (true) {
+        if (signal?.aborted) {
+          reader.cancel().catch(() => {});
+          break;
+        }
+
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+
+        let currentEvent = 'message';
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed || trimmed.startsWith(':')) continue;
+
+          if (trimmed.startsWith('event: ')) {
+            currentEvent = trimmed.slice(7).trim();
+            continue;
+          }
+
+          if (trimmed.startsWith('data: ')) {
+            const dataStr = trimmed.slice(6);
+            try {
+              const data = JSON.parse(dataStr);
+              if (currentEvent === 'metadata') {
+                if (data.citations) citations = data.citations;
+                callbacks?.onMetadata?.(data);
+              } else if (currentEvent === 'delta') {
+                if (data.content) {
+                  accumulated += data.content;
+                  callbacks?.onDelta?.(data.content, accumulated);
+                }
+              } else if (currentEvent === 'done') {
+                const shortcuts = extractShortcuts(accumulated);
+                callbacks?.onDone?.(accumulated, shortcuts);
+                return accumulated;
+              } else if (currentEvent === 'error') {
+                throw new Error(data.message || 'Stream error from server');
+              }
+            } catch (err) {
+              if (currentEvent === 'error') throw err;
+            }
+          }
+        }
+      }
+
+      if (accumulated.trim()) {
+        const shortcuts = extractShortcuts(accumulated);
+        callbacks?.onDone?.(accumulated, shortcuts);
+        return accumulated;
+      }
+    }
+  } catch (err) {
+    if (signal?.aborted) return accumulated;
+    console.warn('[Stream Client] Backend stream unavailable, attempting direct OpenRouter fallback:', err);
+  }
+
+  // 2. Fallback to Direct OpenRouter Client SSE
+  const apiKey = settings.apiKey.trim();
+  if (!apiKey) {
+    const errorMsg =
+      'Layanan AI backend tidak dapat dihubungi dan OpenRouter API Key belum dikonfigurasi. Silakan periksa koneksi backend atau masukkan API Key di Pengaturan.';
+    callbacks?.onError?.(new Error(errorMsg));
+    return errorMsg;
+  }
+
+  try {
+    try {
+      citations = await webRagService.search({ query: userText, matchCount: 3 });
+    } catch {
+      citations = [];
+    }
+
+    callbacks?.onMetadata?.({
+      model: settings.model || 'openai/gpt-oss-120b:nitro',
+      mode,
+      citations,
+    });
+
+    const ragContextBlock =
+      citations.length > 0
+        ? `\n=== BUKTI REGULASI RESMI (RAG GROUNDING) ===\n` +
+          citations
+            .map((c, i) => `[${i + 1}] ${c.regulation} (${c.article || ''}): ${c.title}\n"${c.content}"`)
+            .join('\n\n')
+        : '';
+
+    const systemPrompt =
+      mode === 'voice'
+        ? 'Anda adalah asisten suara INFERA BPJS Kesehatan. Jawab maksimal 2-3 kalimat santun tanpa markdown.' + ragContextBlock
+        : SYSTEM_PROMPT + ragContextBlock;
+
+    const targetModel = settings.model || (mode === 'voice' ? 'google/gemini-2.0-flash-001' : 'openai/gpt-oss-120b:nitro');
+    const fallbackModels =
+      mode === 'voice'
+        ? ['google/gemini-2.0-flash-001', 'meta-llama/llama-3.3-70b-instruct']
+        : ['openai/gpt-oss-120b:nitro', 'google/gemini-2.0-flash-001', 'meta-llama/llama-3.3-70b-instruct'];
+
+    const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': window.location.origin,
+        'X-Title': 'INFERA BPJS AI Assistant',
+      },
+      body: JSON.stringify({
+        models: [targetModel, ...fallbackModels.filter((m) => m !== targetModel)],
+        messages: [
+          { role: 'system', content: systemPrompt },
+          ...history.slice(-8).map((m) => ({ role: m.role, content: m.content })),
+          { role: 'user', content: userText },
+        ],
+        temperature: mode === 'voice' ? 0.7 : 0.5,
+        max_tokens: mode === 'voice' ? 220 : 2500,
+        stream: true,
+        provider: { allow_fallbacks: true },
+      }),
+      signal,
+    });
+
+    if (!res.ok || !res.body) {
+      throw new Error(`Direct OpenRouter streaming failed with status ${res.status}`);
+    }
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder('utf-8');
+    let buffer = '';
+
+    while (true) {
+      if (signal?.aborted) {
+        reader.cancel().catch(() => {});
+        break;
+      }
+
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
+
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed || trimmed.startsWith(':')) continue;
+        if (trimmed === 'data: [DONE]') break;
+        if (trimmed.startsWith('data: ')) {
+          try {
+            const parsed = JSON.parse(trimmed.slice(6));
+            const delta = parsed.choices?.[0]?.delta?.content;
+            if (delta) {
+              accumulated += delta;
+              callbacks?.onDelta?.(delta, accumulated);
+            }
+          } catch {
+            // Ignore partial lines
+          }
+        }
+      }
+    }
+
+    const shortcuts = extractShortcuts(accumulated);
+    callbacks?.onDone?.(accumulated, shortcuts);
+    return accumulated;
+  } catch (directErr) {
+    const errorObj = directErr instanceof Error ? directErr : new Error('Gagal memproses streaming AI.');
+    callbacks?.onError?.(errorObj);
+    throw errorObj;
+  }
+}
+
 export async function sendOpenRouterChat(
   userText: string,
   history: ChatMessage[],
-  settings: OpenRouterSettings
+  settings: OpenRouterSettings,
+  mode: 'chat' | 'voice' = 'voice'
 ): Promise<{
   reply: string;
   emotion: CharacterEmotion;
@@ -214,7 +442,8 @@ export async function sendOpenRouterChat(
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           messages,
-          model: settings.model || 'openai/gpt-oss-120b:nitro',
+          mode,
+          model: settings.model || (mode === 'voice' ? 'google/gemini-2.0-flash-001' : 'openai/gpt-oss-120b:nitro'),
         }),
       });
 

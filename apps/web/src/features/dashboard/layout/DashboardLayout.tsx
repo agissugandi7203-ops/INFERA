@@ -14,6 +14,7 @@ import {
   getStoredChatHistory,
   saveStoredChatHistory,
   sendOpenRouterChat,
+  streamOpenRouterChat,
 } from '../services/openrouter';
 import { SpeechService } from '../services/speech';
 import {
@@ -205,7 +206,8 @@ const DashboardLayoutContent: React.FC<
     setShowSettingsModal(false);
   };
 
-  const handleSendMessage = async (text: string) => {
+  // 1. Dedicated AI Voice Assistant Handler (Conversational, Short, ElevenLabs TTS)
+  const handleVoiceAssistant = async (text: string) => {
     const trimmed = text.trim().slice(0, 1500);
     if (!trimmed || isLoading) return;
 
@@ -223,15 +225,21 @@ const DashboardLayoutContent: React.FC<
     handleSelectEmotion('thinking', 15000);
 
     try {
-      const { reply, emotion, metadata, shortcuts, citations } = await sendOpenRouterChat(text, newHistory, settings);
+      // mode: 'voice' ensures concise, conversational, speech-friendly answer
+      const { reply, emotion, metadata, shortcuts, citations } = await sendOpenRouterChat(
+        trimmed,
+        newHistory,
+        settings,
+        'voice'
+      );
 
       const assistantMsg: ChatMessage = {
         id: 'msg-' + Date.now() + '-a',
         role: 'assistant',
         content: reply,
-        emotion: emotion,
-        shortcuts: shortcuts,
-        citations: citations,
+        emotion,
+        shortcuts,
+        citations,
         timestamp: new Date().toISOString(),
       };
 
@@ -240,6 +248,7 @@ const DashboardLayoutContent: React.FC<
 
       handleSelectEmotion(emotion, 5500);
 
+      // Speak using ElevenLabs TTS (VOICE ASSISTANT ONLY)
       const voiceSettings = TTSProcessor.computeVoiceSettings(metadata);
       const speechText = TTSProcessor.extractSpokenSummary(reply, metadata, 220);
 
@@ -283,6 +292,114 @@ const DashboardLayoutContent: React.FC<
     }
   };
 
+  // 2. Dedicated AI Chat Handler (Text-Only, Multi-Paragraph, Real SSE Streaming, NO TTS)
+  const handleStreamChat = async (text: string) => {
+    const trimmed = text.trim().slice(0, 3000);
+    if (!trimmed || isLoading) return;
+
+    const userMsgId = 'msg-' + Date.now() + '-u';
+    const assistantMsgId = 'msg-' + Date.now() + '-a';
+
+    const userMsg: ChatMessage = {
+      id: userMsgId,
+      role: 'user',
+      content: trimmed,
+      timestamp: new Date().toISOString(),
+    };
+
+    const initialAssistantMsg: ChatMessage = {
+      id: assistantMsgId,
+      role: 'assistant',
+      content: '',
+      isStreaming: true,
+      timestamp: new Date().toISOString(),
+    };
+
+    const historyWithUser = [...messages, userMsg];
+    setMessages([...historyWithUser, initialAssistantMsg]);
+    setIsLoading(true);
+
+    handleSelectEmotion('thinking', 20000);
+
+    const abortCtrl = new AbortController();
+
+    try {
+      await streamOpenRouterChat(
+        trimmed,
+        historyWithUser,
+        settings,
+        'chat',
+        {
+          onMetadata: (meta) => {
+            setMessages((prev) =>
+              prev.map((m) =>
+                m.id === assistantMsgId
+                  ? { ...m, citations: meta.citations }
+                  : m
+              )
+            );
+          },
+          onDelta: (_delta, fullText) => {
+            setMessages((prev) =>
+              prev.map((m) =>
+                m.id === assistantMsgId
+                  ? { ...m, content: fullText, isStreaming: true }
+                  : m
+              )
+            );
+          },
+          onDone: (fullText, shortcuts) => {
+            setMessages((prev) =>
+              prev.map((m) =>
+                m.id === assistantMsgId
+                  ? { ...m, content: fullText, shortcuts, isStreaming: false }
+                  : m
+              )
+            );
+            setIsLoading(false);
+            handleSelectEmotion('normal', 0);
+          },
+          onError: (streamErr) => {
+            setIsLoading(false);
+            handleSelectEmotion('confused', 4000);
+            setMessages((prev) =>
+              prev.map((m) =>
+                m.id === assistantMsgId
+                  ? {
+                      ...m,
+                      content:
+                        m.content.trim() ||
+                        `Maaf, terjadi kendala koneksi AI: ${streamErr.message}`,
+                      isStreaming: false,
+                    }
+                  : m
+              )
+            );
+          },
+        },
+        abortCtrl.signal
+      );
+    } catch (err) {
+      setIsLoading(false);
+      handleSelectEmotion('confused', 4000);
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === assistantMsgId
+            ? {
+                ...m,
+                content:
+                  m.content.trim() ||
+                  `Maaf, terjadi kendala saat menghubungi AI: ${
+                    err instanceof Error ? err.message : 'Kesalahan tidak dikenal'
+                  }`,
+                isStreaming: false,
+              }
+            : m
+        )
+      );
+    }
+  };
+
   const handleToggleClickToSpeak = () => {
     if (isListening) {
       if (stopListeningRef.current) {
@@ -303,7 +420,7 @@ const DashboardLayoutContent: React.FC<
         setIsSoundDetected(false);
         stopListeningRef.current = null;
         if (transcript.trim()) {
-          handleSendMessage(transcript.trim());
+          handleVoiceAssistant(transcript.trim());
         }
       },
       (listening) => {
@@ -355,7 +472,7 @@ const DashboardLayoutContent: React.FC<
       onTriggerAvatarSpeech: handleTriggerSpeechFromPage,
       messages,
       isLoading,
-      onSendMessage: handleSendMessage,
+      onSendMessage: handleStreamChat,
       onClearHistory: handleClearHistory,
       onSelectEmotion: handleSelectEmotion,
       selectedVoiceId: settings.elevenLabsVoiceId || VOICE_DEFAULT_ID,
@@ -371,7 +488,7 @@ const DashboardLayoutContent: React.FC<
       handleTriggerSpeechFromPage,
       messages,
       isLoading,
-      handleSendMessage,
+      handleStreamChat,
       handleClearHistory,
       handleSelectEmotion,
       settings.elevenLabsVoiceId,
