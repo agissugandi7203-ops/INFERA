@@ -374,11 +374,34 @@ export class SpeechService {
         if (onSoundDetected) onSoundDetected(false);
       };
 
+      let hasDeliveredResult = false;
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       recognition.onresult = (event: any) => {
-        const transcript = event.results?.[0]?.[0]?.transcript;
-        if (transcript && transcript.trim()) {
-          onResult(transcript.trim());
+        if (hasDeliveredResult) return;
+
+        let finalTranscript = '';
+        if (event.results) {
+          for (let i = event.resultIndex || 0; i < event.results.length; ++i) {
+            const item = event.results[i];
+            if (item && item[0]?.transcript) {
+              finalTranscript += item[0].transcript;
+            }
+          }
+        }
+
+        const trimmed = finalTranscript.trim();
+        if (trimmed) {
+          hasDeliveredResult = true;
+          try {
+            recognition.stop();
+          } catch {
+            // ignore
+          }
+          if (SpeechService.activeRecognition === recognition) {
+            SpeechService.activeRecognition = null;
+          }
+          onResult(trimmed);
         }
       };
 

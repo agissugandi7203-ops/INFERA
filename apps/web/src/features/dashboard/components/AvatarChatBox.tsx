@@ -15,6 +15,8 @@ import {
 import { ChatMessage } from '../services/openrouter';
 import { CharacterEmotion } from '../avatar/AvatarController';
 import { SpeechService } from '../services/speech';
+import { AIRecommendationCard } from './AIRecommendationCard';
+import { ToolStatusBadge } from './ToolStatusBadge';
 
 interface AvatarChatBoxProps {
   messages: ChatMessage[];
@@ -276,9 +278,29 @@ export const AvatarChatBox: React.FC<AvatarChatBoxProps> = ({
                     </div>
                   )}
 
+                  {/* Tool Status Badge */}
+                  {msg.toolSteps && msg.toolSteps.length > 0 && (
+                    <ToolStatusBadge steps={msg.toolSteps} />
+                  )}
+
                   <div className="text-xs text-slate-800 leading-relaxed whitespace-pre-wrap font-sans">
                     {msg.content}
                   </div>
+
+                  {/* AI Action Recommendation Cards */}
+                  {msg.recommendations && msg.recommendations.length > 0 && (
+                    <div className="space-y-2 pt-1">
+                      {msg.recommendations.map((rec) => (
+                        <AIRecommendationCard
+                          key={rec.id}
+                          recommendation={rec}
+                          onExecuteAction={(r) => {
+                            if (r.targetRoute) window.location.href = r.targetRoute;
+                          }}
+                        />
+                      ))}
+                    </div>
+                  )}
 
                   {/* Action Bar under AI Response */}
                   <div className="flex items-center gap-2 pt-1 text-[10px] text-slate-400">

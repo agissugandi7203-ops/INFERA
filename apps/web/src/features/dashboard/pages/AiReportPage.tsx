@@ -33,6 +33,10 @@ import { SpeechService } from '../services/speech';
 import { VOICE_DEFAULT_ID, VOICE_SECONDARY_ID } from '../services/tts-processor';
 import { useSimulationStream } from '../simulation/SimulationContext';
 import { FALLBACK_CASES } from '../../../services/participantRiskApi';
+import { AIRecommendationCard } from '../components/AIRecommendationCard';
+import { ToolStatusBadge } from '../components/ToolStatusBadge';
+import { ActionConfirmationModal } from '../components/ActionConfirmationModal';
+import type { ActionRecommendation } from '@healthathon/shared';
 
 interface DashboardOutletContextType {
   onTriggerAvatarSpeech?: (text: string, emotion: string) => void;
@@ -103,10 +107,31 @@ const CodeBlock: React.FC<CodeBlockProps> = ({ inline, className, children, ...p
   );
 };
 
+class MarkdownErrorBoundary extends React.Component<{ children: React.ReactNode; rawContent: string }, { hasError: boolean }> {
+  state = { hasError: false };
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  componentDidCatch(error: Error) {
+    console.warn('[MarkdownRenderer] Gagal merender Markdown AST, beralih ke fallback teks polos:', error);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="text-xs sm:text-sm whitespace-pre-wrap font-sans text-slate-800 dark:text-slate-200 leading-relaxed">
+          {this.props.rawContent}
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 const MarkdownRenderer: React.FC<{ content: string }> = ({ content }) => {
   return (
-    <ReactMarkdown
-      remarkPlugins={[remarkGfm]}
+    <MarkdownErrorBoundary rawContent={content}>
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
       components={{
         h1: ({ node, ...props }) => (
           <h1 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-slate-100 mt-5 mb-2.5 pb-1 border-b border-slate-100 dark:border-slate-800" {...props} />
@@ -161,6 +186,7 @@ const MarkdownRenderer: React.FC<{ content: string }> = ({ content }) => {
     >
       {content}
     </ReactMarkdown>
+    </MarkdownErrorBoundary>
   );
 };
 
@@ -217,6 +243,29 @@ export const AiReportPage: React.FC = () => {
   const [showAttachMenu, setShowAttachMenu] = useState(false);
   const [isVoiceOpen, setIsVoiceOpen] = useState(false);
   const [userFeedback, setUserFeedback] = useState<Record<string, 'up' | 'down'>>({});
+  const [isDictating, setIsDictating] = useState(false);
+  const stopDictateRef = useRef<(() => void) | null>(null);
+
+  const [selectedRecForConfirm, setSelectedRecForConfirm] = useState<ActionRecommendation | null>(null);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+
+  const handleExecuteRecommendation = (rec: ActionRecommendation) => {
+    if (rec.targetRoute) {
+      navigate(rec.targetRoute);
+    }
+  };
+
+  const handleOpenConfirmModal = (rec: ActionRecommendation) => {
+    setSelectedRecForConfirm(rec);
+    setIsConfirmModalOpen(true);
+  };
+
+  const handleConfirmAction = (rec: ActionRecommendation, auditorNotes: string) => {
+    const target = rec.targetName || rec.targetId;
+    onSendMessage(
+      `[KONFIRMASI AUDITOR RESMI] Tindakan "${rec.title}" atas subjek "${target}" telah diverifikasi dan disetujui. Catatan Berita Acara: "${auditorNotes || 'Disetujui sesuai Permenkes No. 16 Tahun 2019.'}"`
+    );
+  };
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -224,6 +273,16 @@ export const AiReportPage: React.FC = () => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [isUserScrolledUp, setIsUserScrolledUp] = useState(false);
   const [hasNewUnseenResponse, setHasNewUnseenResponse] = useState(false);
+
+  // Clean up speech recognition on unmount
+  useEffect(() => {
+    return () => {
+      if (stopDictateRef.current) {
+        stopDictateRef.current();
+        stopDictateRef.current = null;
+      }
+    };
+  }, []);
 
   // Close voice dropdown on outside click
   useEffect(() => {
@@ -317,6 +376,43 @@ export const AiReportPage: React.FC = () => {
     setTimeout(() => setCopiedMsgId(null), 2000);
   };
 
+  const handleToggleDictate = () => {
+    if (isDictating) {
+      if (stopDictateRef.current) {
+        stopDictateRef.current();
+        stopDictateRef.current = null;
+      }
+      setIsDictating(false);
+      return;
+    }
+
+    SpeechService.stopSpeaking();
+    setIsDictating(true);
+
+    const stopFn = SpeechService.startListening(
+      (transcript) => {
+        setIsDictating(false);
+        stopDictateRef.current = null;
+        if (transcript.trim()) {
+          setInputText((prev) => (prev.trim() ? `${prev.trim()} ${transcript.trim()}` : transcript.trim()));
+          if (textareaRef.current) {
+            textareaRef.current.focus();
+          }
+        }
+      },
+      (listening) => {
+        setIsDictating(listening);
+      },
+      (err) => {
+        console.warn('[Dictate] Speech recognition error:', err);
+        setIsDictating(false);
+        stopDictateRef.current = null;
+      }
+    );
+
+    stopDictateRef.current = stopFn;
+  };
+
   const handleToggleSpeech = (msg: ChatMessage) => {
     if (activeSpeechMsgId === msg.id) {
       SpeechService.stopSpeaking();
@@ -396,7 +492,7 @@ export const AiReportPage: React.FC = () => {
 
   // Cases available for quick audit
   const realTimeCases = [
-    ...anomalies.slice(0, 4).map((a) => ({
+    ...anomalies.slice(0, 4).map((a: any) => ({
       code: a.noSep,
       patient: a.namaPeserta,
       anomaly: a.anomalyTitle || 'Anomali Aliran Transaksi',
@@ -646,11 +742,11 @@ export const AiReportPage: React.FC = () => {
               {/* Dictation mic */}
               <button
                 type="button"
-                onClick={() => outletContext?.onToggleClickToSpeak?.()}
+                onClick={handleToggleDictate}
                 className={`p-1.5 rounded-full text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 transition-colors cursor-pointer shrink-0 ${
-                  outletContext?.isListening ? 'text-rose-500 animate-pulse' : ''
+                  isDictating ? 'text-rose-500 bg-rose-50 dark:bg-rose-950/40 animate-pulse' : ''
                 }`}
-                title="Bicara dengan suara"
+                title={isDictating ? 'Sedang mendengarkan... Klik untuk berhenti' : 'Dikte suara ke teks'}
               >
                 <Mic className="w-4 h-4" />
               </button>
@@ -714,6 +810,11 @@ export const AiReportPage: React.FC = () => {
                   />
 
                   <div className="flex-1 min-w-0 space-y-3">
+                    {/* Tool Steps Stepper Badge */}
+                    {msg.toolSteps && msg.toolSteps.length > 0 && (
+                      <ToolStatusBadge steps={msg.toolSteps} />
+                    )}
+
                     {/* Rendered Markdown Body with GFM & Table support */}
                     <div className="text-sm leading-relaxed text-slate-900 dark:text-slate-100 font-sans break-words">
                       <MarkdownRenderer content={msg.content} />
@@ -768,6 +869,20 @@ export const AiReportPage: React.FC = () => {
                             <span>{sc.label}</span>
                             {sc.route && <ExternalLink className="w-3 h-3 opacity-70" />}
                           </button>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* AI Action Recommendation Cards (Two-Phase Action Model) */}
+                    {msg.recommendations && msg.recommendations.length > 0 && (
+                      <div className="space-y-3 pt-1">
+                        {msg.recommendations.map((rec) => (
+                          <AIRecommendationCard
+                            key={rec.id}
+                            recommendation={rec}
+                            onExecuteAction={handleExecuteRecommendation}
+                            onConfirmAction={handleOpenConfirmModal}
+                          />
                         ))}
                       </div>
                     )}
@@ -933,13 +1048,13 @@ export const AiReportPage: React.FC = () => {
               {/* Speech Recognition Mic */}
               <button
                 type="button"
-                onClick={() => outletContext?.onToggleClickToSpeak?.()}
+                onClick={handleToggleDictate}
                 className={`p-2 rounded-full transition-colors cursor-pointer shrink-0 mb-0.5 ${
-                  outletContext?.isListening
+                  isDictating
                     ? 'text-rose-500 bg-rose-50 dark:bg-rose-950/40 animate-pulse'
                     : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
                 }`}
-                title="Dikte Suara"
+                title={isDictating ? 'Sedang mendengarkan... Klik untuk berhenti' : 'Dikte Suara ke Teks'}
               >
                 <Mic className="w-4 h-4" />
               </button>
@@ -973,6 +1088,18 @@ export const AiReportPage: React.FC = () => {
           </div>
         </div>
       )}
+
+
+      {/* Confirmation Modal (Level 3 Side-Effect Actions) */}
+      <ActionConfirmationModal
+        isOpen={isConfirmModalOpen}
+        recommendation={selectedRecForConfirm}
+        onClose={() => {
+          setIsConfirmModalOpen(false);
+          setSelectedRecForConfirm(null);
+        }}
+        onConfirm={handleConfirmAction}
+      />
     </div>
   );
 };

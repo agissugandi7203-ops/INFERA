@@ -14,7 +14,7 @@ import {
   getStoredChatHistory,
   saveStoredChatHistory,
   sendOpenRouterChat,
-  streamOpenRouterChat,
+  runAgentInvestigationStream,
 } from '../services/openrouter';
 import { SpeechService } from '../services/speech';
 import {
@@ -23,7 +23,7 @@ import {
   TTSProcessor,
 } from '../services/tts-processor';
 import { UserCheck, ShieldAlert, X } from 'lucide-react';
-import { SimulationProvider } from '../simulation/SimulationContext';
+import { SimulationProvider, useSimulationStream } from '../simulation/SimulationContext';
 import type { JknClaimRecord } from '@healthathon/shared';
 
 interface DashboardLayoutProps {
@@ -44,6 +44,7 @@ const DashboardLayoutContent: React.FC<
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { claims, anomalies, selectedClaimForAudit } = useSimulationStream();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState<boolean>(false);
   const [showSettingsModal, setShowSettingsModal] = useState<boolean>(false);
@@ -90,6 +91,7 @@ const DashboardLayoutContent: React.FC<
   const controllerRef = useRef<AvatarController | null>(null);
   const emotionTimedownRef = useRef<NodeJS.Timeout | null>(null);
   const stopListeningRef = useRef<(() => void) | null>(null);
+  const isVoiceProcessingRef = useRef<boolean>(false);
 
   const handleSelectEmotion = (emo: CharacterEmotion, timedownMs = 5000) => {
     if (emotionTimedownRef.current) {
@@ -209,7 +211,8 @@ const DashboardLayoutContent: React.FC<
   // 1. Dedicated AI Voice Assistant Handler (Conversational, Short, ElevenLabs TTS)
   const handleVoiceAssistant = async (text: string) => {
     const trimmed = text.trim().slice(0, 1500);
-    if (!trimmed || isLoading) return;
+    if (!trimmed || isLoading || isVoiceProcessingRef.current) return;
+    isVoiceProcessingRef.current = true;
 
     const userMsg: ChatMessage = {
       id: 'msg-' + Date.now() + '-u',
@@ -289,6 +292,8 @@ const DashboardLayoutContent: React.FC<
       };
 
       setMessages([...newHistory, errorMsg]);
+    } finally {
+      isVoiceProcessingRef.current = false;
     }
   };
 
@@ -324,11 +329,16 @@ const DashboardLayoutContent: React.FC<
     const abortCtrl = new AbortController();
 
     try {
-      await streamOpenRouterChat(
+      await runAgentInvestigationStream(
         trimmed,
         historyWithUser,
         settings,
-        'chat',
+        {
+          claims,
+          anomalies,
+          selectedClaim: selectedClaimForAudit,
+          userRole: 'auditor',
+        },
         {
           onMetadata: (meta) => {
             setMessages((prev) =>
@@ -337,6 +347,30 @@ const DashboardLayoutContent: React.FC<
                   ? { ...m, citations: meta.citations }
                   : m
               )
+            );
+          },
+          onToolStep: (step) => {
+            setMessages((prev) =>
+              prev.map((m) => {
+                if (m.id !== assistantMsgId) return m;
+                const existingSteps = m.toolSteps || [];
+                const idx = existingSteps.findIndex((s) => s.id === step.id);
+                const nextSteps =
+                  idx >= 0
+                    ? existingSteps.map((s, i) => (i === idx ? step : s))
+                    : [...existingSteps, step];
+                return { ...m, toolSteps: nextSteps };
+              })
+            );
+          },
+          onRecommendation: (rec) => {
+            setMessages((prev) =>
+              prev.map((m) => {
+                if (m.id !== assistantMsgId) return m;
+                const existingRecs = m.recommendations || [];
+                if (existingRecs.some((r) => r.id === rec.id)) return m;
+                return { ...m, recommendations: [...existingRecs, rec] };
+              })
             );
           },
           onDelta: (_delta, fullText) => {
@@ -348,11 +382,18 @@ const DashboardLayoutContent: React.FC<
               )
             );
           },
-          onDone: (fullText, shortcuts) => {
+          onDone: (fullText, recommendations, shortcuts) => {
             setMessages((prev) =>
               prev.map((m) =>
                 m.id === assistantMsgId
-                  ? { ...m, content: fullText, shortcuts, isStreaming: false }
+                  ? {
+                      ...m,
+                      content: fullText,
+                      recommendations:
+                        recommendations.length > 0 ? recommendations : m.recommendations,
+                      shortcuts,
+                      isStreaming: false,
+                    }
                   : m
               )
             );
@@ -640,13 +681,13 @@ const DashboardLayoutContent: React.FC<
         isSoundDetected={isSoundDetected}
         onOpenChat={() => navigate('/dashboard/ai-report')}
         onMinimize={() => setIsMinimized(true)}
-        isMinimized={isMinimized}
+        isMinimized={isMinimized || location.pathname === '/dashboard/ai-report'}
         selectedVoiceId={settings.elevenLabsVoiceId || VOICE_DEFAULT_ID}
         onSelectVoice={handleSelectVoice}
       />
 
-      {/* Avatar Pop-Up Trigger when Minimized */}
-      {isMinimized && (
+      {/* Avatar Pop-Up Trigger when Minimized (hidden on ai-report page) */}
+      {isMinimized && location.pathname !== '/dashboard/ai-report' && (
         <button
           onClick={() => setIsMinimized(false)}
           className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-3.5 py-1.5 bg-white dark:bg-slate-800 hover:bg-slate-50 text-slate-800 dark:text-slate-200 rounded-full shadow-md border border-slate-200 dark:border-slate-700 text-xs font-medium transition-colors cursor-pointer"

@@ -66,6 +66,10 @@ export interface JknClaimRecord {
   anomalyDescription?: string;
   legalCitations?: LegalCitation[];
   recommendedAction?: string;
+  jenisKelamin?: string;
+  kodeDiagnosa?: string;
+  namaDiagnosa?: string;
+  tglPelayanan?: string;
 }
 
 export type SimulationScenarioPreset =

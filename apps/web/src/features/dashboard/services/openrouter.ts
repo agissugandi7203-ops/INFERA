@@ -4,7 +4,7 @@ import {
   VOICE_SECONDARY_ID,
   VoiceExpressionMetadata,
 } from './tts-processor';
-import type { RagSearchResult } from '@healthathon/shared';
+import type { RagSearchResult, ActionRecommendation, ToolProgressStep } from '@healthathon/shared';
 import { webRagService } from '../../../services/rag.service';
 
 export interface AiShortcut {
@@ -22,9 +22,13 @@ export interface ChatMessage {
   emotion?: CharacterEmotion;
   shortcuts?: AiShortcut[];
   citations?: RagSearchResult[];
+  recommendations?: ActionRecommendation[];
+  toolSteps?: ToolProgressStep[];
   timestamp: string;
   isStreaming?: boolean;
 }
+
+export { runAgentInvestigationStream } from './openrouterAgent';
 
 export interface OpenRouterSettings {
   apiKey: string;
