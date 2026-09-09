@@ -8,6 +8,32 @@ import type { JknClaimRecord } from '@healthathon/shared';
 import { FALLBACK_CASES } from '../../../../services/participantRiskApi';
 import { webRagService } from '../../../../services/rag.service';
 
+export type UserRole = 'auditor' | 'analyst' | 'admin';
+
+/**
+ * Tool Permission Matrix (Section 30 of System Requirements)
+ */
+export const TOOL_PERMISSION_MATRIX: Record<string, UserRole[]> = {
+  // Read / Analysis Tools: accessible by all roles
+  analyze_participant: ['auditor', 'analyst', 'admin'],
+  get_claim_history: ['auditor', 'analyst', 'admin'],
+  detect_fraud_pattern: ['auditor', 'analyst', 'admin'],
+  calculate_risk_score: ['auditor', 'analyst', 'admin'],
+  search_regulations_rag: ['auditor', 'analyst', 'admin'],
+  navigate_to_workflow: ['auditor', 'analyst', 'admin'],
+  propose_case_review: ['auditor', 'analyst', 'admin'],
+
+  // Destructive / Administrative Action Proposal Tools: restricted to auditor & admin
+  propose_warning_letter: ['auditor', 'admin'],
+  propose_participant_suspension: ['auditor', 'admin'],
+};
+
+export function hasToolPermission(toolName: string, role: UserRole = 'auditor'): boolean {
+  const allowed = TOOL_PERMISSION_MATRIX[toolName];
+  if (!allowed) return true;
+  return allowed.includes(role);
+}
+
 /**
  * Execution Context provided by the UI / Simulation Layer
  */
@@ -15,7 +41,7 @@ export interface ToolExecutionContext {
   claims?: JknClaimRecord[];
   anomalies?: JknClaimRecord[];
   selectedClaim?: JknClaimRecord | null;
-  userRole?: 'auditor' | 'analyst' | 'admin';
+  userRole?: UserRole;
 }
 
 /**
@@ -395,6 +421,15 @@ export async function executeInferaTool(
   args: Record<string, unknown>,
   context?: ToolExecutionContext
 ): Promise<ToolExecutionResult> {
+  const role: UserRole = context?.userRole || 'auditor';
+  if (!hasToolPermission(toolName, role)) {
+    return {
+      success: false,
+      summary: `Akses ditolak: Peran pengguna "${role}" tidak memiliki hak otorisasi untuk menjalankan tool "${toolName}".`,
+      error: `PERMISSION_DENIED: ${toolName} for role ${role}`,
+    };
+  }
+
   switch (toolName) {
     case 'analyze_participant': {
       const query = String(args.participant_query || '');

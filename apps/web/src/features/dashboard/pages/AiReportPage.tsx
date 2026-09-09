@@ -36,6 +36,7 @@ import { FALLBACK_CASES } from '../../../services/participantRiskApi';
 import { AIRecommendationCard } from '../components/AIRecommendationCard';
 import { ToolStatusBadge } from '../components/ToolStatusBadge';
 import { ActionConfirmationModal } from '../components/ActionConfirmationModal';
+import { InvestigationActionPanel } from '../components/InvestigationActionPanel';
 import type { ActionRecommendation } from '@healthathon/shared';
 
 interface DashboardOutletContextType {
@@ -248,6 +249,17 @@ export const AiReportPage: React.FC = () => {
 
   const [selectedRecForConfirm, setSelectedRecForConfirm] = useState<ActionRecommendation | null>(null);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [isActionPanelOpen, setIsActionPanelOpen] = useState(true);
+
+  const allRecommendations = React.useMemo(() => {
+    const list: ActionRecommendation[] = [];
+    messages.forEach((m) => {
+      if (m.recommendations && m.recommendations.length > 0) {
+        list.push(...m.recommendations);
+      }
+    });
+    return list;
+  }, [messages]);
 
   const handleExecuteRecommendation = (rec: ActionRecommendation) => {
     if (rec.targetRoute) {
@@ -439,8 +451,9 @@ export const AiReportPage: React.FC = () => {
   };
 
   const handleExecuteShortcut = (shortcut: AiShortcut) => {
-    if (shortcut.route) {
-      navigate(shortcut.route);
+    const targetRoute = shortcut.route || shortcut.path;
+    if (targetRoute) {
+      navigate(targetRoute);
     } else if (shortcut.action) {
       onSendMessage(shortcut.action);
     }
@@ -474,7 +487,7 @@ export const AiReportPage: React.FC = () => {
       title: 'Audit Kasus Impossible Travel Antar-Faskes',
       icon: <FileCheck className="w-4 h-4 text-sky-600 dark:text-sky-400" />,
       prompt:
-        'Bagaimana algoritma analitik mendeteksi anomali Impossible Travel kartu peserta yang digunakan bersamaan di dua faskes berjarak jauh?',
+        'Tolong lakukan audit dan analisis mendalam terhadap kasus Impossible Travel pasien Budi Santoso (0001847291038). Uji indikator fraud spasial-temporal dan berikan rekomendasi tindakannya.',
     },
     {
       title: 'Tinjau Regulasi Permenkes No. 16/2019',
@@ -483,10 +496,10 @@ export const AiReportPage: React.FC = () => {
         'Apa saja sanksi administratif dan langkah verifikasi pencegahan kecurangan JKN berdasarkan Permenkes No. 16 Tahun 2019?',
     },
     {
-      title: 'Verifikasi Kelayakan Klaim Bersih (Clean Claim)',
+      title: 'Audit Dugaan Kasus Doctor Shopping',
       icon: <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />,
       prompt:
-        'Jelaskan kriteria klaim wajar (Clean Claim) yang langsung disetujui tanpa penundaan pembayaran ke faskes.',
+        'Tolong analisis riwayat klaim pasien Hendra Wijaya (0001928471920) terkait indikasi Doctor Shopping dan peresepan obat berulang di faskes berbeda.',
     },
   ];
 
@@ -688,11 +701,13 @@ export const AiReportPage: React.FC = () => {
       )}
 
       {/* Main Content Area */}
-      <div
-        ref={scrollContainerRef}
-        onScroll={handleScroll}
-        className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col justify-between relative scroll-smooth"
-      >
+      <div className="flex-1 flex overflow-hidden relative">
+        <div className="flex-1 flex flex-col overflow-hidden relative">
+          <div
+            ref={scrollContainerRef}
+            onScroll={handleScroll}
+            className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col justify-between relative scroll-smooth"
+          >
         {!isChatActive ? (
           /* Empty / Welcome State (Exact match to ChatGPT media_1788920242379.png) */
           <div className="flex-1 flex flex-col items-center justify-center max-w-2xl mx-auto w-full px-4 text-center my-auto pb-12">
@@ -867,7 +882,7 @@ export const AiReportPage: React.FC = () => {
                             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800/80 text-xs font-semibold shadow-2xs transition-all cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
                           >
                             <span>{sc.label}</span>
-                            {sc.route && <ExternalLink className="w-3 h-3 opacity-70" />}
+                            {(sc.route || sc.path) && <ExternalLink className="w-3 h-3 opacity-70" />}
                           </button>
                         ))}
                       </div>
@@ -1089,6 +1104,19 @@ export const AiReportPage: React.FC = () => {
         </div>
       )}
 
+        </div>
+
+        {/* Right side Investigation Action Center Panel */}
+        {allRecommendations.length > 0 && (
+          <InvestigationActionPanel
+            isOpen={isActionPanelOpen}
+            onToggle={() => setIsActionPanelOpen(!isActionPanelOpen)}
+            recommendations={allRecommendations}
+            onExecuteRecommendation={handleExecuteRecommendation}
+            onConfirmRecommendation={handleOpenConfirmModal}
+          />
+        )}
+      </div>
 
       {/* Confirmation Modal (Level 3 Side-Effect Actions) */}
       <ActionConfirmationModal

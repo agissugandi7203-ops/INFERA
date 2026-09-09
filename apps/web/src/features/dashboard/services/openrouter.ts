@@ -664,6 +664,7 @@ export function extractShortcuts(text: string, existingShortcuts?: AiShortcut[])
     shortcuts.push({
       label: 'Buka Modus Impossible Travel',
       path: '/dashboard/identity-risk',
+      route: '/dashboard/identity-risk',
       description: 'Audit geospasial & biologi',
     });
   }
@@ -671,6 +672,7 @@ export function extractShortcuts(text: string, existingShortcuts?: AiShortcut[])
     shortcuts.push({
       label: 'Periksa Doctor Shopping (DSI)',
       path: '/dashboard/unnecessary-services',
+      route: '/dashboard/unnecessary-services',
       description: 'Deteksi kunjungan ganda',
     });
   }
@@ -678,6 +680,7 @@ export function extractShortcuts(text: string, existingShortcuts?: AiShortcut[])
     shortcuts.push({
       label: 'Tinjau Resep & Alkes',
       path: '/dashboard/pharmacy-alkes',
+      route: '/dashboard/pharmacy-alkes',
       description: 'Audit batas waktu klaim',
     });
   }
@@ -685,6 +688,7 @@ export function extractShortcuts(text: string, existingShortcuts?: AiShortcut[])
     shortcuts.push({
       label: 'Dasar Hukum & Regulasi JKN',
       path: '/dashboard/regulations',
+      route: '/dashboard/regulations',
       description: 'Permenkes 16/2019 & UU PDP',
     });
   }
@@ -692,6 +696,7 @@ export function extractShortcuts(text: string, existingShortcuts?: AiShortcut[])
     shortcuts.push({
       label: '4 Kasus Benchmark Terbukti',
       path: '/dashboard/cases',
+      route: '/dashboard/cases',
       description: 'Detail audit forensik',
     });
   }
@@ -699,6 +704,7 @@ export function extractShortcuts(text: string, existingShortcuts?: AiShortcut[])
     shortcuts.push({
       label: 'Pantau Aliran Transaksi',
       path: '/dashboard/transactions',
+      route: '/dashboard/transactions',
       description: 'Monitoring live real-time',
     });
   }
