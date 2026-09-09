@@ -4,12 +4,24 @@ import {
   VOICE_SECONDARY_ID,
   VoiceExpressionMetadata,
 } from './tts-processor';
+import type { RagSearchResult } from '@healthathon/shared';
+import { webRagService } from '../../../services/rag.service';
+
+export interface AiShortcut {
+  label: string;
+  path?: string;
+  route?: string;
+  action?: string;
+  description?: string;
+}
 
 export interface ChatMessage {
   id: string;
   role: 'user' | 'assistant';
   content: string;
   emotion?: CharacterEmotion;
+  shortcuts?: AiShortcut[];
+  citations?: RagSearchResult[];
   timestamp: string;
 }
 
@@ -133,33 +145,66 @@ export const AVATAR_EMOTION_TOOLS = [
   },
 ];
 
-const SYSTEM_PROMPT = `Kamu adalah asisten suara BPJS Kesehatan berkarakter anime 2D yang cerdas, ramah, dan santun.
+const SYSTEM_PROMPT = `Anda adalah INFERA AI, Asisten Investigasi Fraud & Analisis Risiko Cerdas BPJS Kesehatan.
 
-Aturan Respon:
-1. Format WAJIB HANYA 1 objek JSON valid (Dilarang menggunakan pembungkus markdown \`\`\`json).
-2. Jawaban lisan ("text") harus padat, jelas, alami, dan ringkas (2-4 kalimat percakapan santun; dilarang bullet, pagar, bintang, atau tabel).
-3. Respon wajib tuntas.
+Peran & Tanggung Jawab:
+1. Memberikan analisis hukum regulasi JKN (Permenkes No. 16/2019 tentang Pencegahan Kecurangan, UU PDP No. 27/2022, UU No. 24/2011 BPJS).
+2. Membantu auditor memverifikasi 4 tipologi anomali klaim:
+   - Modus 1 & 2: Identitas & Impossible Travel (kartu pinjaman & diskordansi biologi)
+   - Modus 3: Doctor Shopping (indeks DSI tinggi pada rawat jalan/FKTP berulang)
+   - Modus 4: Resale Obat PRB & Klaim Alat Kesehatan (kacamata 2 thn, alat bantu dengar 5 thn)
+3. Jawaban WAJIB terstruktur rapi menggunakan format Markdown profesional (judul, poin-poin penjelasan, kutipan pasal hukum, dan ringkasan rekomendasi tindakan).
+4. Jika merekomendasikan investigasi atau penanganan kasus, sertakan array "shortcuts" agar pengguna dapat langsung membuka modul terkait.
 
-Format JSON:
+Format Output WAJIB JSON:
 {
-  "text": "Jawaban percakapan santun, ramah, dan ringkas.",
+  "text": "Jawaban lengkap dan terstruktur dalam format Markdown.",
   "emotion": "normal" | "happy" | "sad" | "angry" | "surprised" | "confused" | "thinking",
-  "expressions": [{"type": "happy", "intensity": 0.6}],
-  "emphasis": [{"text": "kata kunci", "intensity": 0.7}],
-  "pauses": [{"after": "kata", "duration_ms": 250}],
-  "prosody": {"energy": 0.8, "speed": 1.0}
+  "shortcuts": [
+    { "label": "Buka Modus Impossible Travel", "path": "/dashboard/identity-risk", "description": "Investigasi geospasial" },
+    { "label": "Tinjau Kasus Benchmark", "path": "/dashboard/cases", "description": "4 Studi kasus pembuktian" },
+    { "label": "Buka Regulasi Permenkes 16/2019", "path": "/dashboard/regulations", "description": "Dasar hukum JKN" }
+  ]
 }`;
 
 export async function sendOpenRouterChat(
   userText: string,
   history: ChatMessage[],
   settings: OpenRouterSettings
-): Promise<{ reply: string; emotion: CharacterEmotion; metadata?: VoiceExpressionMetadata }> {
+): Promise<{
+  reply: string;
+  emotion: CharacterEmotion;
+  shortcuts?: AiShortcut[];
+  citations?: RagSearchResult[];
+  metadata?: VoiceExpressionMetadata;
+}> {
+  // 1. Injeksi Otak RAG: Cari regulasi JKN relevan secara semantik dari basis pengetahuan resmi
+  let ragResults: RagSearchResult[] = [];
+  try {
+    ragResults = await webRagService.search({ query: userText, matchCount: 3 });
+  } catch (ragErr) {
+    console.warn('[RAG Brain] Gagal mengambil regulasi:', ragErr);
+  }
+
+  const ragContextBlock =
+    ragResults.length > 0
+      ? `\n=== BASIS RUJUKAN HUKUM RESMI & REGULASI JKN (RAG OTAK AI TERSUNTIK) ===\n` +
+        ragResults
+          .map(
+            (r, i) =>
+              `[DOKUMEN ${i + 1}]: ${r.regulation} ${r.article ? `(${r.article})` : ''} — ${r.title}\nKATEGORI: ${r.category}\nRINGKASAN REGULASI RESMI:\n"${r.content}"`
+          )
+          .join('\n\n') +
+        `\n\nINSTRUKSI PENALARAN HUKUM (LEGAL REASONING):\n1. Anda WAJIB mendasarkan analisis Anda pada pasal dan ketentuan regulasi resmi di atas.\n2. Kutip secara eksplisit nomor pasal, nama peraturan (misal Permenkes 16/2019, UU BPJS, dsb), batas waktu pengembalian (14 hari kerja), atau parameter kepatuhan.\n3. Berikan rekomendasi audit (VEDIKA/DEFRADA) serta sanksi administratif yang sesuai.`
+      : '';
+
+  const dynamicSystemPrompt = `${SYSTEM_PROMPT}${ragContextBlock}`;
+
   // If useBackendProxy is true or no direct key provided, try backend
   if (settings.useBackendProxy || (!settings.apiKey && import.meta.env.VITE_API_URL)) {
     try {
       const messages = [
-        { role: 'system' as const, content: SYSTEM_PROMPT },
+        { role: 'system' as const, content: dynamicSystemPrompt },
         ...history.slice(-6).map((m) => ({ role: m.role, content: m.content })),
         { role: 'user' as const, content: userText },
       ];
@@ -176,7 +221,8 @@ export async function sendOpenRouterChat(
       if (res.ok) {
         const json = await res.json();
         if (json.success && json.data?.message?.content) {
-          return parseAiContent(json.data.message.content);
+          const parsed = parseAiContent(json.data.message.content);
+          return { ...parsed, citations: ragResults };
         }
       }
     } catch (err) {
@@ -191,6 +237,7 @@ export async function sendOpenRouterChat(
     return {
       reply: defaultMsg,
       emotion: 'happy',
+      citations: ragResults,
       metadata: {
         text: defaultMsg,
         emotion: 'happy',
@@ -201,7 +248,7 @@ export async function sendOpenRouterChat(
   }
 
   const messages = [
-    { role: 'system', content: SYSTEM_PROMPT },
+    { role: 'system', content: dynamicSystemPrompt },
     ...history.slice(-6).map((m) => ({ role: m.role, content: m.content })),
     { role: 'user', content: userText },
   ];
@@ -341,6 +388,8 @@ export async function sendOpenRouterChat(
   return {
     reply: parsed.reply,
     emotion: detectedEmotion || parsed.emotion,
+    shortcuts: parsed.shortcuts,
+    citations: ragResults,
     metadata: parsed.metadata,
   };
 }
@@ -370,9 +419,64 @@ function normalizeEmotion(raw: string): CharacterEmotion {
   return 'normal';
 }
 
+export function extractShortcuts(text: string, existingShortcuts?: AiShortcut[]): AiShortcut[] {
+  if (Array.isArray(existingShortcuts) && existingShortcuts.length > 0) {
+    return existingShortcuts;
+  }
+
+  const shortcuts: AiShortcut[] = [];
+  const lower = text.toLowerCase();
+
+  if (lower.includes('impossible travel') || lower.includes('geospasial') || lower.includes('kartu pinjam') || lower.includes('mobilitas')) {
+    shortcuts.push({
+      label: 'Buka Modus Impossible Travel',
+      path: '/dashboard/identity-risk',
+      description: 'Audit geospasial & biologi',
+    });
+  }
+  if (lower.includes('doctor shopping') || lower.includes('dsi') || lower.includes('fktp berulang') || lower.includes('pelayanan berlebih')) {
+    shortcuts.push({
+      label: 'Periksa Doctor Shopping (DSI)',
+      path: '/dashboard/unnecessary-services',
+      description: 'Deteksi kunjungan ganda',
+    });
+  }
+  if (lower.includes('alkes') || lower.includes('kacamata') || lower.includes('prb') || lower.includes('resep') || lower.includes('obat kronis')) {
+    shortcuts.push({
+      label: 'Tinjau Resep & Alkes',
+      path: '/dashboard/pharmacy-alkes',
+      description: 'Audit batas waktu klaim',
+    });
+  }
+  if (lower.includes('permenkes') || lower.includes('regulasi') || lower.includes('uu 27') || lower.includes('pasal') || lower.includes('hukum') || lower.includes('sanksi')) {
+    shortcuts.push({
+      label: 'Dasar Hukum & Regulasi JKN',
+      path: '/dashboard/regulations',
+      description: 'Permenkes 16/2019 & UU PDP',
+    });
+  }
+  if (lower.includes('kasus') || lower.includes('benchmark') || lower.includes('pembuktian') || lower.includes('budi santoso')) {
+    shortcuts.push({
+      label: '4 Kasus Benchmark Terbukti',
+      path: '/dashboard/cases',
+      description: 'Detail audit forensik',
+    });
+  }
+  if (lower.includes('transaksi') || lower.includes('aliran') || lower.includes('live stream') || lower.includes('sep')) {
+    shortcuts.push({
+      label: 'Pantau Aliran Transaksi',
+      path: '/dashboard/transactions',
+      description: 'Monitoring live real-time',
+    });
+  }
+
+  return shortcuts.slice(0, 3);
+}
+
 function parseAiContent(raw: string): {
   reply: string;
   emotion: CharacterEmotion;
+  shortcuts?: AiShortcut[];
   metadata?: VoiceExpressionMetadata;
 } {
   let detectedEmotion: CharacterEmotion | null = null;
@@ -399,6 +503,7 @@ function parseAiContent(raw: string): {
       const replyContent = parsed.text || parsed.reply;
       if (replyContent && typeof replyContent === 'string') {
         const emo = detectedEmotion || (parsed.emotion ? normalizeEmotion(parsed.emotion) : 'normal');
+        const shortcuts = extractShortcuts(replyContent, parsed.shortcuts);
         const metadata: VoiceExpressionMetadata = {
           text: cleanTtsText(replyContent),
           emotion: emo,
@@ -408,8 +513,9 @@ function parseAiContent(raw: string): {
           prosody: parsed.prosody && typeof parsed.prosody === 'object' ? parsed.prosody : { energy: 0.8, pitch: 1.0, speed: 1.0 },
         };
         return {
-          reply: metadata.text,
+          reply: replyContent, // Pertahankan format Markdown lengkap untuk tampilan ChatGPT
           emotion: emo,
+          shortcuts,
           metadata,
         };
       }
@@ -443,18 +549,19 @@ function parseAiContent(raw: string): {
     // Decode escaped characters
     extractedText = extractedText
       .replace(/\\"/g, '"')
-      .replace(/\\n/g, ' ')
+      .replace(/\\n/g, '\n')
       .replace(/\\r/g, '')
-      .replace(/\\t/g, ' ')
+      .replace(/\\t/g, '\t')
       .replace(/\\\\/g, '\\');
 
-    const cleanReply = cleanTtsText(extractedText);
     const emo = detectedEmotion || 'normal';
+    const shortcuts = extractShortcuts(extractedText);
     return {
-      reply: cleanReply,
+      reply: extractedText,
       emotion: emo,
+      shortcuts,
       metadata: {
-        text: cleanReply,
+        text: cleanTtsText(extractedText),
         emotion: emo,
         expressions: [{ type: emo, intensity: 0.5 }],
         prosody: { energy: 0.8, pitch: 1.0, speed: 1.0 },
@@ -465,11 +572,8 @@ function parseAiContent(raw: string): {
   // 3. Absolute fallback: strip any remaining JSON syntax, braces, quotes, keys
   let fallbackReply = cleanedText
     .replace(/^\{?\s*"(?:text|reply)"\s*:\s*"?/i, '')
-    .replace(/",\s*"(?:emotion|expressions|pauses|prosody)"[\s\S]*$/i, '')
-    .replace(/[{}"\\]/g, '')
+    .replace(/",\s*"(?:emotion|expressions|pauses|prosody|shortcuts)"[\s\S]*$/i, '')
     .trim();
-
-  fallbackReply = cleanTtsText(fallbackReply);
 
   if (!detectedEmotion) {
     const lower = fallbackReply.toLowerCase();
@@ -486,11 +590,14 @@ function parseAiContent(raw: string): {
     }
   }
 
+  const shortcuts = extractShortcuts(fallbackReply);
+
   return {
     reply: fallbackReply,
     emotion: detectedEmotion,
+    shortcuts,
     metadata: {
-      text: fallbackReply,
+      text: cleanTtsText(fallbackReply),
       emotion: detectedEmotion,
       expressions: [{ type: detectedEmotion, intensity: 0.5 }],
       prosody: { energy: 0.8, pitch: 1.0, speed: 1.0 },

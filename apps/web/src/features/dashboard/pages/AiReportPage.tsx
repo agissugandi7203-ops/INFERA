@@ -1,482 +1,853 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { useOutletContext, useNavigate } from 'react-router-dom';
 import {
-  ShieldAlert,
-  ShieldCheck,
-  Scale,
+  Sparkles,
+  Plus,
+  Mic,
+  Square,
+  ArrowUp,
   Volume2,
-  FileCheck,
+  VolumeX,
+  Copy,
+  Check,
+  ThumbsUp,
+  ThumbsDown,
+  Trash2,
   Download,
-  ChevronRight,
-  CheckCircle2,
+  Scale,
+  ShieldCheck,
+  FileCheck,
+  ExternalLink,
+  ChevronDown,
+  FileText,
+  X,
 } from 'lucide-react';
+import { ChatMessage, AiShortcut } from '../services/openrouter';
+import { CharacterEmotion } from '../avatar/AvatarController';
+import { SpeechService } from '../services/speech';
 import { useSimulationStream } from '../simulation/SimulationContext';
 import { FALLBACK_CASES } from '../../../services/participantRiskApi';
-import type { JknClaimRecord } from '@healthathon/shared';
 
-interface AiReportPageProps {
+interface DashboardOutletContextType {
   onTriggerAvatarSpeech?: (text: string, emotion: string) => void;
+  messages: ChatMessage[];
+  isLoading: boolean;
+  onSendMessage: (text: string) => void;
+  onClearHistory: () => void;
+  onSelectEmotion?: (emo: CharacterEmotion, timedownMs?: number) => void;
+  selectedVoiceId?: string;
+  onSelectVoice?: (voiceId: string) => void;
+  isListening?: boolean;
+  isSoundDetected?: boolean;
+  onToggleClickToSpeak?: () => void;
+  onStopSpeaking?: () => void;
 }
 
-export const AiReportPage: React.FC<AiReportPageProps> = ({ onTriggerAvatarSpeech }) => {
-  const { claims, anomalies, selectedClaimForAudit, setSelectedClaimForAudit } = useSimulationStream();
-  const [filterType, setFilterType] = useState<'ALL' | 'ANOMALY' | 'CLEAN'>('ALL');
+// Markdown renderer without heavy external deps
+const renderFormattedContent = (content: string) => {
+  const lines = content.split('\n');
+  const elements: React.ReactNode[] = [];
 
-  // Build list of auditable cases including both anomalies and verified clean claims
-  const streamAnomalies = anomalies.slice(0, 8).map((a) => ({
-    id: a.id,
-    code: a.noSep,
-    patient: a.namaPeserta,
-    nik: a.nik,
-    title: a.anomalyTitle || 'Anomali Aliran Transaksi',
-    description: a.anomalyDescription || 'Klaim terindikasi ketidaksesuaian pola pelayanan medis.',
-    riskScore: a.fraudRiskScore,
-    riskLevel: a.riskLevel,
-    tariff: a.cbgTariff,
-    action: a.recommendedAction || 'Audit berkas medis dan konfirmasi ke faskes.',
-    citations: a.legalCitations || [],
-    isRealtimeStream: true,
-    isCleanClaim: false,
-    claim: a,
-  }));
+  let inList = false;
+  let listItems: React.ReactNode[] = [];
 
-  const streamCleanClaims = claims
-    .filter((c) => !c.isAnomaly)
-    .slice(0, 6)
-    .map((c) => ({
-      id: c.id,
-      code: c.noSep,
-      patient: c.namaPeserta,
-      nik: c.nik,
-      title: c.anomalyTitle || 'Klaim Terverifikasi Sesuai Ketentuan JKN',
-      description:
-        c.anomalyDescription ||
-        'Seluruh rekam medis elektronik, kepatuhan tarif INA-CBG, dan indikasi klinis terverifikasi absah sesuai regulasi JKN tanpa kejanggalan.',
-      riskScore: c.fraudRiskScore,
-      riskLevel: c.riskLevel,
-      tariff: c.cbgTariff,
-      action: c.recommendedAction || 'Klaim disetujui untuk pembayaran tepat waktu oleh BPJS.',
-      citations: [
-        {
-          regulation: 'Permenkes No. 16 Tahun 2019',
-          article: 'Pasal 2 (Kepatuhan Layanan JKN)',
-          summary: 'Pelayanan kesehatan memenuhi indikasi medis yang dapat dipertanggungjawabkan.',
-        },
-      ],
-      isRealtimeStream: true,
-      isCleanClaim: true,
-      claim: c,
-    }));
-
-  const fallbackAuditCases = FALLBACK_CASES.map((c) => ({
-    id: c.id,
-    code: c.caseCode,
-    patient: c.patientName,
-    nik: c.nikMasked,
-    title: c.categoryLabel,
-    description: c.detailedAnalysis,
-    riskScore: c.riskScore,
-    riskLevel: c.riskLevel,
-    tariff: c.potentialLoss,
-    action: c.recommendedSanction,
-    citations: [c.legalReference],
-    isRealtimeStream: false,
-    isCleanClaim: false,
-    claim: null as JknClaimRecord | null,
-  }));
-
-  // Selected item guarantee (prepend if not present)
-  const selectedCaseEntry = selectedClaimForAudit
-    ? [
-        {
-          id: selectedClaimForAudit.id,
-          code: selectedClaimForAudit.noSep,
-          patient: selectedClaimForAudit.namaPeserta,
-          nik: selectedClaimForAudit.nik,
-          title:
-            selectedClaimForAudit.anomalyTitle ||
-            (selectedClaimForAudit.isAnomaly
-              ? 'Anomali Aliran Transaksi'
-              : 'Klaim Terverifikasi Sesuai Ketentuan JKN'),
-          description:
-            selectedClaimForAudit.anomalyDescription ||
-            (selectedClaimForAudit.isAnomaly
-              ? 'Klaim terindikasi pelanggaran ketentuan JKN.'
-              : 'Seluruh kriteria klinis, administrasi SATUSEHAT, kepatuhan tarif INA-CBG, dan rekam medis digital terpenuhi secara lengkap tanpa anomali.'),
-          riskScore: selectedClaimForAudit.fraudRiskScore,
-          riskLevel: selectedClaimForAudit.riskLevel,
-          tariff: selectedClaimForAudit.cbgTariff,
-          action:
-            selectedClaimForAudit.recommendedAction ||
-            (selectedClaimForAudit.isAnomaly
-              ? 'Audit berkas medis dan konfirmasi ke faskes.'
-              : 'Klaim disetujui untuk pembayaran tepat waktu oleh BPJS.'),
-          citations: selectedClaimForAudit.legalCitations || [],
-          isRealtimeStream: true,
-          isCleanClaim: !selectedClaimForAudit.isAnomaly,
-          claim: selectedClaimForAudit,
-        },
-      ]
-    : [];
-
-  const rawCases = [...selectedCaseEntry, ...streamAnomalies, ...streamCleanClaims, ...fallbackAuditCases];
-  // Deduplicate by ID
-  const allAuditableCases = Array.from(new Map(rawCases.map((c) => [c.id, c])).values());
-
-  const filteredCases = allAuditableCases.filter((c) => {
-    if (filterType === 'ANOMALY') return !c.isCleanClaim;
-    if (filterType === 'CLEAN') return c.isCleanClaim;
-    return true;
-  });
-
-  const [activeCaseId, setActiveCaseId] = useState<string>(
-    selectedClaimForAudit ? selectedClaimForAudit.id : allAuditableCases[0]?.id || 'CASE-001'
-  );
-
-  const currentCase =
-    allAuditableCases.find((c) => c.id === activeCaseId) || filteredCases[0] || allAuditableCases[0]!;
-
-  const handleSpeakBriefing = () => {
-    const isClean = currentCase.isCleanClaim;
-    const speechText = isClean
-      ? `Laporan Verifikasi AI: Kasus ${currentCase.code}, atas nama ${currentCase.patient}. Klaim terverifikasi wajar dan sah. Nilai klaim sebesar ${currentCase.tariff.toLocaleString('id-ID')} rupiah telah disetujui untuk pembayaran.`
-      : `Laporan Investigasi AI: Kasus ${currentCase.code}, atas nama ${currentCase.patient}. Terdeteksi ${currentCase.title}. Estimasi potensi inefisiensi Dana Jaminan Sosial sebesar ${currentCase.tariff.toLocaleString('id-ID')} rupiah. Rekomendasi: ${currentCase.action}`;
-
-    if (onTriggerAvatarSpeech) {
-      onTriggerAvatarSpeech(speechText, isClean ? 'happy' : currentCase.riskLevel === 'CRITICAL' ? 'surprised' : 'thinking');
+  const flushList = () => {
+    if (inList && listItems.length > 0) {
+      elements.push(
+        <ul key={`ul-${elements.length}`} className="space-y-1.5 my-2.5 ml-1">
+          {listItems}
+        </ul>
+      );
+      listItems = [];
+      inList = false;
     }
   };
 
+  const formatInline = (text: string) => {
+    // Split by bold (**text**)
+    const parts = text.split(/(\*\*.*?\*\*)/g);
+    return parts.map((part, i) => {
+      if (part.startsWith('**') && part.endsWith('**')) {
+        return (
+          <strong key={i} className="font-semibold text-slate-900 dark:text-slate-100">
+            {part.slice(2, -2)}
+          </strong>
+        );
+      }
+      // Inline code
+      if (part.startsWith('`') && part.endsWith('`')) {
+        return (
+          <code
+            key={i}
+            className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-mono text-xs"
+          >
+            {part.slice(1, -1)}
+          </code>
+        );
+      }
+      return part;
+    });
+  };
+
+  lines.forEach((line, idx) => {
+    const trimmed = line.trim();
+
+    if (!trimmed) {
+      flushList();
+      elements.push(<div key={`space-${idx}`} className="h-2" />);
+      return;
+    }
+
+    // Heading 3: ###
+    if (trimmed.startsWith('### ')) {
+      flushList();
+      elements.push(
+        <h3
+          key={`h3-${idx}`}
+          className="text-sm sm:text-base font-bold text-slate-900 dark:text-slate-100 mt-4 mb-2 flex items-center gap-2"
+        >
+          {formatInline(trimmed.slice(4))}
+        </h3>
+      );
+      return;
+    }
+
+    // Heading 2: ##
+    if (trimmed.startsWith('## ')) {
+      flushList();
+      elements.push(
+        <h2
+          key={`h2-${idx}`}
+          className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 mt-4 mb-2"
+        >
+          {formatInline(trimmed.slice(3))}
+        </h2>
+      );
+      return;
+    }
+
+    // Heading 1: #
+    if (trimmed.startsWith('# ')) {
+      flushList();
+      elements.push(
+        <h1
+          key={`h1-${idx}`}
+          className="text-lg sm:text-xl font-bold text-slate-900 dark:text-slate-100 mt-5 mb-2.5"
+        >
+          {formatInline(trimmed.slice(2))}
+        </h1>
+      );
+      return;
+    }
+
+    // Blockquote: >
+    if (trimmed.startsWith('> ')) {
+      flushList();
+      elements.push(
+        <blockquote
+          key={`quote-${idx}`}
+          className="border-l-4 border-emerald-500/80 pl-3.5 py-1.5 my-2.5 bg-emerald-50/40 dark:bg-emerald-950/20 text-slate-700 dark:text-slate-300 rounded-r-lg text-xs sm:text-sm italic"
+        >
+          {formatInline(trimmed.slice(2))}
+        </blockquote>
+      );
+      return;
+    }
+
+    // Unordered List item: - or *
+    if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
+      inList = true;
+      listItems.push(
+        <li key={`li-${idx}`} className="flex items-start gap-2 text-xs sm:text-sm text-slate-800 dark:text-slate-200">
+          <span className="text-emerald-600 dark:text-emerald-400 mt-1 text-xs">•</span>
+          <span className="flex-1 leading-relaxed">{formatInline(trimmed.slice(2))}</span>
+        </li>
+      );
+      return;
+    }
+
+    // Numbered List: e.g. 1.
+    const numMatch = trimmed.match(/^(\d+)\.\s+(.*)$/);
+    if (numMatch) {
+      flushList();
+      elements.push(
+        <div key={`num-${idx}`} className="flex items-start gap-2.5 my-1 text-xs sm:text-sm text-slate-800 dark:text-slate-200">
+          <span className="font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5">
+            {numMatch[1]}.
+          </span>
+          <span className="flex-1 leading-relaxed">{formatInline(numMatch[2])}</span>
+        </div>
+      );
+      return;
+    }
+
+    // Normal paragraph
+    flushList();
+    elements.push(
+      <p key={`p-${idx}`} className="text-xs sm:text-sm leading-relaxed text-slate-800 dark:text-slate-200 my-1">
+        {formatInline(trimmed)}
+      </p>
+    );
+  });
+
+  flushList();
+  return elements;
+};
+
+export const AiReportPage: React.FC = () => {
+  const navigate = useNavigate();
+  const outletContext = useOutletContext<DashboardOutletContextType | undefined>();
+  const { anomalies, setSelectedClaimForAudit } = useSimulationStream();
+
+  // Local fallbacks if opened directly without context
+  const [localMessages, setLocalMessages] = useState<ChatMessage[]>([
+    {
+      id: 'welcome-init',
+      role: 'assistant',
+      content:
+        'Halo! Saya asisten AI INFERA BPJS Kesehatan. Anda dapat menanyakan seputar regulasi JKN, memverifikasi anomali klaim peserta, atau melakukan penelusuran rekam data secara interaktif.',
+      emotion: 'happy',
+      timestamp: new Date().toISOString(),
+    },
+  ]);
+  const [localIsLoading, setLocalIsLoading] = useState(false);
+
+  const messages = outletContext?.messages ?? localMessages;
+  const isLoading = outletContext?.isLoading ?? localIsLoading;
+  const onSendMessage = outletContext?.onSendMessage ?? ((text: string) => {
+    const userMsg: ChatMessage = {
+      id: 'user-' + Date.now(),
+      role: 'user',
+      content: text,
+      timestamp: new Date().toISOString(),
+    };
+    setLocalMessages((prev) => [...prev, userMsg]);
+    setLocalIsLoading(true);
+    setTimeout(() => {
+      setLocalMessages((prev) => [
+        ...prev,
+        {
+          id: 'asst-' + Date.now(),
+          role: 'assistant',
+          content: `Analisis Integritas JKN untuk: "${text}".\n\n### Hasil Penelusuran\nBerdasarkan Permenkes No. 16 Tahun 2019, klaim terindikasi mematuhi kaidah INA-CBG.`,
+          timestamp: new Date().toISOString(),
+        },
+      ]);
+      setLocalIsLoading(false);
+    }, 1000);
+  });
+  const onClearHistory = outletContext?.onClearHistory ?? (() => setLocalMessages([]));
+
+  // Chat UI states
+  const [inputText, setInputText] = useState('');
+  const [isDeepThinking, setIsDeepThinking] = useState(true);
+  const [activeSpeechMsgId, setActiveSpeechMsgId] = useState<string | null>(null);
+  const [copiedMsgId, setCopiedMsgId] = useState<string | null>(null);
+  const [userFeedback, setUserFeedback] = useState<Record<string, 'up' | 'down'>>({});
+  const [showCaseSelector, setShowCaseSelector] = useState(false);
+  const [showAttachMenu, setShowAttachMenu] = useState(false);
+
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Auto-scroll on new messages
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages.length, isLoading]);
+
+  // Adjust textarea height dynamically
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInputText(e.target.value);
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 180)}px`;
+    }
+  };
+
+  const handleSend = () => {
+    const trimmed = inputText.trim();
+    if (!trimmed || isLoading) return;
+
+    let fullPrompt = trimmed;
+    if (isDeepThinking && !trimmed.toLowerCase().includes('berpikir')) {
+      // Add subtle analytical context if thinking mode enabled
+      fullPrompt = trimmed;
+    }
+
+    onSendMessage(fullPrompt);
+    setInputText('');
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+
+  const handleCopyText = (id: string, text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedMsgId(id);
+    setTimeout(() => setCopiedMsgId(null), 2000);
+  };
+
+  const handleToggleSpeech = (msg: ChatMessage) => {
+    if (activeSpeechMsgId === msg.id) {
+      SpeechService.stopSpeaking();
+      setActiveSpeechMsgId(null);
+      return;
+    }
+
+    setActiveSpeechMsgId(msg.id);
+    if (outletContext?.onSelectEmotion && msg.emotion) {
+      outletContext.onSelectEmotion(msg.emotion, 10000);
+    }
+
+    SpeechService.speak(
+      msg.content,
+      () => {},
+      () => {},
+      () => {
+        setActiveSpeechMsgId(null);
+        if (outletContext?.onSelectEmotion) {
+          outletContext.onSelectEmotion('normal', 0);
+        }
+      }
+    );
+  };
+
+  const handleExecuteShortcut = (shortcut: AiShortcut) => {
+    if (shortcut.route) {
+      navigate(shortcut.route);
+    } else if (shortcut.action) {
+      onSendMessage(shortcut.action);
+    }
+  };
+
+  const handleSelectCaseToAudit = (caseItem: {
+    code: string;
+    patient: string;
+    anomaly: string;
+    score: number;
+    raw?: any;
+  }) => {
+    if (caseItem.raw) {
+      setSelectedClaimForAudit(caseItem.raw);
+    }
+    setShowCaseSelector(false);
+    onSendMessage(
+      `Audit berkas klaim ${caseItem.code} atas nama ${caseItem.patient}. Terindikasi: ${caseItem.anomaly} (Skor Risiko: ${caseItem.score}). Berikan analisis kesesuaian klinis, potensi kerugian DJS, dan rujukan hukumnya.`
+    );
+  };
+
+  // Sample prompt cards matching user reference media_1788920242379.png
+  const quickPrompts = [
+    {
+      title: 'Deteksi Modus Upcoding & Phantoming',
+      icon: <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />,
+      prompt:
+        'Jelaskan cara mendeteksi pola upcoding kode diagnosa INA-CBG dan phantom billing pada sistem VEDIKA BPJS Kesehatan.',
+    },
+    {
+      title: 'Audit Kasus Impossible Travel Antar-Faskes',
+      icon: <FileCheck className="w-4 h-4 text-sky-600 dark:text-sky-400" />,
+      prompt:
+        'Bagaimana algoritma analitik mendeteksi anomali Impossible Travel kartu peserta yang digunakan bersamaan di dua faskes berjarak jauh?',
+    },
+    {
+      title: 'Tinjau Regulasi Permenkes No. 16/2019',
+      icon: <Scale className="w-4 h-4 text-amber-600 dark:text-amber-400" />,
+      prompt:
+        'Apa saja sanksi administratif dan langkah verifikasi pencegahan kecurangan JKN berdasarkan Permenkes No. 16 Tahun 2019?',
+    },
+    {
+      title: 'Verifikasi Kelayakan Klaim Bersih (Clean Claim)',
+      icon: <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />,
+      prompt:
+        'Jelaskan kriteria klaim wajar (Clean Claim) yang langsung disetujui tanpa penundaan pembayaran ke faskes.',
+    },
+  ];
+
+  // Cases available for quick audit
+  const realTimeCases = [
+    ...anomalies.slice(0, 4).map((a) => ({
+      code: a.noSep,
+      patient: a.namaPeserta,
+      anomaly: a.anomalyTitle || 'Anomali Aliran Transaksi',
+      score: a.fraudRiskScore,
+      raw: a,
+    })),
+    ...FALLBACK_CASES.slice(0, 3).map((f) => ({
+      code: f.caseCode,
+      patient: f.patientName,
+      anomaly: f.categoryLabel,
+      score: f.riskScore,
+    })),
+  ];
+
+  const hasMessages = messages.length > 0;
+
   return (
-    <div
-      className="flex flex-col lg:flex-row gap-4 max-w-6xl mx-auto w-full"
-      style={{ minHeight: '600px', height: 'calc(100vh - 130px)' }}
-    >
-      {/* Left Panel - Case Selector */}
-      <div className="w-full lg:w-72 shrink-0 flex flex-col gap-2">
-        <div className="flex items-center justify-between px-1">
-          <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wide">
-            Daftar Audit &amp; Verifikasi
-          </span>
-          <span className="font-mono text-[10px] text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
-            {filteredCases.length} kasus
-          </span>
+    <div className="flex flex-col h-full w-full bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 overflow-hidden relative">
+      {/* Top Header Toolbar */}
+      <header className="px-4 sm:px-6 py-2.5 border-b border-slate-100 dark:border-slate-800/80 flex items-center justify-between bg-white/80 dark:bg-slate-950/80 backdrop-blur-md shrink-0 z-10">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center shadow-xs">
+            <Sparkles className="w-4 h-4" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100">
+                INFERA AI Assistant
+              </h1>
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800/60">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                Online
+              </span>
+            </div>
+            <p className="text-[10px] text-slate-400 dark:text-slate-500">
+              Audit Integritas JKN &amp; Penalaran Regulasi
+            </p>
+          </div>
         </div>
 
-        {/* Filter Switcher: Semua vs Anomali vs Wajar */}
-        <div className="flex items-center p-0.5 bg-slate-100 rounded-lg text-[11px] font-medium text-slate-600">
+        {/* Header Right Actions */}
+        <div className="flex items-center gap-1.5">
           <button
             type="button"
-            onClick={() => setFilterType('ALL')}
-            className={`flex-1 py-1 text-center rounded-md transition-colors cursor-pointer ${
-              filterType === 'ALL' ? 'bg-white text-slate-900 font-bold shadow-2xs' : 'hover:text-slate-900'
-            }`}
+            onClick={() => setShowCaseSelector(!showCaseSelector)}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-medium transition-colors cursor-pointer"
+            title="Pilih berkas klaim riil untuk diaudit"
           >
-            Semua
+            <FileText className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+            <span className="hidden sm:inline">Pilih Kasus</span>
+            <ChevronDown className="w-3 h-3 text-slate-400" />
           </button>
-          <button
-            type="button"
-            onClick={() => setFilterType('CLEAN')}
-            className={`flex-1 py-1 text-center rounded-md transition-colors cursor-pointer ${
-              filterType === 'CLEAN' ? 'bg-white text-emerald-700 font-bold shadow-2xs' : 'hover:text-slate-900'
-            }`}
-          >
-            Wajar
-          </button>
-          <button
-            type="button"
-            onClick={() => setFilterType('ANOMALY')}
-            className={`flex-1 py-1 text-center rounded-md transition-colors cursor-pointer ${
-              filterType === 'ANOMALY' ? 'bg-white text-rose-700 font-bold shadow-2xs' : 'hover:text-slate-900'
-            }`}
-          >
-            Anomali
-          </button>
-        </div>
 
-        {/* Case List */}
-        <div className="flex-1 overflow-y-auto space-y-1.5 pr-1">
-          {filteredCases.slice(0, 16).map((c) => {
-            const isSelected = c.id === activeCaseId;
-            return (
+          {hasMessages && (
+            <>
               <button
-                key={c.id}
                 type="button"
                 onClick={() => {
-                  setActiveCaseId(c.id);
-                  if (c.claim) setSelectedClaimForAudit(c.claim);
+                  const content = messages
+                    .map((m) => `[${m.role.toUpperCase()}] (${m.timestamp})\n${m.content}\n`)
+                    .join('\n---\n\n');
+                  const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `bap-infera-chat-${new Date().toISOString().slice(0, 10)}.txt`;
+                  a.click();
+                  URL.revokeObjectURL(url);
                 }}
-                className={`w-full text-left px-3 py-2.5 rounded-xl border transition-all cursor-pointer ${
-                  isSelected
-                    ? 'bg-slate-900 border-slate-900 text-white shadow-xs'
-                    : 'bg-white border-slate-200/90 hover:border-slate-300 text-slate-700 hover:bg-slate-50/70'
-                }`}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                title="Unduh Berita Acara Percakapan (BAP)"
               >
-                <div className="flex items-center justify-between mb-1">
-                  <span
-                    className={`font-mono text-[10px] font-semibold ${
-                      isSelected ? 'text-slate-300' : 'text-slate-400'
-                    }`}
-                  >
-                    {c.code.slice(0, 16)}
-                  </span>
-                  <span
-                    className={`text-[10px] font-bold font-mono px-1.5 py-0.5 rounded border ${
-                      c.isCleanClaim
-                        ? isSelected
-                          ? 'bg-emerald-900/80 text-emerald-200 border-emerald-700'
-                          : 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                        : isSelected
-                        ? 'bg-rose-900/80 text-rose-200 border-rose-700'
-                        : 'bg-rose-50 text-rose-700 border-rose-200'
-                    }`}
-                  >
-                    Skor {c.riskScore}
-                  </span>
-                </div>
-                <div
-                  className={`font-semibold text-xs truncate ${
-                    isSelected ? 'text-white' : 'text-slate-900'
-                  }`}
-                >
-                  {c.patient}
-                </div>
-                <div
-                  className={`text-[11px] truncate mt-0.5 ${
-                    isSelected ? 'text-slate-300' : 'text-slate-500'
-                  }`}
-                >
-                  {c.title}
-                </div>
-                {isSelected && (
-                  <div className="flex items-center gap-1 mt-1.5">
-                    <ChevronRight className="w-3 h-3 text-emerald-400" />
-                    <span className="text-[10px] text-emerald-400 font-medium">
-                      Sedang diaudit
-                    </span>
-                  </div>
-                )}
+                <Download className="w-4 h-4" />
               </button>
-            );
-          })}
+              <button
+                type="button"
+                onClick={onClearHistory}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
+                title="Bersihkan Percakapan"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </>
+          )}
         </div>
-      </div>
+      </header>
 
-      {/* Right Panel - Reading Canvas */}
-      <div className="flex-1 flex flex-col min-w-0 bg-white rounded-2xl border border-slate-200/90 shadow-2xs overflow-hidden">
-        {/* Canvas Header */}
-        <div className="flex items-center justify-between px-6 py-3.5 border-b border-slate-100 shrink-0">
-          <div className="flex items-center gap-3 min-w-0">
-            <div
-              className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
-                currentCase.isCleanClaim ? 'bg-[#007a3d] text-white' : 'bg-rose-600 text-white'
-              }`}
-            >
-              {currentCase.isCleanClaim ? (
-                <ShieldCheck className="w-4 h-4" />
-              ) : (
-                <ShieldAlert className="w-4 h-4" />
-              )}
-            </div>
-            <div className="min-w-0">
-              <div className="text-sm font-bold text-slate-900 leading-tight truncate">
-                {currentCase.patient}
-              </div>
-              <div className="text-[11px] text-slate-500 font-mono mt-0.5">
-                SEP: {currentCase.code}
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 shrink-0">
-            <span
-              className={`text-[11px] font-bold px-2.5 py-1 rounded-lg border font-mono ${
-                currentCase.isCleanClaim
-                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                  : 'bg-rose-50 text-rose-700 border-rose-200'
-              }`}
-            >
-              {currentCase.isCleanClaim
-                ? `Skor ${currentCase.riskScore} • Lolos Wajar`
-                : `Skor ${currentCase.riskScore} • Anomali`}
+      {/* Case Selector Dropdown Modal */}
+      {showCaseSelector && (
+        <div className="absolute top-14 right-4 sm:right-6 z-40 w-80 sm:w-96 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl p-3 space-y-2 animate-in fade-in zoom-in-95 duration-150">
+          <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800 px-1">
+            <span className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wide">
+              Pilih Berkas Klaim Riil
             </span>
             <button
-              type="button"
-              onClick={handleSpeakBriefing}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
+              onClick={() => setShowCaseSelector(false)}
+              className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
             >
-              <Volume2 className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Dengarkan</span>
+              <X className="w-3.5 h-3.5" />
             </button>
-            <button
-              type="button"
-              onClick={() => window.print()}
-              className="flex items-center gap-1 px-3 py-1.5 border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
-            >
-              <Download className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Cetak Dokumen</span>
-            </button>
+          </div>
+          <div className="max-h-64 overflow-y-auto space-y-1.5 pr-1">
+            {realTimeCases.map((c, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => handleSelectCaseToAudit(c)}
+                className="w-full text-left p-2 rounded-xl border border-slate-100 dark:border-slate-800/80 hover:border-emerald-300 dark:hover:border-emerald-700 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/20 transition-all cursor-pointer group"
+              >
+                <div className="flex items-center justify-between text-[11px] mb-0.5">
+                  <span className="font-mono text-slate-500 font-semibold">{c.code}</span>
+                  <span className="font-mono text-xs font-bold text-rose-600 dark:text-rose-400">
+                    Skor {c.score}
+                  </span>
+                </div>
+                <div className="text-xs font-semibold text-slate-900 dark:text-slate-100 group-hover:text-emerald-700 dark:group-hover:text-emerald-300">
+                  {c.patient}
+                </div>
+                <div className="text-[11px] text-slate-400 truncate">{c.anomaly}</div>
+              </button>
+            ))}
           </div>
         </div>
+      )}
 
-        {/* Canvas Body */}
-        <div className="flex-1 overflow-y-auto px-6 sm:px-8 py-6 space-y-7">
-          {/* Main Financial / Tariff Metric */}
-          <div className="flex items-baseline gap-4">
-            <div>
-              <div className="text-[11px] text-slate-400 uppercase tracking-wider font-semibold mb-1">
-                {currentCase.isCleanClaim
-                  ? 'Nilai Klaim Terverifikasi Sah (INA-CBG)'
-                  : 'Estimasi Potensi Inefisiensi DJS'}
-              </div>
-              <div
-                className={`text-2xl sm:text-3xl font-bold font-mono ${
-                  currentCase.isCleanClaim ? 'text-emerald-700' : 'text-rose-700'
+      {/* Main Content Area */}
+      <div className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col justify-between">
+        {!hasMessages || (messages.length === 1 && messages[0].id === 'welcome-init') ? (
+          /* Empty / Welcome State (Exact match to ChatGPT media_1788920242379.png) */
+          <div className="flex-1 flex flex-col items-center justify-center max-w-2xl mx-auto w-full px-4 text-center my-auto pb-12">
+            <h2 className="text-2xl sm:text-3xl font-semibold text-slate-800 dark:text-slate-100 mb-8 tracking-tight">
+              Saya siap kapan pun Anda siap.
+            </h2>
+
+            {/* Centered Floating Input Capsule */}
+            <div className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-sm hover:shadow-md transition-shadow px-4 py-3 flex items-center gap-3 mb-6">
+              <button
+                type="button"
+                onClick={() => setShowAttachMenu(!showAttachMenu)}
+                className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-300 transition-colors cursor-pointer shrink-0"
+                title="Menu Cepat"
+              >
+                <Plus className="w-4 h-4" />
+              </button>
+
+              <input
+                type="text"
+                value={inputText}
+                onChange={(e) => setInputText(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+                placeholder="Tanyakan apa saja seputar audit integritas JKN..."
+                className="flex-1 bg-transparent border-0 outline-hidden text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+              />
+
+              {/* Berpikir chip */}
+              <button
+                type="button"
+                onClick={() => setIsDeepThinking(!isDeepThinking)}
+                className={`hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border transition-colors cursor-pointer shrink-0 ${
+                  isDeepThinking
+                    ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
+                    : 'bg-slate-50 dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700'
                 }`}
               >
-                Rp {currentCase.tariff.toLocaleString('id-ID')}
-              </div>
-            </div>
-            <div className="flex-1 h-px bg-slate-100 self-center ml-2" />
-          </div>
+                <span>🧠</span>
+                <span>Berpikir</span>
+              </button>
 
-          {/* Temuan */}
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <FileCheck className="w-4 h-4 text-slate-400" />
-              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                {currentCase.isCleanClaim ? 'Hasil Uji Kelayakan Klinis' : 'Temuan Forensik Integritas'}
-              </span>
-            </div>
-            <h2 className="text-lg sm:text-xl font-bold text-slate-900 leading-snug mb-2">
-              {currentCase.title}
-            </h2>
-            <p className="text-xs text-slate-500 leading-relaxed">
-              NIK: <code className="font-mono text-slate-700">{currentCase.nik}</code> — Verifikasi
-              otomatis sistem audit integritas JKN.
-            </p>
-          </div>
+              {/* Dictation mic */}
+              <button
+                type="button"
+                onClick={() => outletContext?.onToggleClickToSpeak?.()}
+                className={`p-1.5 rounded-full text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 transition-colors cursor-pointer shrink-0 ${
+                  outletContext?.isListening ? 'text-rose-500 animate-pulse' : ''
+                }`}
+                title="Bicara dengan suara"
+              >
+                <Mic className="w-4 h-4" />
+              </button>
 
-          {/* Analisis Naratif */}
-          <div>
-            <p className="text-sm text-slate-800 leading-relaxed">
-              {currentCase.isCleanClaim ? (
-                <>
-                  Pemeriksaan silang terhadap berkas admisi dan riwayat klaim peserta atas nama{' '}
-                  <strong>{currentCase.patient}</strong> membuktikan bahwa pelayanan medis yang diberikan
-                  telah memenuhi seluruh kriteria klinis yang sah, diagnosis primer dan sekunder koheren,
-                  serta tarif sesuai standar INA-CBG:
-                </>
-              ) : (
-                <>
-                  Hasil penelusuran riwayat berkas digital atas nama peserta{' '}
-                  <strong>{currentCase.patient}</strong> mengidentifikasi potensi ketidaksesuaian pola
-                  pelayanan terhadap ketentuan regulasi JKN:
-                </>
-              )}
-            </p>
-            <blockquote
-              className={`mt-3 pl-4 border-l-2 text-sm leading-relaxed ${
-                currentCase.isCleanClaim
-                  ? 'border-emerald-400 bg-emerald-50/40 p-3 rounded-r-xl text-slate-700'
-                  : 'border-rose-400 bg-rose-50/40 p-3 rounded-r-xl text-slate-700'
-              }`}
-            >
-              {currentCase.description}
-            </blockquote>
-          </div>
-
-          {/* Dasar Hukum */}
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <Scale className="w-4 h-4 text-slate-400" />
-              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                Rujukan Regulasi &amp; Ketentuan JKN
-              </span>
+              {/* Send or voice action */}
+              <button
+                type="button"
+                onClick={handleSend}
+                disabled={!inputText.trim() && !isLoading}
+                className={`w-8 h-8 rounded-full flex items-center justify-center text-white transition-all cursor-pointer shrink-0 ${
+                  inputText.trim()
+                    ? 'bg-blue-600 hover:bg-blue-700 shadow-xs'
+                    : 'bg-blue-500/50 cursor-not-allowed'
+                }`}
+              >
+                <ArrowUp className="w-4 h-4" />
+              </button>
             </div>
-            <div className="space-y-2.5">
-              {currentCase.citations?.map((cit, idx) => (
-                <div key={idx} className="flex gap-3 py-2.5 border-b border-slate-100 last:border-0">
-                  <div className="shrink-0">
-                    <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-semibold border border-slate-200">
-                      {cit.article}
-                    </span>
-                  </div>
-                  <div className="min-w-0">
-                    <div className="text-xs font-bold text-slate-900">{cit.regulation}</div>
-                    <p className="text-[11px] text-slate-600 leading-relaxed mt-0.5">{cit.summary}</p>
-                  </div>
-                </div>
+
+            {/* Quick Action Prompt List with Icons */}
+            <div className="w-full max-w-lg space-y-2 text-left">
+              {quickPrompts.map((qp, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => onSendMessage(qp.prompt)}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-900/60 transition-colors text-xs sm:text-sm text-slate-700 dark:text-slate-300 group cursor-pointer border border-transparent hover:border-slate-100 dark:hover:border-slate-800"
+                >
+                  <span className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 group-hover:bg-white dark:group-hover:bg-slate-700 transition-colors shrink-0">
+                    {qp.icon}
+                  </span>
+                  <span className="flex-1 font-medium">{qp.title}</span>
+                </button>
               ))}
             </div>
           </div>
+        ) : (
+          /* Chat Thread Area (Exact match to ChatGPT media_1788920238372.png) */
+          <div className="max-w-3xl mx-auto w-full space-y-6 pb-28 pt-2">
+            {messages.map((msg) => {
+              const isUser = msg.role === 'user';
+              const isPlayingAudio = activeSpeechMsgId === msg.id;
+              const feedback = userFeedback[msg.id];
 
-          {/* Rekomendasi Box */}
-          <div
-            className={`p-4 sm:p-5 rounded-2xl border ${
-              currentCase.isCleanClaim
-                ? 'bg-emerald-50/70 border-emerald-200/80 text-emerald-900'
-                : 'bg-rose-50/70 border-rose-200/80 text-rose-900'
-            }`}
-          >
-            <div className="flex items-center gap-2 mb-2">
-              {currentCase.isCleanClaim ? (
-                <CheckCircle2 className="w-4 h-4 text-emerald-700" />
-              ) : (
-                <ShieldAlert className="w-4 h-4 text-rose-700" />
-              )}
-              <span className="text-xs font-bold uppercase tracking-wider">
-                {currentCase.isCleanClaim
-                  ? 'Status Verifikasi VEDIKA: Disetujui'
-                  : 'Rekomendasi Tindakan Korektif'}
-              </span>
-            </div>
-            <p className="text-sm font-semibold leading-relaxed mb-3">{currentCase.action}</p>
-            <ul
-              className={`space-y-1.5 text-xs ${
-                currentCase.isCleanClaim ? 'text-emerald-800' : 'text-rose-800'
-              }`}
-            >
-              {currentCase.isCleanClaim ? (
-                <>
-                  <li className="flex items-start gap-2">
-                    <span className="text-emerald-500 mt-0.5">•</span>
-                    Klaim memenuhi seluruh syarat administrasi dan verifikasi kepatuhan klinis.
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-emerald-500 mt-0.5">•</span>
-                    Hak pelayanan peserta terjamin tanpa hambatan atau penundaan.
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-emerald-500 mt-0.5">•</span>
-                    Pembayaran DJS kepada fasilitas kesehatan diteruskan sesuai siklus berkala.
-                  </li>
-                </>
-              ) : (
-                <>
-                  <li className="flex items-start gap-2">
-                    <span className="text-rose-400 mt-0.5">•</span>
-                    Peninjauan kembali berkas klaim pada sistem VEDIKA.
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-rose-400 mt-0.5">•</span>
-                    Pemberitahuan resmi klarifikasi kepada fasilitas kesehatan perujuk.
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-rose-400 mt-0.5">•</span>
-                    Penerbitan surat peringatan atau klarifikasi kepada peserta bersangkutan.
-                  </li>
-                </>
-              )}
-            </ul>
+              if (isUser) {
+                return (
+                  <div key={msg.id} className="flex justify-end">
+                    <div className="max-w-[85%] sm:max-w-[75%] bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-3xl px-5 py-3 text-sm leading-relaxed shadow-2xs">
+                      {msg.content}
+                    </div>
+                  </div>
+                );
+              }
+
+              return (
+                <div key={msg.id} className="flex items-start gap-3 sm:gap-4 group">
+                  <div className="w-7 h-7 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center shrink-0 mt-1 shadow-2xs">
+                    <Sparkles className="w-3.5 h-3.5" />
+                  </div>
+
+                  <div className="flex-1 min-w-0 space-y-3">
+                    {/* Rendered Markdown Body */}
+                    <div className="text-sm leading-relaxed text-slate-900 dark:text-slate-100 font-sans break-words">
+                      {renderFormattedContent(msg.content)}
+                    </div>
+
+                    {/* RAG Brain Injected Regulatory Citations */}
+                    {msg.citations && msg.citations.length > 0 && (
+                      <div className="pt-1">
+                        <div className="flex items-center gap-1.5 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 mb-1.5">
+                          <Scale className="w-3.5 h-3.5" />
+                          <span>Rujukan Regulasi Terverifikasi (RAG Otak AI):</span>
+                        </div>
+                        <div className="flex flex-wrap gap-1.5">
+                          {msg.citations.map((cit, cIdx) => (
+                            <div
+                              key={cIdx}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-[11px] text-slate-700 dark:text-slate-300"
+                              title={cit.content}
+                            >
+                              <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                                {cit.regulation}
+                              </span>
+                              {cit.article && (
+                                <span className="font-mono text-[10px] text-slate-500">
+                                  {cit.article}
+                                </span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Action Shortcut Chips (if available) */}
+                    {msg.shortcuts && msg.shortcuts.length > 0 && (
+                      <div className="flex flex-wrap gap-2 pt-1">
+                        {msg.shortcuts.map((sc, scIdx) => (
+                          <button
+                            key={scIdx}
+                            type="button"
+                            onClick={() => handleExecuteShortcut(sc)}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800/80 text-xs font-semibold shadow-2xs transition-all cursor-pointer hover:scale-[1.02] active:scale-[0.98]"
+                          >
+                            <span>{sc.label}</span>
+                            {sc.route && <ExternalLink className="w-3 h-3 opacity-70" />}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* ChatGPT Action Buttons Bar */}
+                    <div className="flex items-center gap-1 pt-1 text-slate-400">
+                      <button
+                        type="button"
+                        onClick={() => handleCopyText(msg.id, msg.content)}
+                        className="p-1.5 rounded-lg hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                        title="Salin teks"
+                      >
+                        {copiedMsgId === msg.id ? (
+                          <Check className="w-3.5 h-3.5 text-emerald-600" />
+                        ) : (
+                          <Copy className="w-3.5 h-3.5" />
+                        )}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleToggleSpeech(msg)}
+                        className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                          isPlayingAudio
+                            ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50'
+                            : 'hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+                        }`}
+                        title={isPlayingAudio ? 'Hentikan suara' : 'Bacakan dengan suara'}
+                      >
+                        {isPlayingAudio ? (
+                          <VolumeX className="w-3.5 h-3.5 animate-pulse" />
+                        ) : (
+                          <Volume2 className="w-3.5 h-3.5" />
+                        )}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setUserFeedback((prev) => ({
+                            ...prev,
+                            [msg.id]: prev[msg.id] === 'up' ? undefined! : 'up',
+                          }))
+                        }
+                        className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                          feedback === 'up'
+                            ? 'text-emerald-600'
+                            : 'hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+                        }`}
+                        title="Bagus"
+                      >
+                        <ThumbsUp className="w-3.5 h-3.5" />
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setUserFeedback((prev) => ({
+                            ...prev,
+                            [msg.id]: prev[msg.id] === 'down' ? undefined! : 'down',
+                          }))
+                        }
+                        className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                          feedback === 'down'
+                            ? 'text-rose-600'
+                            : 'hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+                        }`}
+                        title="Perlu perbaikan"
+                      >
+                        <ThumbsDown className="w-3.5 h-3.5" />
+                      </button>
+
+                      {msg.emotion && (
+                        <span className="font-mono text-[10px] text-slate-400 ml-2">
+                          {msg.emotion}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+
+            {/* Assistant Loading Indicator */}
+            {isLoading && (
+              <div className="flex items-start gap-3 sm:gap-4">
+                <div className="w-7 h-7 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center shrink-0 mt-1 shadow-2xs animate-pulse">
+                  <Sparkles className="w-3.5 h-3.5" />
+                </div>
+                <div className="flex items-center gap-2 py-2 px-3 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800">
+                  <div className="flex gap-1">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-bounce" style={{ animationDelay: '300ms' }} />
+                  </div>
+                  <span className="text-xs text-slate-500 dark:text-slate-400 font-medium ml-1">
+                    INFERA sedang menganalisis regulasi &amp; data klaim...
+                  </span>
+                </div>
+              </div>
+            )}
+
+            <div ref={messagesEndRef} />
           </div>
+        )}
+      </div>
 
-          {/* Footer */}
-          <div className="pt-2 flex items-center justify-between text-[11px] text-slate-400 border-t border-slate-100">
-            <span>Audit objektif otomatis berdasar Rule Engine PK-JKN</span>
-            <span className="font-mono">Audit Log: HK-2026-BAP-09</span>
+      {/* Pinned Bottom Bar (when in chat thread state) */}
+      {hasMessages && messages.length > 1 && (
+        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-white via-white dark:from-slate-950 dark:via-slate-950 to-transparent pt-6 pb-4 px-4 pointer-events-none">
+          <div className="max-w-3xl mx-auto w-full pointer-events-auto">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-3xl shadow-lg hover:shadow-xl transition-shadow px-4 py-2.5 flex items-end gap-2.5">
+              {/* Plus button */}
+              <button
+                type="button"
+                onClick={() => setShowCaseSelector(!showCaseSelector)}
+                className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-300 transition-colors cursor-pointer shrink-0 mb-0.5"
+                title="Pilih Berkas Klaim"
+              >
+                <Plus className="w-4 h-4" />
+              </button>
+
+              {/* Textarea */}
+              <textarea
+                ref={textareaRef}
+                rows={1}
+                value={inputText}
+                onChange={handleInputChange}
+                onKeyDown={handleKeyDown}
+                placeholder="Tanyakan apa saja seputar audit integritas JKN..."
+                className="flex-1 bg-transparent border-0 outline-hidden text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 resize-none max-h-40 py-1.5 leading-relaxed"
+              />
+
+              {/* Berpikir toggle */}
+              <button
+                type="button"
+                onClick={() => setIsDeepThinking(!isDeepThinking)}
+                className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors cursor-pointer shrink-0 mb-0.5 ${
+                  isDeepThinking
+                    ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
+                    : 'bg-slate-50 dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700'
+                }`}
+                title="Mode penalaran mendalam"
+              >
+                <span>🧠</span>
+                <span>Berpikir</span>
+              </button>
+
+              {/* Speech Recognition Mic */}
+              <button
+                type="button"
+                onClick={() => outletContext?.onToggleClickToSpeak?.()}
+                className={`p-2 rounded-full transition-colors cursor-pointer shrink-0 mb-0.5 ${
+                  outletContext?.isListening
+                    ? 'text-rose-500 bg-rose-50 dark:bg-rose-950/40 animate-pulse'
+                    : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                }`}
+                title="Dikte Suara"
+              >
+                <Mic className="w-4 h-4" />
+              </button>
+
+              {/* Send / Stop Action Button */}
+              {isLoading ? (
+                <button
+                  type="button"
+                  onClick={() => outletContext?.onStopSpeaking?.()}
+                  className="w-8 h-8 rounded-full bg-blue-600 hover:bg-blue-700 flex items-center justify-center text-white transition-colors cursor-pointer shrink-0 mb-0.5 shadow-xs"
+                  title="Hentikan"
+                >
+                  <Square className="w-3.5 h-3.5 fill-current" />
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleSend}
+                  disabled={!inputText.trim()}
+                  className={`w-8 h-8 rounded-full flex items-center justify-center text-white transition-all cursor-pointer shrink-0 mb-0.5 ${
+                    inputText.trim()
+                      ? 'bg-blue-600 hover:bg-blue-700 shadow-xs'
+                      : 'bg-blue-500/40 cursor-not-allowed'
+                  }`}
+                  title="Kirim Pesan"
+                >
+                  <ArrowUp className="w-4 h-4" />
+                </button>
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

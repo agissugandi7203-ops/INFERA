@@ -2,7 +2,7 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard,
-  FileSearch,
+  Sparkles,
   Activity,
   FolderKanban,
   MapPin,
@@ -26,6 +26,7 @@ interface SidebarProps {
   userEmail?: string | null;
   onLogout?: () => void;
   onOpenAvatarChat?: () => void;
+  onNavigate?: () => void;
 }
 
 interface NavItem {
@@ -41,6 +42,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onToggleCollapse,
   userEmail = 'dr.arief@bpjs-kesehatan.go.id',
   onLogout,
+  onNavigate,
 }) => {
   const { isDark, toggleTheme } = useTheme();
   const { claims, isPaused, togglePause, intervalSec, anomalies } = useSimulationStream();
@@ -49,10 +51,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { to: '/dashboard', label: 'Ringkasan', icon: LayoutDashboard },
     {
       to: '/dashboard/ai-report',
-      label: 'Laporan Audit',
-      icon: FileSearch,
-      badge: `${anomalies.length}`,
-      badgeColor: 'bg-rose-50 text-rose-700 border border-rose-200/80 font-semibold',
+      label: 'Chat AI',
+      icon: Sparkles,
+      badge: `${anomalies.length > 0 ? anomalies.length : 'Live'}`,
+      badgeColor: 'bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold',
     },
     {
       to: '/dashboard/transactions',
@@ -207,6 +209,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 key={item.to}
                 to={item.to}
                 end={item.to === '/dashboard'}
+                onClick={onNavigate}
                 className={({ isActive }) =>
                   `flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-xs transition-colors group ${
                     isActive
@@ -253,6 +256,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <NavLink
                 key={item.to}
                 to={item.to}
+                onClick={onNavigate}
                 className={({ isActive }) =>
                   `flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-xs transition-colors group ${
                     isActive
@@ -299,6 +303,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <NavLink
                 key={item.to}
                 to={item.to}
+                onClick={onNavigate}
                 className={({ isActive }) =>
                   `flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-xs transition-colors group ${
                     isActive
@@ -334,6 +339,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <NavLink
                 key={item.to}
                 to={item.to}
+                onClick={onNavigate}
                 className={({ isActive }) =>
                   `flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-xs transition-colors group ${
                     isActive

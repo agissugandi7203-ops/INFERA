@@ -197,6 +197,57 @@ export class TTSProcessor {
 
     return clean.replace(/\.{3,}\s*\.{3,}/g, '... ').replace(/\s+/g, ' ').trim();
   }
+
+  /**
+   * Fast, low-latency spoken lead generator.
+   * Extracts a punchy 1-2 sentence spoken executive summary (<= 220 chars)
+   * to guarantee sub-second ElevenLabs generation and ultra-responsive voice output.
+   */
+  public static extractSpokenSummary(
+    rawText: string,
+    metadata?: VoiceExpressionMetadata | null,
+    maxLength: number = 220
+  ): string {
+    if (metadata?.text && metadata.text.trim().length > 0) {
+      return this.prepareTextForTTS(metadata.text, metadata);
+    }
+
+    // Strip markdown code blocks, tables, headers, and symbols
+    let clean = rawText
+      .replace(/```[\s\S]*?```/g, ' ')
+      .replace(/^#{1,6}\s+.*$/gm, ' ')
+      .replace(/[*_#`~\[\]\(\)>]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    if (!clean) return 'Laporan analisis telah siap.';
+
+    // Extract first 1-2 sentences
+    const sentences = clean.match(/[^.!?]+[.!?]+/g);
+    if (sentences && sentences.length > 0) {
+      let lead = '';
+      for (const s of sentences) {
+        const candidate = (lead ? `${lead} ` : '') + s.trim();
+        if (candidate.length <= maxLength) {
+          lead = candidate;
+        } else {
+          break;
+        }
+      }
+      if (lead.length > 15) {
+        return this.prepareTextForTTS(lead, metadata);
+      }
+    }
+
+    // Fallback: clamp to maxLength at word boundary
+    if (clean.length > maxLength) {
+      const truncated = clean.slice(0, maxLength);
+      const lastSpace = truncated.lastIndexOf(' ');
+      clean = (lastSpace > 25 ? truncated.slice(0, lastSpace) : truncated) + '.';
+    }
+
+    return this.prepareTextForTTS(clean, metadata);
+  }
 }
 
 function escapeRegExp(string: string): string {

@@ -8,6 +8,10 @@ export class SpeechService {
   private static synth = typeof window !== 'undefined' ? window.speechSynthesis : null;
   private static lipSyncInterval: number | null = null;
   private static currentAudio: HTMLAudioElement | null = null;
+  private static currentAudioUrl: string | null = null;
+  private static activeRecognition: any = null;
+  private static speakSessionId = 0;
+  private static speakingState = false;
 
   public static isSpeechSupported(): boolean {
     return typeof window !== 'undefined' && 'speechSynthesis' in window;
@@ -20,7 +24,14 @@ export class SpeechService {
     );
   }
 
+  public static isSpeaking(): boolean {
+    return this.speakingState;
+  }
+
   public static stopSpeaking(): void {
+    this.speakSessionId++;
+    this.speakingState = false;
+
     if (this.lipSyncInterval) {
       clearInterval(this.lipSyncInterval);
       this.lipSyncInterval = null;
@@ -34,8 +45,31 @@ export class SpeechService {
       }
       this.currentAudio = null;
     }
+    if (this.currentAudioUrl) {
+      try {
+        URL.revokeObjectURL(this.currentAudioUrl);
+      } catch {
+        // ignore
+      }
+      this.currentAudioUrl = null;
+    }
     if (this.synth) {
-      this.synth.cancel();
+      try {
+        this.synth.cancel();
+      } catch {
+        // ignore
+      }
+    }
+  }
+
+  public static stopListening(): void {
+    if (this.activeRecognition) {
+      try {
+        this.activeRecognition.stop();
+      } catch {
+        // ignore
+      }
+      this.activeRecognition = null;
     }
   }
 
@@ -52,6 +86,9 @@ export class SpeechService {
     voiceSettings?: ElevenLabsVoiceSettings
   ): Promise<void> {
     this.stopSpeaking();
+    this.stopListening(); // Matikan mikrofon agar suara speaker tidak masuk kembali (anti-echo loop)
+    const sessionId = ++this.speakSessionId;
+    this.speakingState = true;
 
     // Clean text for speech (remove markdown formatting that sounds bad in TTS)
     const cleanText = text
@@ -60,6 +97,7 @@ export class SpeechService {
       .trim();
 
     if (!cleanText) {
+      this.speakingState = false;
       if (onEnd) onEnd();
       return;
     }
@@ -72,19 +110,24 @@ export class SpeechService {
           cleanText,
           elevenLabsApiKey.trim(),
           elevenLabsVoiceId,
-          voiceSettings
+          voiceSettings,
+          1800
         );
+
+        // Jika user telah memicu sesi audio baru selama unduhan berlangsung, buang audio usang ini
+        if (this.speakSessionId !== sessionId) return;
+
         await this.playAudioWithLipSync(audioBlob, onLipSync, onStart, onEnd);
         return;
       } catch (err) {
-        console.error('[Speech] ElevenLabs TTS gagal, menggunakan fallback anime web speech:', err);
-        // Still fallback so the user isn't left in silence
+        console.warn('[Speech] ElevenLabs TTS timeout/gagal, beralih instan ke Web Speech (low-latency):', err);
+        if (this.speakSessionId !== sessionId) return;
         this.speakWithWebSpeech(cleanText, onLipSync, onStart, onEnd);
         return;
       }
     }
 
-    // No ElevenLabs key configured — use browser Web Speech as last resort
+    // No ElevenLabs key configured — use browser Web Speech as instant voice
     this.speakWithWebSpeech(cleanText, onLipSync, onStart, onEnd);
   }
 
@@ -92,34 +135,43 @@ export class SpeechService {
     text: string,
     apiKey: string,
     voiceId: string,
-    voiceSettings?: ElevenLabsVoiceSettings
+    voiceSettings?: ElevenLabsVoiceSettings,
+    timeoutMs: number = 1800
   ): Promise<Blob> {
     const settings = voiceSettings || BASE_VOICE_SETTINGS;
-    const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
-      method: 'POST',
-      headers: {
-        'xi-api-key': apiKey,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        text,
-        model_id: 'eleven_multilingual_v2',
-        voice_settings: {
-          stability: settings.stability,
-          similarity_boost: settings.similarity_boost,
-          style: settings.style,
-          use_speaker_boost: settings.use_speaker_boost,
-          speed: settings.speed,
+    const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    const timer = controller ? setTimeout(() => controller.abort(), timeoutMs) : null;
+
+    try {
+      const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+        method: 'POST',
+        headers: {
+          'xi-api-key': apiKey,
+          'Content-Type': 'application/json',
         },
-      }),
-    });
+        body: JSON.stringify({
+          text,
+          model_id: 'eleven_multilingual_v2',
+          voice_settings: {
+            stability: settings.stability,
+            similarity_boost: settings.similarity_boost,
+            style: settings.style,
+            use_speaker_boost: settings.use_speaker_boost,
+            speed: settings.speed,
+          },
+        }),
+        signal: controller?.signal,
+      });
 
-    if (!res.ok) {
-      const errText = await res.text();
-      throw new Error(`ElevenLabs Error (${res.status}): ${errText}`);
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(`ElevenLabs Error (${res.status}): ${errText}`);
+      }
+
+      return await res.blob();
+    } finally {
+      if (timer) clearTimeout(timer);
     }
-
-    return await res.blob();
   }
 
   private static async playAudioWithLipSync(
@@ -129,6 +181,7 @@ export class SpeechService {
     onEnd?: () => void
   ): Promise<void> {
     const url = URL.createObjectURL(blob);
+    this.currentAudioUrl = url;
     const audio = new Audio(url);
     this.currentAudio = audio;
 
@@ -143,6 +196,7 @@ export class SpeechService {
     };
 
     audio.onplay = () => {
+      this.speakingState = true;
       if (onStart) onStart();
       startFlap();
     };
@@ -150,14 +204,12 @@ export class SpeechService {
     audio.onended = () => {
       this.stopSpeaking();
       onLipSync(0);
-      URL.revokeObjectURL(url);
       if (onEnd) onEnd();
     };
 
     audio.onerror = () => {
       this.stopSpeaking();
       onLipSync(0);
-      URL.revokeObjectURL(url);
       if (onEnd) onEnd();
     };
 
@@ -167,7 +219,6 @@ export class SpeechService {
       console.warn('[Speech] Audio playback blocked or failed, settling state:', playErr);
       this.stopSpeaking();
       onLipSync(0);
-      URL.revokeObjectURL(url);
       if (onEnd) onEnd();
     }
   }
@@ -204,7 +255,19 @@ export class SpeechService {
       utterance.voice = femaleVoice;
     }
 
+    try {
+      this.synth.cancel();
+      if (this.synth.paused) {
+        this.synth.resume();
+      }
+    } catch {
+      // ignore
+    }
+
+    let watchdog: number | null = null;
+
     utterance.onstart = () => {
+      this.speakingState = true;
       if (onStart) onStart();
 
       let phase = 0;
@@ -214,6 +277,17 @@ export class SpeechService {
         const mouthOpen = Math.max(0.12, Math.min(0.85, base));
         onLipSync(mouthOpen);
       }, 65);
+
+      // Chrome long-speech unpause watchdog
+      watchdog = window.setInterval(() => {
+        if (!SpeechService.speakingState) {
+          if (watchdog) clearInterval(watchdog);
+          return;
+        }
+        if (SpeechService.synth && SpeechService.synth.paused) {
+          SpeechService.synth.resume();
+        }
+      }, 2500);
     };
 
     utterance.onboundary = (event) => {
@@ -223,12 +297,14 @@ export class SpeechService {
     };
 
     utterance.onend = () => {
+      if (watchdog) clearInterval(watchdog);
       this.stopSpeaking();
       onLipSync(0);
       if (onEnd) onEnd();
     };
 
     utterance.onerror = (err) => {
+      if (watchdog) clearInterval(watchdog);
       console.warn('Speech synthesis error:', err);
       this.stopSpeaking();
       onLipSync(0);
@@ -236,6 +312,18 @@ export class SpeechService {
     };
 
     this.synth.speak(utterance);
+  }
+
+  public static unlockAudio(): void {
+    if (this.synth) {
+      try {
+        if (this.synth.paused) {
+          this.synth.resume();
+        }
+      } catch {
+        // ignore
+      }
+    }
   }
 
   public static startListening(
@@ -253,8 +341,13 @@ export class SpeechService {
       return () => {};
     }
 
+    // Pastikan tidak ada suara TTS yang sedang berputar sebelum membuka mic
+    this.stopSpeaking();
+    this.stopListening();
+
     try {
       const recognition = new SpeechRecognition();
+      this.activeRecognition = recognition;
       recognition.lang = 'id-ID';
       recognition.interimResults = false;
       recognition.maxAlternatives = 1;
@@ -292,12 +385,18 @@ export class SpeechService {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       recognition.onerror = (event: any) => {
         console.warn('Speech recognition event error:', event.error);
+        if (SpeechService.activeRecognition === recognition) {
+          SpeechService.activeRecognition = null;
+        }
         if (onError) onError(event.error);
         if (onStateChange) onStateChange(false);
         if (onSoundDetected) onSoundDetected(false);
       };
 
       recognition.onend = () => {
+        if (SpeechService.activeRecognition === recognition) {
+          SpeechService.activeRecognition = null;
+        }
         if (onStateChange) onStateChange(false);
         if (onSoundDetected) onSoundDetected(false);
       };
@@ -310,9 +409,13 @@ export class SpeechService {
         } catch {
           // ignore
         }
+        if (SpeechService.activeRecognition === recognition) {
+          SpeechService.activeRecognition = null;
+        }
         if (onStateChange) onStateChange(false);
       };
     } catch (err) {
+      this.activeRecognition = null;
       console.error('Failed to start speech recognition:', err);
       if (onError) onError(err instanceof Error ? err.message : 'Gagal mengakses mikrofon.');
       if (onStateChange) onStateChange(false);

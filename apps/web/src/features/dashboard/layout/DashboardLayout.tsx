@@ -1,9 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { DashboardTopNav } from './DashboardTopNav';
 import { FloatingAvatarWidget } from '../components/FloatingAvatarWidget';
-import { AvatarChatBox } from '../components/AvatarChatBox';
 import { AvatarDebugControls } from '../components/AvatarDebugControls';
 import { AvatarController, CharacterEmotion } from '../avatar/AvatarController';
 import {
@@ -22,7 +21,7 @@ import {
   VOICE_SECONDARY_ID,
   TTSProcessor,
 } from '../services/tts-processor';
-import { MessageCircle, UserCheck, ShieldAlert, X } from 'lucide-react';
+import { UserCheck, ShieldAlert, X } from 'lucide-react';
 import { SimulationProvider } from '../simulation/SimulationContext';
 import type { JknClaimRecord } from '@healthathon/shared';
 
@@ -43,9 +42,16 @@ const DashboardLayoutContent: React.FC<
   clearAnomalyAlert,
 }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(false);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState<boolean>(false);
   const [showSettingsModal, setShowSettingsModal] = useState<boolean>(false);
   const [isAlertExiting, setIsAlertExiting] = useState<boolean>(false);
+
+  // Auto-close mobile sidebar drawer on navigation
+  useEffect(() => {
+    setIsMobileSidebarOpen(false);
+  }, [location.pathname]);
 
   // Auto-dismiss anomaly alert after 5 seconds with smooth slide-up
   useEffect(() => {
@@ -76,7 +82,6 @@ const DashboardLayoutContent: React.FC<
   const [manualMouthOpen, setManualMouthOpen] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [settings, setSettings] = useState<OpenRouterSettings>(getStoredSettings);
-  const [isChatOpen, setIsChatOpen] = useState<boolean>(false);
   const [isMinimized, setIsMinimized] = useState<boolean>(false);
   const [isListening, setIsListening] = useState<boolean>(false);
   const [isSoundDetected, setIsSoundDetected] = useState<boolean>(false);
@@ -218,13 +223,15 @@ const DashboardLayoutContent: React.FC<
     handleSelectEmotion('thinking', 15000);
 
     try {
-      const { reply, emotion, metadata } = await sendOpenRouterChat(text, newHistory, settings);
+      const { reply, emotion, metadata, shortcuts, citations } = await sendOpenRouterChat(text, newHistory, settings);
 
       const assistantMsg: ChatMessage = {
         id: 'msg-' + Date.now() + '-a',
         role: 'assistant',
         content: reply,
         emotion: emotion,
+        shortcuts: shortcuts,
+        citations: citations,
         timestamp: new Date().toISOString(),
       };
 
@@ -234,7 +241,7 @@ const DashboardLayoutContent: React.FC<
       handleSelectEmotion(emotion, 5500);
 
       const voiceSettings = TTSProcessor.computeVoiceSettings(metadata);
-      const speechText = TTSProcessor.prepareTextForTTS(reply, metadata);
+      const speechText = TTSProcessor.extractSpokenSummary(reply, metadata, 220);
 
       const el11Key = settings.elevenLabsApiKey || DEFAULT_SETTINGS.elevenLabsApiKey;
       const el11Voice = settings.elevenLabsVoiceId || DEFAULT_SETTINGS.elevenLabsVoiceId || VOICE_DEFAULT_ID;
@@ -344,28 +351,77 @@ const DashboardLayoutContent: React.FC<
   }, [settings.elevenLabsApiKey, settings.elevenLabsVoiceId]);
 
   const outletContextValue = React.useMemo(
-    () => ({ onTriggerAvatarSpeech: handleTriggerSpeechFromPage }),
-    [handleTriggerSpeechFromPage]
+    () => ({
+      onTriggerAvatarSpeech: handleTriggerSpeechFromPage,
+      messages,
+      isLoading,
+      onSendMessage: handleSendMessage,
+      onClearHistory: handleClearHistory,
+      onSelectEmotion: handleSelectEmotion,
+      selectedVoiceId: settings.elevenLabsVoiceId || VOICE_DEFAULT_ID,
+      onSelectVoice: handleSelectVoice,
+      isListening,
+      isSoundDetected,
+      onToggleClickToSpeak: handleToggleClickToSpeak,
+      onStopSpeaking: () => SpeechService.stopSpeaking(),
+    }),
+    [
+      handleTriggerSpeechFromPage,
+      messages,
+      isLoading,
+      handleSendMessage,
+      handleClearHistory,
+      handleSelectEmotion,
+      settings.elevenLabsVoiceId,
+      handleSelectVoice,
+      isListening,
+      isSoundDetected,
+    ]
   );
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-[#fafafa] dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans">
-      {/* Floating Rounded Sidebar */}
-      <div className="p-3 shrink-0 h-full">
+      {/* Desktop Floating Rounded Sidebar */}
+      <div className="hidden md:block p-3 shrink-0 h-full">
         <Sidebar
           isCollapsed={isSidebarCollapsed}
           onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
           userEmail={userEmail}
           onLogout={onLogout}
-          onOpenAvatarChat={() => setIsChatOpen(true)}
+          onOpenAvatarChat={() => navigate('/dashboard/ai-report')}
         />
       </div>
+
+      {/* Mobile Drawer Sidebar Overlay */}
+      {isMobileSidebarOpen && (
+        <div className="fixed inset-0 z-50 md:hidden flex">
+          <div
+            className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity duration-200"
+            onClick={() => setIsMobileSidebarOpen(false)}
+          />
+          <div className="relative z-10 w-72 max-w-[82vw] h-full p-3 shadow-2xl animate-in slide-in-from-left duration-200">
+            <Sidebar
+              isCollapsed={false}
+              onToggleCollapse={() => setIsMobileSidebarOpen(false)}
+              userEmail={userEmail}
+              onLogout={onLogout}
+              onNavigate={() => setIsMobileSidebarOpen(false)}
+              onOpenAvatarChat={() => {
+                setIsMobileSidebarOpen(false);
+                navigate('/dashboard/ai-report');
+              }}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Main App Content Area */}
       <div className="flex-1 flex flex-col h-full overflow-hidden min-w-0">
         <DashboardTopNav
           onToggleSettings={() => setShowSettingsModal(!showSettingsModal)}
           selectedVoiceId={settings.elevenLabsVoiceId || VOICE_DEFAULT_ID}
+          onSelectVoice={handleSelectVoice}
+          onToggleMobileSidebar={() => setIsMobileSidebarOpen((prev) => !prev)}
         />
 
         {/* Live Anomaly Toast (top-right, compact with smooth slide-up exit) */}
@@ -388,16 +444,16 @@ const DashboardLayoutContent: React.FC<
                   clearAnomalyAlert();
                   navigate('/dashboard/ai-report');
                 }}
-                className="text-[11px] font-semibold text-white hover:underline shrink-0"
+                className="text-[11px] font-semibold text-white hover:underline shrink-0 cursor-pointer"
               >
-                Audit
+                Chat AI
               </button>
               <button
                 onClick={() => {
                   setIsAlertExiting(true);
                   setTimeout(clearAnomalyAlert, 300);
                 }}
-                className="text-rose-300 hover:text-white transition-colors shrink-0"
+                className="text-rose-300 hover:text-white transition-colors shrink-0 cursor-pointer"
                 title="Tutup"
               >
                 <X className="w-3.5 h-3.5" />
@@ -407,20 +463,33 @@ const DashboardLayoutContent: React.FC<
         )}
 
         {/* Dynamic Page Routed Content via Outlet */}
-        <main id="dashboard-main-scroll" className="flex-1 overflow-y-auto p-5 sm:p-6 overscroll-contain bg-slate-50/50 dark:bg-slate-950">
-          <div className="max-w-6xl mx-auto w-full space-y-5">
+        <main
+          id="dashboard-main-scroll"
+          className={`flex-1 min-w-0 ${
+            location.pathname === '/dashboard/ai-report'
+              ? 'overflow-hidden flex flex-col bg-white dark:bg-slate-950 p-0'
+              : 'overflow-y-auto p-4 sm:p-6 overscroll-contain bg-slate-50/50 dark:bg-slate-950'
+          }`}
+        >
+          <div
+            className={
+              location.pathname === '/dashboard/ai-report'
+                ? 'flex-1 flex flex-col h-full w-full min-h-0'
+                : 'max-w-6xl mx-auto w-full space-y-5'
+            }
+          >
             <Outlet context={outletContextValue} />
           </div>
 
           {/* Settings Modal (if opened) */}
           {showSettingsModal && (
             <div className="fixed inset-0 z-50 bg-black/30 backdrop-blur-xs flex items-center justify-center p-4">
-              <div className="bg-white rounded-xl p-5 max-w-xl w-full border border-slate-200 shadow-xl space-y-3">
-                <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
-                  <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wide">Konfigurasi Model & Suara</h3>
+              <div className="bg-white dark:bg-slate-900 rounded-xl p-5 max-w-xl w-full border border-slate-200 dark:border-slate-800 shadow-xl space-y-3">
+                <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2.5">
+                  <h3 className="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wide">Konfigurasi Model & Suara</h3>
                   <button
                     onClick={() => setShowSettingsModal(false)}
-                    className="text-slate-400 hover:text-slate-700 transition-colors"
+                    className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors cursor-pointer"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -447,7 +516,7 @@ const DashboardLayoutContent: React.FC<
         onClickToSpeak={handleToggleClickToSpeak}
         isListening={isListening}
         isSoundDetected={isSoundDetected}
-        onOpenChat={() => setIsChatOpen(true)}
+        onOpenChat={() => navigate('/dashboard/ai-report')}
         onMinimize={() => setIsMinimized(true)}
         isMinimized={isMinimized}
         selectedVoiceId={settings.elevenLabsVoiceId || VOICE_DEFAULT_ID}
@@ -458,41 +527,13 @@ const DashboardLayoutContent: React.FC<
       {isMinimized && (
         <button
           onClick={() => setIsMinimized(false)}
-          className="fixed bottom-24 right-6 z-50 flex items-center gap-2 px-3.5 py-1.5 bg-white hover:bg-slate-50 text-slate-800 rounded-full shadow-md border border-slate-200 text-xs font-medium transition-colors"
+          className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-3.5 py-1.5 bg-white dark:bg-slate-800 hover:bg-slate-50 text-slate-800 dark:text-slate-200 rounded-full shadow-md border border-slate-200 dark:border-slate-700 text-xs font-medium transition-colors cursor-pointer"
           title="Buka Asisten AI"
         >
           <div className="w-2 h-2 rounded-full bg-[#007a3d]" />
           <span>Buka Asisten AI</span>
-          <UserCheck className="w-4 h-4 text-slate-600" />
+          <UserCheck className="w-4 h-4 text-slate-600 dark:text-slate-300" />
         </button>
-      )}
-
-      {/* Floating Chat Box Trigger (Neutral Modern Styling, No Star SVG) */}
-      {!isChatOpen && (
-        <button
-          onClick={() => setIsChatOpen(true)}
-          className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-full shadow-xl border border-slate-700/50 text-xs font-medium transition-all hover:scale-105 active:scale-95"
-          title="Tanya Regulasi & Kasus"
-        >
-          <MessageCircle className="w-4 h-4 text-slate-300" />
-          <span className="tracking-tight font-medium">Tanya Regulasi &amp; Kasus</span>
-        </button>
-      )}
-
-
-      {/* Floating Chat Modal */}
-      {isChatOpen && (
-        <div className="fixed bottom-4 right-4 sm:right-6 sm:bottom-6 z-50 sm:w-[420px] max-w-[calc(100vw-32px)] shadow-2xl rounded-2xl overflow-hidden border border-slate-200 animate-in fade-in slide-in-from-bottom-4 duration-200">
-          <AvatarChatBox
-            messages={messages}
-            isLoading={isLoading}
-            onSendMessage={handleSendMessage}
-            onClearHistory={handleClearHistory}
-            onTriggerLipSync={handleMouthOpenChange}
-            onAvatarStateChange={(emo) => handleSelectEmotion(emo, 6000)}
-            onClose={() => setIsChatOpen(false)}
-          />
-        </div>
       )}
     </div>
   );
