@@ -125,22 +125,12 @@ export const AvatarCanvas: React.FC<AvatarCanvasProps> = ({
 
         app.stage.addChild(model.rootContainer);
 
-        // Throttled 30 FPS tick loop for idle state (reduces CPU/GPU usage by ~70%)
-        let lastRender = 0;
-        const TARGET_FRAME_MS = 33.3; // 30 FPS is silky smooth for 2D anime character
-
+        // Smooth 60 FPS update loop with accurate ticker delta
         app.ticker.add((ticker) => {
           if (isDisposed || !app) return;
-          const now = performance.now();
-          if (now - lastRender < TARGET_FRAME_MS) return;
-          lastRender = now;
-
-          const delta = Math.min(ticker?.deltaMS ?? 33.3, 100);
+          const delta = Math.min(ticker?.deltaMS ?? 16.6, 50);
           controller.update(delta);
-          app.render();
         });
-
-        app.render();
 
         if (isMinimized) {
           app.ticker.stop();

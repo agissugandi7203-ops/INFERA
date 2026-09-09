@@ -231,7 +231,8 @@ export class AvatarController {
         this.nextBlink = 2.2 + Math.random() * 3.2;
       }
     } else {
-      this.blinkProgress += dt * 9.0;
+      // Natural human / anime blink duration: ~155ms (Math.PI / 20 = 0.157s)
+      this.blinkProgress += dt * 20.0;
       if (this.blinkProgress >= Math.PI) {
         this.isBlinking = false;
         this.model.eyeLContainer.scale.y = 1.0;
@@ -527,11 +528,17 @@ export class AvatarController {
       case 'normal':
       default: {
         this.applyMouthVisual('closed');
-        if (browL) gsap.to(browL, { x: this.browLInitX, y: this.browLInitY, rotation: 0, duration, overwrite: 'auto' });
-        if (browR) gsap.to(browR, { x: this.browRInitX, y: this.browRInitY, rotation: 0, duration, overwrite: 'auto' });
-        gsap.to(this.model.eyeLContainer.scale, { x: 1.0, y: 1.0, duration, overwrite: 'auto' });
-        gsap.to(this.model.eyeRContainer.scale, { x: 1.0, y: 1.0, duration, overwrite: 'auto' });
-        gsap.to(this.model.headContainer, { rotation: 0, duration, overwrite: 'auto' });
+        this.isBlinking = false;
+        this.model.eyeLContainer.scale.x = 1.0;
+        this.model.eyeLContainer.scale.y = 1.0;
+        this.model.eyeRContainer.scale.x = 1.0;
+        this.model.eyeRContainer.scale.y = 1.0;
+
+        if (browL) gsap.to(browL, { x: this.browLInitX, y: this.browLInitY, rotation: 0, duration: 0.2, overwrite: 'auto' });
+        if (browR) gsap.to(browR, { x: this.browRInitX, y: this.browRInitY, rotation: 0, duration: 0.2, overwrite: 'auto' });
+        gsap.to(this.model.eyeLContainer.scale, { x: 1.0, y: 1.0, duration: 0.15, overwrite: 'auto' });
+        gsap.to(this.model.eyeRContainer.scale, { x: 1.0, y: 1.0, duration: 0.15, overwrite: 'auto' });
+        gsap.to(this.model.headContainer, { rotation: 0, duration: 0.2, overwrite: 'auto' });
         this.setMouthOpen(0);
         break;
       }
