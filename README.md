@@ -124,7 +124,7 @@ INFERA menjembatani kesenjangan antara sistem pemantauan konvensional yang kaku 
 Guna mempercepat adopsi dan kemudahan penelaahan, INFERA dilengkapi dengan asisten virtual berwujud avatar interaktif yang didukung sintesis suara neural alami (*low-latency neural TTS*). Auditor dapat berdialog secara langsung menggunakan bahasa percakapan sehari-hari untuk menggali latar belakang kasus, memeriksa alasan penandaan anomali, hingga meminta ringkasan pasal hukum yang relevan.
 
 <p align="center">
-  <img src="docs/assets/infera-workflow.svg" alt="Diagram Alur Kerja Sistem INFERA" width="100%" />
+  <img src="docs/assets/infera-workflow.png" alt="Diagram Alur Kerja Sistem INFERA" width="100%" />
 </p>
 
 Diagram di atas mengilustrasikan tiga lapisan arsitektur terpadu INFERA:
@@ -594,19 +594,29 @@ Seluruh proses analisis risiko, deteksi anomali, hingga telaah forensik disajika
 
 ### B. Interactive AI Multimodal Voice & Avatar Engine (Vera & Luna)
 
-INFERA menghadirkan asisten avatar visual cerdas yang dilengkapi ekspresi emosional dan sintesis suara neural tingkat tinggi:
-- **Teknologi Render Canvas/SVG:** Dibangun di atas PixiJS v8 dan GSAP untuk render animasi 60 FPS tanpa membebani GPU/CPU pengguna.
-- **Dynamic Emotional States:** Avatar secara adaptif mengubah ekspresi berdasarkan konteks pembicaraan:
-  - `normal`: Siap siaga mendengarkan.
-  - `thinking`: Berpikir saat tool forensik sedang dieksekusi.
-  - `surprised`: Terkejut saat menemukan anomali kritis ($S > 85$).
-  - `confused`: Menganalisis parameter yang bertolak belakang.
-  - `speaking`: Animasi bibir (*lip-sync*) sinkron dengan aliran audio ElevenLabs.
-  - `listening`: Mode pengenalan suara auditor (*Speech-to-Text*).
-- **Dual Voice Identity (ElevenLabs TTS):**
-  - **Vera (Default AI Voice):** Suara ramah, jernih, dan profesional (`GgFtkxszsIQcD4MYvQax`).
-  - **Luna (Secondary Voice):** Karakter vokal lembut dan tenang (`0csCu4D7iyBsmlVlf9Iu`), dapat ditukar instan via klik kanan widget avatar.
-  - **Voice Auditor & Analyst System:** Profil vokal tegas dan formal (`onwK4e9ZLuTAKqWW03F9`) untuk pembacaan berita acara audit resmi.
+INFERA menghadirkan asisten avatar visual cerdas yang bertindak sebagai antarmuka interaksi natural antara auditor dengan sistem intelijen risiko. Avatar digerakkan oleh mesin grafis Canvas/WebGL berbasis **PixiJS v8** dan **GSAP** berkinerja tinggi (60 FPS stabil) dengan sinkronisasi artikulasi bibir (*real-time lip-sync*) dan sintesis suara neural alami ElevenLabs.
+
+<p align="center">
+  <img src="docs/assets/vera-expressions-strip.png" alt="Ekspresi Adaptif Avatar INFERA Vera" width="100%" />
+  <br/>
+  <em>Ekspresi Wajah Adaptif Asisten Virtual INFERA (Vera): Siaga Mendengarkan (Kiri), Menjelaskan & Lip-Sync (Tengah), dan Analisis / Berpikir (Kanan)</em>
+</p>
+
+#### Penjabaran Status Ekspresi Adaptif Avatar:
+1. **Siap & Mendengarkan (*Normal / Listening State*):**  
+   - **Visual:** Tatapan mata ramah, postur tegak siaga, dan senyuman lembut natural.
+   - **Konteks Operasional:** Status default sistem saat menunggu instruksi auditor. Ketika mikrofon diaktifkan, indikator gelombang suara hijau menyala dan avatar masuk ke mode mendengarkan input suara pengguna secara terfokus.
+2. **Berbicara & Penjelasan Yuridis (*Speaking / Lip-Sync State*):**  
+   - **Visual:** Artikulasi bibir terbuka dinamis yang disinkronkan secara matematis (*audio-driven lip movement*) dengan kontur fonem suara vokal ElevenLabs.
+   - **Konteks Operasional:** Aktif ketika asisten membacakan ringkasan hasil audit, menguraikan kronologi anomali klaim, atau mengutip pasal regulasi resmi JKN secara langsung kepada auditor.
+3. **Analisis Kasus & Penelaahan Regulasi (*Thinking State*):**  
+   - **Visual:** Tatapan mata analitis terfokus disertai bayangan kontemplatif halus pada area dahi.
+   - **Konteks Operasional:** Dipicu secara otomatis saat AI Agent mengeksekusi *tool calls* di latar belakang—seperti mengalkulasi formula matematis ($DSI, V_{\text{travel}}, POR$), mengkroscek riwayat kunjungan SEP, atau melakukan pencarian semantik vektor regulasi di Supabase pgvector.
+
+#### Dual Voice Identity & Profil Vokal (ElevenLabs Neural Voice):
+- **Vera (Default AI Voice):** Karakter vokal ramah, artikulatif, dan profesional (`GgFtkxszsIQcD4MYvQax`), dirancang untuk memandu auditor dalam eksplorasi dashboard sehari-hari.
+- **Luna (Secondary Voice):** Karakter vokal lebih lembut dan tenang (`0csCu4D7iyBsmlVlf9Iu`), dapat dialihkan secara instan melalui menu klik kanan pada widget avatar.
+- **Voice Auditor & Analyst Mode:** Profil vokal formal dengan intonasi tegas (`onwK4e9ZLuTAKqWW03F9`) untuk pembacaan berita acara pemeriksaan forensik resmi.
 
 ---
 

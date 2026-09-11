@@ -147,15 +147,18 @@ for part_id, stype, target, parent, default_vis, z_idx in PARTS_SPEC:
         orig_y = layer.bbox[1] + bbox[1]
 
     elif stype == 'special_mouth_open':
-        # Unified open mouth composite
+        # Clean open mouth composite: Only cavity, teeth, tongue, and lip outlines (no skin clipping masks)
         layer = find_layer_anywhere('mouth')
+        clean_canvas = Image.new('RGBA', (psd.size[0], psd.size[1]), (0, 0, 0, 0))
         for c in layer.descendants():
-            c.visible = True
-        raw_img = layer.composite()
-        bbox = raw_img.getbbox()
-        cropped_img = raw_img.crop(bbox)
-        orig_x = layer.bbox[0] + bbox[0]
-        orig_y = layer.bbox[1] + bbox[1]
+            if c.name.strip() in ('in.mouth', 'teeth', 'tongue', 'Lapisan 170', 'Lapisan 173'):
+                im = c.topil()
+                if im:
+                    clean_canvas.paste(im, (c.bbox[0], c.bbox[1]), im)
+        bbox = clean_canvas.getbbox()
+        cropped_img = clean_canvas.crop(bbox)
+        orig_x = bbox[0]
+        orig_y = bbox[1]
 
     elif stype == 'path':
         layer = find_layer_by_path(target)
