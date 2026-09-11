@@ -1,5 +1,10 @@
 <div align="center">
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/logo-dark.png">
+  <img alt="INFERA Logo" src="docs/assets/logo.png" width="160" />
+</picture>
+
 # INFERA
 ### Intelligent Fraud & Risk Analysis Agent
 **Enterprise Decision Support System & Autonomous Investigation Agent for BPJS Kesehatan**  
@@ -30,7 +35,7 @@
 
 <br/>
 
-```
+<pre align="center">
  ██╗███╗   ██╗███████╗███████╗██████╗  █████╗ 
  ██║████╗  ██║██╔════╝██╔════╝██╔══██╗██╔══██╗
  ██║██╔██╗ ██║█████╗  █████╗  ██████╔╝███████║
@@ -38,7 +43,7 @@
  ██║██║ ╚████║██║     ███████╗██║  ██║██║  ██║
  ╚═╝╚═╝  ╚═══╝╚═╝     ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝
        Intelligent Fraud & Risk Analysis Agent
-```
+</pre>
 
 ### Tagline
 ### *“See the Pattern. Understand the Risk. Act Smarter.”*
