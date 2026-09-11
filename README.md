@@ -596,11 +596,31 @@ Seluruh proses analisis risiko, deteksi anomali, hingga telaah forensik disajika
 
 INFERA menghadirkan asisten avatar visual cerdas yang bertindak sebagai antarmuka interaksi natural antara auditor dengan sistem intelijen risiko. Avatar digerakkan oleh mesin grafis Canvas/WebGL berbasis **PixiJS v8** dan **GSAP** berkinerja tinggi (60 FPS stabil) dengan sinkronisasi artikulasi bibir (*real-time lip-sync*) dan sintesis suara neural alami ElevenLabs.
 
-<p align="center">
-  <img src="docs/assets/vera-expressions-strip.png" alt="Ekspresi Adaptif Avatar INFERA Vera" width="100%" />
-  <br/>
-  <em>Ekspresi Wajah Adaptif Asisten Virtual INFERA (Vera): Siaga Mendengarkan (Kiri), Menjelaskan & Lip-Sync (Tengah), dan Analisis / Berpikir (Kanan)</em>
-</p>
+<div align="center">
+  <table>
+    <tr>
+      <td width="28%" align="center" valign="middle">
+        <img src="docs/assets/vera-preview.png" alt="Model Utuh Full Badan Vera" width="220" />
+        <br/>
+        <sub><b>Model Karakter Utuh Vera</b><br/><i>Multi-Layer Rigged Mesh 60 FPS</i></sub>
+      </td>
+      <td width="72%" valign="middle">
+        <p align="center">
+          <img src="docs/assets/vera-expressions-strip.png" alt="Ekspresi Wajah Bersih Vera" width="100%" />
+          <br/>
+          <sub><b>Ekspresi Wajah Adaptif:</b> Siaga Mendengarkan (Kiri) &bull; Penjelasan &amp; Lip-Sync (Tengah) &bull; Analisis / Berpikir (Kanan)</sub>
+        </p>
+        <hr/>
+        <p align="left">
+          <b>Karakteristik Visual &amp; Motorik Asisten:</b><br/>
+          &bull; <b>Artikulasi Fonemik Halus:</b> Gerakan bibir terbuka dinamis yang disinkronkan secara matematis dengan amplitudo audio ElevenLabs tanpa jeda latensi.<br/>
+          &bull; <b>State Reaction Otomatis:</b> Wajah berubah ke mode berpikir saat mengeksekusi <i>tool calls</i> analitik, dan kembali tersenyum ramah saat menyajikan insight.<br/>
+          &bull; <b>Ringan &amp; Responsif:</b> Sprite atlas 2D teroptimasi penuh, bebas beban GPU berlebih, dan terintegrasi mulus sebagai floating widget.
+        </p>
+      </td>
+    </tr>
+  </table>
+</div>
 
 #### Penjabaran Status Ekspresi Adaptif Avatar:
 1. **Siap & Mendengarkan (*Normal / Listening State*):**  
