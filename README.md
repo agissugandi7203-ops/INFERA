@@ -301,11 +301,11 @@ Modus *Doctor Shopping* merugikan keuangan JKN karena peserta mendatangi beberap
 
 #### Formulasi Doctor Shopping Index ($DSI$):
 
-$$DSI = \frac{\sum_{i=1}^{N-1} \mathbb{I}\Big(\Delta t_{(i, i+1)} \le 7\text{ hari} \ \land \ \text{ICD}_{i}^{3\text{char}} = \text{ICD}_{i+1}^{3\text{char}} \ \land \ \text{PPK}_i \ne \text{PPK}_{i+1}\Big)}{N_{\text{total\_kunjungan}} - 1}$$
+$$DSI = \frac{\sum_{i=1}^{N-1} \mathbb{I}\Big(\Delta t_{(i, i+1)} \le 7\text{ hari} \ \land \ \text{ICD}_{i}^{3\text{char}} = \text{ICD}_{i+1}^{3\text{char}} \ \land \ \text{PPK}_i \ne \text{PPK}_{i+1}\Big)}{N_{\text{total}} - 1}$$
 
 **Keterangan Notasi Matematis:**
 - $\mathbb{I}(\dots)$: Operator indikator logika biner Kronecker (bernilai 1 jika seluruh kondisi dalam tanda kurung terpenuhi, bernilai 0 jika tidak).
-- $N_{\text{total\_kunjungan}}$: Total kunjungan rawat jalan peserta dalam periode observasi 30 hari.
+- $N_{\text{total}}$: Total kunjungan rawat jalan peserta dalam periode observasi 30 hari.
 - $(N - 1)$: Jumlah transisi interval waktu antar kunjungan berurutan, sehingga rentang nilai $DSI$ terstandarisasi tepat pada interval tertutup $[0, 1.0]$.
 
 **Rasional Penetapan Parameter & Ambang Batas:**
@@ -354,7 +354,7 @@ Dimana $S_k$ adalah durasi hari suplai obat ke-$k$ yang telah ditebus peserta, d
 #### 2. Pelanggaran Masa Tunggu Alat Kesehatan (Cooling-off Period $\Delta t_{\text{alkes}}$)
 Klaim alat kesehatan memiliki ketentuan masa tunggu retensi penggantian (*replacement cooling-off period*) resmi:
 
-$$\Delta t_{\text{alkes}} = \frac{t_{\text{klaim\_saat\_ini}} - t_{\text{klaim\_sebelumnya}}}{86.400.000\text{ ms/hari}}$$
+$$\Delta t_{\text{alkes}} = \frac{t_{\text{akhir}} - t_{\text{awal}}}{86.400.000\text{ ms/hari}}$$
 
 Klaim dinyatakan sah hanya jika memenuhi masa tunggu statutory ($\Delta t_{\text{alkes}} \ge \tau_{\text{regulasi}}$):
 
@@ -395,7 +395,7 @@ $$\sum_{m=1}^{4} w_m = 1.00 \quad (w_m > 0)$$
 
 $$S_{\text{final}} = 
 \begin{cases} 
-\max\left(S_{\text{composite}}, S_{\text{critical\_override}}\right), & \text{jika } \text{Flag}_{\text{deterministik}} = 1 \\
+\max\left(S_{\text{composite}}, S_{\text{override}}\right), & \text{jika } \text{Flag}_{\text{deterministik}} = 1 \\
 \min\left(100, S_{\text{composite}}\right), & \text{jika anomali probabilistik biasa}
 \end{cases}$$
 
@@ -409,7 +409,7 @@ $$S_{\text{final}} =
 | **Penyalahgunaan Farmasi & Alkes** | **$0.15$ (15%)** | Rasio $POR$ obat PRB, masa tunggu $\Delta t_{\text{alkes}}$ | Menilai deviasi kuota obat kronis dan masa tunggu alkes untuk mencegah penimbunan dan klaim prematur. |
 
 - **Parameter Penambah Riwayat ($\beta_{\text{riwayat}} \in [0, 10]$):** Penalti tambahan apabila data riwayat audit menunjukkan peserta pernah menerima surat teguran resmi atau catatan verifikasi dalam 12 bulan terakhir.
-- **Nilai Override Deterministik ($S_{\text{critical\_override}} \ge 95$):** Menjamin bahwa jika terjadi diskordansi biologis mutlak atau *impossible travel* $> 150\text{ km/jam}$, skor risiko peserta **langsung melompat ke level CRITICAL**, tanpa tereduksi oleh komponen lain yang bernilai 0.
+- **Nilai Override Deterministik ($S_{\text{override}} \ge 95$):** Menjamin bahwa jika terjadi diskordansi biologis mutlak atau *impossible travel* $> 150\text{ km/jam}$, skor risiko peserta **langsung melompat ke level CRITICAL**, tanpa tereduksi oleh komponen lain yang bernilai 0.
 
 #### 3. Matriks Tingkat Risiko & Tata Kelola Tindakan Administratif:
 
@@ -456,11 +456,11 @@ sequenceDiagram
     Reg->>DB: Query master profil peserta & riwayat SEP
     DB-->>Reg: Data 2 kunjungan (Solo & Semarang dalam 45 menit)
     Reg-->>Agent: JSON Result Envelopes
-    Web<<--Agent: SSE Event: tool.complete ("Profil & Riwayat SEP Ditemukan")
+    Agent-->>Web: SSE Event: tool.complete ("Profil & Riwayat SEP Ditemukan")
     
     Agent->>Reg: Panggil detect_fraud_pattern(type: "impossible_travel")
     Reg-->>Agent: Kecepatan 180 km/jam (CRITICAL ANOMALY)
-    Web<<--Agent: SSE Event: tool.complete ("Anomali Impossible Travel Terverifikasi")
+    Agent-->>Web: SSE Event: tool.complete ("Anomali Impossible Travel Terverifikasi")
 
     Agent->>Reg: Panggil search_regulations_rag(query: "Peminjaman kartu sanksi Permenkes 16/2019")
     Reg->>DB: Semantic Vector Match (pgvector cosine similarity)
