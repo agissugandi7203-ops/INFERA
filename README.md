@@ -75,10 +75,11 @@
 3. [Cara Kerja & Pipeline INFERA](#3-cara-kerja--pipeline-infera)
 4. [Regulatory Intelligence & RAG](#4-regulatory-intelligence--rag)
 5. [Taksonomi Modus Fraud & Formulasi Algoritma Deteksi](#5-taksonomi-modus-fraud--formulasi-algoritma-deteksi)
-   - [Modus 1 & 2: Pemalsuan & Penyalahgunaan Kartu (Impossible Travel)](#a-modus-1--2-pemalsuan--penyalahgunaan-identitas-impossible-travel)
-   - [Modus 3: Pelayanan Tidak Perlu & Doctor Shopping (DSI)](#b-modus-3-pelayanan-tidak-perlu--doctor-shopping-dsi)
-   - [Modus 4: Penyalahgunaan Obat PRB & Alat Kesehatan](#c-modus-4-penyalahgunaan-obat-kronis-prb--alat-kesehatan)
-   - [Matriks Scoring Risiko Multi-Faktor](#d-matriks-scoring-risiko-multi-faktor)
+   - [Modus 1: Pemalsuan Data & Identitas (Diskordansi Biologis)](#a-modus-1-pemalsuan-data--identitas-diskordansi-biologis-mutlak)
+   - [Modus 2: Peminjaman Kartu Kepesertaan (Impossible Travel)](#b-modus-2-peminjaman-kartu-kepesertaan-impossible-travel-velocity)
+   - [Modus 3: Pelayanan Tidak Perlu & Doctor Shopping (DSI)](#c-modus-3-pelayanan-tidak-perlu--doctor-shopping-doctor-shopping-index---dsi)
+   - [Modus 4: Penyalahgunaan Obat PRB & Alat Kesehatan (POR & Cooling-off)](#d-modus-4-penyalahgunaan-obat-kronis-prb--masa-tunggu-alat-kesehatan-por--cooling-off)
+   - [Matriks Scoring Risiko Multi-Faktor & Rule Override](#e-matriks-scoring-risiko-multi-faktor--rule-override)
 6. [Arsitektur Agen AI Forensik & Orchestrator Tools](#6-arsitektur-agen-ai-forensik--orchestrator-tools)
    - [Alur Kerja SSE (Server-Sent Events)](#a-alur-kerja-sse-server-sent-events)
    - [Katalog 9 Forensic Investigation Tools](#b-katalog-9-forensic-investigation-tools)
@@ -235,11 +236,36 @@ INFERA mengimplementasikan 4 mesin kalkulasi analitik deterministik yang memetak
 
 ---
 
-### A. Modus 1 & 2: Pemalsuan Identitas & Kartu Pinjaman (Impossible Travel & Diskordansi Biologis)
+### A. Modus 1: Pemalsuan Data & Identitas (Diskordansi Biologis Mutlak)
 
-Penyalahgunaan kartu oleh pihak yang tidak berhak merupakan salah satu kebocoran terbesar Dana Jaminan Sosial (DJS). INFERA mendeteksinya melalui dua pilar verifikasi fisik: **Kecepatan Perpindahan Geodesik** dan **Konsistensi Biologis Mutlak**.
+Pemalsuan data kepesertaan atau dokumen klaim terjadi ketika identitas peserta dimanipulasi atau dialihkan kepada individu lain dengan karakteristik biologis yang bertentangan secara fisiologis. Pelanggaran ini merupakan tindak pidana pemalsuan data autentik dan penipuan klaim jaminan kesehatan.
 
-#### 1. Kecepatan Perjalanan Spasial-Temporal (Impossible Travel Velocity)
+#### Formulasi Diskordansi Biologis Mutlak (*Absolute Biological Discordance*):
+Mengevaluasi keselarasan parameter demografi anatomis paten (jenis kelamin terdaftar di database master kepesertaan) terhadap tindakan medis atau diagnosis penyakit organ reproduksi spesifik:
+
+$$\text{Discordance}(\text{Peserta}, \text{SEP}) = 
+\begin{cases} 
+1, & \text{jika } \text{Gender}(\text{Peserta}) = \text{'L'} \ \land \ \text{Diagnosa} \in \{\text{O00-O99}\} \text{ (Obstetri / Persalinan / Sesar)} \\
+1, & \text{jika } \text{Gender}(\text{Peserta}) = \text{'P'} \land \text{Diagnosa} \in \{\text{N40-N51}\} \text{ (Penyakit Organ Genital Pria)} \\
+0, & \text{lainnya (Biologis Selaras)}
+\end{cases}$$
+
+**Rasional Klinis, Logis & Regulasi:**
+- **Kategori ICD-10 `O00-O99` (Bab XV):** Klasifikasi WHO khusus *Pregnancy, childbirth and the puerperium* (misal: Seksio Sesarea `O82.0`, Partus Spontan `O80.0`). Secara anatomi fisiologis biologis, diagnosis dan tindakan ini mutlak hanya dapat dialami oleh individu dengan organ reproduksi rahim wanita.
+- **Kategori ICD-10 `N40-N51` (Bab XIV):** Klasifikasi WHO khusus *Diseases of male genital organs*, mencakup hiperplasia prostat jinak (`N40`), prostatitis (`N41`), hingga orchitis/gangguan testis (`N45`). Secara anatomi, organ ini mutlak tidak dimiliki oleh wanita.
+- **Mengapa Diberi Skor Deterministik 99/100 (`CRITICAL`)?**  
+  Berbeda dengan anomali statistik yang probabilistik, ketidaksesuaian anatomi biologis memiliki probabilitas kesalahan acak mendekati nol ($p \approx 0$). Ketika nilai bernilai $1$, sistem mengabaikan perataan bobot linier (*non-linear deterministic override*) dan langsung memicu status darurat audit guna mencegah klaim fiktif atau peminjaman kartu beda gender sebelum dana DJS ditransfer.
+- **Dasar Regulasi & Penegakan Hukum Pidana:**  
+  Melanggar **Pasal 263 KUHP** (pemalsuan surat dan penggunaan identitas bukan haknya) dengan ancaman pidana penjara hingga 6 tahun, juncto **Permenkes No. 16 Tahun 2019 Pasal 6 & Pasal 7** tentang kewajiban pengembalian kerugian DJS secara mutlak dalam batas waktu 14 hari kerja.
+- **Studi Kasus Rujukan:** Terverifikasi pada **Benchmark Kasus 4: Agus Pratama** (`HK-ID-FALSIFY-2026`), peserta pria yang kartunya digunakan mendaftar operasi sesar di RS Swasta Surabaya (klaim Rp 12.800.000).
+
+---
+
+### B. Modus 2: Peminjaman Kartu Kepesertaan (Impossible Travel Velocity)
+
+Modus peminjaman kartu (*card sharing / pooling*) terjadi saat kartu kepesertaan yang sah diserahkan atau dipinjamkan kepada kerabat atau pihak lain yang tidak terdaftar, sehingga satu nomor kartu dipakai secara serentak di fasilitas kesehatan yang berjauhan. INFERA mendeteksinya melalui analisis kecepatan perpindahan spasial-temporal (*geodesic velocity*).
+
+#### Formulasi Kecepatan Perjalanan Spasial-Temporal (*Impossible Travel Velocity*):
 Mendeteksi apakah kartu peserta yang sama diterbitkan Surat Eligibilitas Peserta (SEP) di dua fasilitas kesehatan yang terpisah secara geografis dalam selang waktu transit yang mustahil ditempuh secara fisik:
 
 $$V_{\text{travel}} = \frac{d(\text{lat}_1, \text{lng}_1, \text{lat}_2, \text{lng}_2)}{\Delta t}$$
@@ -262,29 +288,14 @@ $$d = 2R \cdot \text{atan2}\left(\sqrt{a}, \sqrt{1-a}\right)$$
 - **Mengapa Ambang $V_{\text{travel}} > 100\text{ km/jam}$ dikategorikan `HIGH RISK`?**  
   Kecepatan tempuh rata-rata kendaraan bermotor antarkota di Indonesia via jalan tol/arteri berkisar antara 60 hingga 80 km/jam (Peraturan Pemerintah No. 79/2013 tentang Batas Kecepatan Maksimum Tol 100 km/jam). Kecepatan perpindahan *point-to-point* $> 100\text{ km/jam}$ tanpa jeda waktu parkir dan administrasi ulang adalah anomali logistik yang mengindikasikan kartu fisik/digital dibawa oleh orang yang berbeda.
 - **Mengapa Ambang $V_{\text{travel}} > 150\text{ km/jam}$ atau $\Delta t \le 45\text{ menit}$ Lintas Kota dikategorikan `CRITICAL RISK` (Skor 95–100)?**  
-  Kecepatan di atas 150 km/jam melampaui kemampuan transportasi darat komersial di Indonesia. Dalam selang waktu $\le 45\text{ menit}$ antarkota, terjadinya penerbitan dua SEP sekaligus membuktikan fenomena **teleportasi fisik yang mustahil**. Ini membuktikan secara konklusif bahwa satu nomor kartu digunakan serentak oleh dua individu berbeda di dua faskes terpisah. Perbuatan ini melanggar **Permenkes No. 16 Tahun 2019 Pasal 7 ayat (1) huruf a** juncto **Pasal 263 KUHP** (pemalsuan dan penggunaan identitas bukan haknya).
+  Kecepatan di atas 150 km/jam melampaui kemampuan transportasi darat komersial di Indonesia. Dalam selang waktu $\le 45\text{ menit}$ antarkota, terjadinya penerbitan dua SEP sekaligus membuktikan fenomena **teleportasi fisik yang mustahil**. Ini membuktikan secara konklusif bahwa satu nomor kartu digunakan serentak oleh dua individu berbeda di dua faskes terpisah.
+- **Dasar Regulasi & Sanksi Hukum:**  
+  Melanggar **Permenkes No. 16 Tahun 2019 Pasal 7 ayat (1) huruf a** juncto **Peraturan BPJS Kesehatan No. 6 Tahun 2020** dan **Pasal 263 KUHP**.
+- **Studi Kasus Rujukan:** Terverifikasi pada **Benchmark Kasus 1: Budi Santoso** (`HK-ID-SHARING-2026`), kartu terbit di Solo (08:30 WIB) dan Semarang (09:15 WIB) dalam jeda 45 menit dengan kecepatan implisit $180\text{ km/jam}$ (klaim Rp 8.400.000).
 
 ---
 
-#### 2. Diskordansi Biologis Mutlak (Absolute Biological Discordance)
-Mengevaluasi keselarasan parameter demografi anatomis paten (jenis kelamin terdaftar di database master kepesertaan) terhadap tindakan medis atau diagnosis penyakit organ reproduksi spesifik:
-
-$$\text{Discordance}(\text{Peserta}, \text{SEP}) = 
-\begin{cases} 
-1, & \text{jika } \text{Gender}(\text{Peserta}) = \text{'L'} \ \land \ \text{Diagnosa} \in \{\text{O00-O99}\} \text{ (Obstetri / Persalinan / Sesar)} \\
-1, & \text{jika } \text{Gender}(\text{Peserta}) = \text{'P'} \land \text{Diagnosa} \in \{\text{N40-N51}\} \text{ (Penyakit Organ Genital Pria)} \\
-0, & \text{lainnya (Biologis Selaras)}
-\end{cases}$$
-
-**Rasional Klinis & Regulasi:**
-- **Kategori ICD-10 `O00-O99` (Bab XV):** Klasifikasi WHO khusus *Pregnancy, childbirth and the puerperium* (misal: Seksio Sesarea `O82.0`, Partus Spontan `O80.0`). Secara anatomi fisiologis biologis, diagnosis dan tindakan ini mutlak hanya dapat dialami oleh individu dengan rahim wanita.
-- **Kategori ICD-10 `N40-N51` (Bab XIV):** Klasifikasi WHO khusus *Diseases of male genital organs*, mencakup hiperplasia prostat jinak (`N40`), prostatitis (`N41`), hingga orchitis/gangguan testis (`N45`). Secara anatomi, organ ini mutlak tidak dimiliki oleh wanita.
-- **Mengapa Diberi Skor DeterministiK 99/100 (`CRITICAL`)?**  
-  Berbeda dengan anomali statistik yang probabilistik, ketidaksesuaian anatomi biologis memiliki probabilitas kesalahan acak mendekati nol ($p \approx 0$). Ketika nilai bernilai $1$, sistem mengabaikan perataan bobot linier (*non-linear deterministic override*) dan langsung memicu status darurat audit guna mencegah klaim fiktif atau peminjaman kartu beda gender sebelum dana DJS ditransfer.
-
----
-
-### B. Modus 3: Pelayanan Tidak Perlu & Doctor Shopping (DSI)
+### C. Modus 3: Pelayanan Tidak Perlu & Doctor Shopping (Doctor Shopping Index - DSI)
 
 Modus *Doctor Shopping* merugikan keuangan JKN karena peserta mendatangi beberapa dokter atau rumah sakit dalam selang waktu sangat singkat untuk keluhan subjektif yang sama (*frequent flyer*). Tujuannya beragam: meminta pemeriksaan penunjang canggih berulang (CT-Scan, MRI, USG) yang tidak berindikasi medis, atau menimbun obat penenang/analgetik.
 
@@ -316,7 +327,7 @@ $$DSI = \frac{\sum_{i=1}^{N-1} \mathbb{I}\Big(\Delta t_{(i, i+1)} \le 7\text{ ha
 
 ---
 
-### C. Modus 4: Penyalahgunaan Obat Kronis PRB & Alat Kesehatan
+### D. Modus 4: Penyalahgunaan Obat Kronis PRB & Masa Tunggu Alat Kesehatan (POR & Cooling-off)
 
 Modus ini mengeksploitasi fasilitas penjaminan obat Program Rujuk Balik (PRB) untuk 9 penyakit kronis (Diabetes Melitus, Hipertensi, Asma, PPOK, Jantung, dsb.) serta masa tunggu klaim alat kesehatan bernilai tinggi.
 
@@ -368,7 +379,7 @@ Klaim yang diajukan sebelum $\tau_{\text{regulasi}}$ terpenuhi secara otomatis d
 
 ---
 
-### D. Matriks Scoring Risiko Multi-Faktor & Rule Override
+### E. Matriks Scoring Risiko Multi-Faktor & Rule Override
 
 Untuk menghasilkan nilai risiko yang objektif, transparan, dan dapat dipertanggungjawabkan, INFERA menggabungkan **model pembobotan aktuaria linier (*convex combination*)** dengan **mekanisme pemutus darurat deterministik (*deterministic safety override*)**:
 
