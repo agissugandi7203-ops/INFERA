@@ -5,6 +5,7 @@
 ---
 
 [![BPJS Kesehatan](https://img.shields.io/badge/BPJS_Kesehatan-HealthAthon_2026-009B4C?style=flat-square&logo=shield&logoColor=white)](https://bpjs-kesehatan.go.id/)
+[![Team](https://img.shields.io/badge/Team-MAMAH%2C%20AKU%20IKUT%20HEALTHKATHON-E11D48?style=flat-square&logo=target&logoColor=white)](https://github.com/agissugandi7203-ops/Healthkathon)
 [![Category](https://img.shields.io/badge/Track-Efisiensi_Risiko_Peserta-0A7B83?style=flat-square)](https://bpjs-kesehatan.go.id/)
 [![React 19](https://img.shields.io/badge/React-19_/_18.3-20232A?style=flat-square&logo=react&logoColor=61DAFB)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-007ACC?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
@@ -754,8 +755,17 @@ Setiap rekomendasi sanksi yang dihasilkan oleh agen AI selalu menyertakan sitasi
 
 ## 13. Tim Pengembang, Hak Cipta & Lisensi
 
-Inovasi platform ini dikembangkan secara berdedikasi untuk kompetisi resmi **HealthAthon BPJS Kesehatan**:
+Inovasi platform ini dikembangkan secara berdedikasi untuk kompetisi resmi **HealthKathon BPJS Kesehatan 2026** (Kategori Inovasi: **Efisiensi Risiko pada Peserta**):
 
+### Identitas Tim & Anggota
+- **Nama Tim:** `MAMAH, AKU IKUT HEALTHKATHON`
+- **Susunan Anggota Tim:**
+  1. **Arief Fajar**
+  2. **Clarisa Nathania Christie**
+  3. **Diana Aliffa Puteri**
+- **Konteks Inovasi:** HealthKathon BPJS Kesehatan JKN — Enterprise Anti-Fraud Decision Support System & Autonomous Forensic Investigation Agent.
+
+### Standar Rekayasa & Arsitektur
 - **Fokus Lomba:** Efisiensi Risiko pada Peserta (*Participant Risk Efficiency & Fraud Intelligence*).
 - **Arsitektur & Konsep:** INFERA Autonomous Forensic Investigation Team.
 - **Standar Rekayasa:** *Anti-AI Slop Principles* — Type-Safe TypeScript, Modular Clean Architecture, Deterministic Analytic Mathematical Engines, Zero Phantom Abstraction.
@@ -767,6 +777,6 @@ Seluruh hak cipta, desain visual avatar, formulasi indeks DSI/Impossible Travel,
 
 <p align="center">
   <b>INFERA — Menjaga Integritas Dana Jaminan Sosial Demi Kesinambungan Kesehatan Seluruh Rakyat Indonesia.</b><br>
-  <i>Built with precision, integrity, and clinical excellence for BPJS Kesehatan HealthAthon.</i>
+  <i>Built with precision, integrity, and clinical excellence for BPJS Kesehatan HealthAthon by Tim <b>MAMAH, AKU IKUT HEALTHKATHON</b>.</i>
 </p>
 
