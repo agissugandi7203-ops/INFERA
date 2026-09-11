@@ -1,0 +1,183 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 460" width="100%" height="100%" style="background: transparent; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <defs>
+    <!-- Soft Drop Shadows -->
+    <filter id="card-shadow" x="-4%" y="-4%" width="108%" height="112%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#0f172a" flood-opacity="0.06" />
+      <feDropShadow dx="0" dy="1" stdDeviation="2" flood-color="#0f172a" flood-opacity="0.04" />
+    </filter>
+    <filter id="pill-shadow" x="-5%" y="-10%" width="110%" height="130%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000000" flood-opacity="0.04" />
+    </filter>
+    
+    <!-- Gradients -->
+    <linearGradient id="grad-stage1" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="100%" stop-color="#f1f5f9" />
+    </linearGradient>
+    <linearGradient id="grad-stage2" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f0fdf4" />
+      <stop offset="100%" stop-color="#ecfdf5" />
+    </linearGradient>
+    <linearGradient id="grad-stage3" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f5f3ff" />
+      <stop offset="100%" stop-color="#ede9fe" />
+    </linearGradient>
+
+    <!-- Arrow Marker -->
+    <marker id="arrow-teal" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#0d9488" />
+    </marker>
+    <marker id="arrow-indigo" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#6366f1" />
+    </marker>
+  </defs>
+
+  <!-- Canvas Outer Border & Background -->
+  <rect x="2" y="2" width="1196" height="456" rx="20" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.5" />
+
+  <!-- ==================== STAGE 1 ==================== -->
+  <g transform="translate(30, 30)">
+    <!-- Stage 1 Container Card -->
+    <rect x="0" y="0" width="340" height="400" rx="16" fill="url(#grad-stage1)" stroke="#cbd5e1" stroke-width="1.2" filter="url(#card-shadow)" />
+    
+    <!-- Header Badge -->
+    <rect x="20" y="20" width="80" height="24" rx="12" fill="#e2e8f0" />
+    <text x="60" y="36" font-size="11" font-weight="700" fill="#475569" text-anchor="middle" letter-spacing="0.5">TAHAP 1</text>
+    
+    <!-- Title & Subtitle -->
+    <text x="20" y="74" font-size="19" font-weight="800" fill="#0f172a">Data &amp; Aktivitas</text>
+    <text x="20" y="96" font-size="12.5" font-weight="500" fill="#64748b">Simulasi dinamis &amp; log transaksi JKN</text>
+    
+    <!-- Sub-Cards / Pills -->
+    <!-- Pill 1 -->
+    <g transform="translate(18, 120)">
+      <rect x="0" y="0" width="304" height="68" rx="12" fill="#ffffff" stroke="#e2e8f0" stroke-width="1" filter="url(#pill-shadow)" />
+      <circle cx="28" cy="34" r="14" fill="#e0f2fe" />
+      <text x="28" y="39" font-size="14" text-anchor="middle">📄</text>
+      <text x="54" y="28" font-size="13.5" font-weight="700" fill="#0f172a">Log Pelayanan &amp; Klaim</text>
+      <text x="54" y="48" font-size="11.5" fill="#64748b">Penerbitan SEP, rujukan, &amp; resep</text>
+    </g>
+    
+    <!-- Pill 2 -->
+    <g transform="translate(18, 202)">
+      <rect x="0" y="0" width="304" height="68" rx="12" fill="#ffffff" stroke="#e2e8f0" stroke-width="1" filter="url(#pill-shadow)" />
+      <circle cx="28" cy="34" r="14" fill="#e0e7ff" />
+      <text x="28" y="39" font-size="14" text-anchor="middle">⚡</text>
+      <text x="54" y="28" font-size="13.5" font-weight="700" fill="#0f172a">Simulation Engine</text>
+      <text x="54" y="48" font-size="11.5" fill="#64748b">Sintesis data dinamis (UU PDP aman)</text>
+    </g>
+
+    <!-- Pill 3 -->
+    <g transform="translate(18, 284)">
+      <rect x="0" y="0" width="304" height="68" rx="12" fill="#ffffff" stroke="#e2e8f0" stroke-width="1" filter="url(#pill-shadow)" />
+      <circle cx="28" cy="34" r="14" fill="#f1f5f9" />
+      <text x="28" y="39" font-size="14" text-anchor="middle">⏱️</text>
+      <text x="54" y="28" font-size="13.5" font-weight="700" fill="#0f172a">Aliran Waktu Nyata</text>
+      <text x="54" y="48" font-size="11.5" fill="#64748b">Menangkap perubahan kurva utilisasi</text>
+    </g>
+
+    <text x="170" y="380" font-size="11" font-weight="600" fill="#94a3b8" text-anchor="middle">Data Dummy Terkalibrasi ICD-10</text>
+  </g>
+
+  <!-- CONNECTOR 1 -> 2 -->
+  <g transform="translate(370, 230)">
+    <path d="M 6 0 L 52 0" fill="none" stroke="#0d9488" stroke-width="2.5" stroke-dasharray="5 3" marker-end="url(#arrow-teal)" />
+    <rect x="10" y="-22" width="44" height="16" rx="8" fill="#ccfbf1" />
+    <text x="32" y="-10" font-size="9" font-weight="700" fill="#0f766e" text-anchor="middle">STREAM</text>
+  </g>
+
+  <!-- ==================== STAGE 2 ==================== -->
+  <g transform="translate(430, 30)">
+    <!-- Stage 2 Container Card -->
+    <rect x="0" y="0" width="340" height="400" rx="16" fill="url(#grad-stage2)" stroke="#86efac" stroke-width="1.5" filter="url(#card-shadow)" />
+    
+    <!-- Header Badge -->
+    <rect x="20" y="20" width="80" height="24" rx="12" fill="#dcfce7" />
+    <text x="60" y="36" font-size="11" font-weight="700" fill="#15803d" text-anchor="middle" letter-spacing="0.5">TAHAP 2</text>
+    
+    <!-- Title & Subtitle -->
+    <text x="20" y="74" font-size="19" font-weight="800" fill="#065f46">Intelligence INFERA</text>
+    <text x="20" y="96" font-size="12.5" font-weight="500" fill="#047857">Deteksi pola, skor risiko, &amp; regulasi</text>
+
+    <!-- Sub-Cards / Pills -->
+    <!-- Pill 1 -->
+    <g transform="translate(18, 120)">
+      <rect x="0" y="0" width="304" height="68" rx="12" fill="#ffffff" stroke="#bbf7d0" stroke-width="1" filter="url(#pill-shadow)" />
+      <circle cx="28" cy="34" r="14" fill="#dcfce7" />
+      <text x="28" y="39" font-size="14" text-anchor="middle">🔍</text>
+      <text x="54" y="28" font-size="13.5" font-weight="700" fill="#0f172a">Deteksi Anomali &amp; Modus</text>
+      <text x="54" y="48" font-size="11.5" fill="#475569">Doctor shopping, travel, &amp; overlap obat</text>
+    </g>
+    
+    <!-- Pill 2 -->
+    <g transform="translate(18, 202)">
+      <rect x="0" y="0" width="304" height="68" rx="12" fill="#ffffff" stroke="#bbf7d0" stroke-width="1" filter="url(#pill-shadow)" />
+      <circle cx="28" cy="34" r="14" fill="#fef08a" />
+      <text x="28" y="39" font-size="14" text-anchor="middle">📊</text>
+      <text x="54" y="28" font-size="13.5" font-weight="700" fill="#0f172a">Skor Risiko (0–100)</text>
+      <text x="54" y="48" font-size="11.5" fill="#475569">Indeks keraguan objektif &amp; transparan</text>
+    </g>
+
+    <!-- Pill 3 -->
+    <g transform="translate(18, 284)">
+      <rect x="0" y="0" width="304" height="68" rx="12" fill="#ffffff" stroke="#bbf7d0" stroke-width="1" filter="url(#pill-shadow)" />
+      <circle cx="28" cy="34" r="14" fill="#e0e7ff" />
+      <text x="28" y="39" font-size="14" text-anchor="middle">⚖️</text>
+      <text x="54" y="28" font-size="13.5" font-weight="700" fill="#0f172a">RAG Regulasi &amp; Agen AI</text>
+      <text x="54" y="48" font-size="11.5" fill="#475569">Kutipan Permenkes 16/2019 &amp; 9 Tools</text>
+    </g>
+
+    <text x="170" y="380" font-size="11" font-weight="700" fill="#059669" text-anchor="middle">Analisis Cerdas &amp; Rekomendasi Terstruktur</text>
+  </g>
+
+  <!-- CONNECTOR 2 -> 3 -->
+  <g transform="translate(770, 230)">
+    <path d="M 6 0 L 52 0" fill="none" stroke="#6366f1" stroke-width="2.5" stroke-dasharray="5 3" marker-end="url(#arrow-indigo)" />
+    <rect x="6" y="-22" width="52" height="16" rx="8" fill="#ede9fe" />
+    <text x="32" y="-10" font-size="9" font-weight="700" fill="#4338ca" text-anchor="middle">REKOMENDASI</text>
+  </g>
+
+  <!-- ==================== STAGE 3 ==================== -->
+  <g transform="translate(830, 30)">
+    <!-- Stage 3 Container Card -->
+    <rect x="0" y="0" width="340" height="400" rx="16" fill="url(#grad-stage3)" stroke="#c4b5fd" stroke-width="1.2" filter="url(#card-shadow)" />
+    
+    <!-- Header Badge -->
+    <rect x="20" y="20" width="80" height="24" rx="12" fill="#ede9fe" />
+    <text x="60" y="36" font-size="11" font-weight="700" fill="#6d28d9" text-anchor="middle" letter-spacing="0.5">TAHAP 3</text>
+    
+    <!-- Title & Subtitle -->
+    <text x="20" y="74" font-size="19" font-weight="800" fill="#3b0764">Keputusan Manusia</text>
+    <text x="20" y="96" font-size="12.5" font-weight="500" fill="#6b21a8">Human-in-the-Loop &amp; Otorisasi</text>
+
+    <!-- Sub-Cards / Pills -->
+    <!-- Pill 1 -->
+    <g transform="translate(18, 120)">
+      <rect x="0" y="0" width="304" height="68" rx="12" fill="#ffffff" stroke="#ddd6fe" stroke-width="1" filter="url(#pill-shadow)" />
+      <circle cx="28" cy="34" r="14" fill="#fae8ff" />
+      <text x="28" y="39" font-size="14" text-anchor="middle">📋</text>
+      <text x="54" y="28" font-size="13.5" font-weight="700" fill="#0f172a">Antrean Kasus Prioritas</text>
+      <text x="54" y="48" font-size="11.5" fill="#64748b">Bukti log, peta anomali, &amp; regulasi</text>
+    </g>
+    
+    <!-- Pill 2 -->
+    <g transform="translate(18, 202)">
+      <rect x="0" y="0" width="304" height="68" rx="12" fill="#ffffff" stroke="#ddd6fe" stroke-width="1" filter="url(#pill-shadow)" />
+      <circle cx="28" cy="34" r="14" fill="#ede9fe" />
+      <text x="28" y="39" font-size="14" text-anchor="middle">🧑‍💼</text>
+      <text x="54" y="28" font-size="13.5" font-weight="700" fill="#0f172a">Verifikasi oleh Auditor</text>
+      <text x="54" y="48" font-size="11.5" fill="#64748b">Pemeriksaan klinis &amp; kepatuhan faskes</text>
+    </g>
+
+    <!-- Pill 3 -->
+    <g transform="translate(18, 284)">
+      <rect x="0" y="0" width="304" height="68" rx="12" fill="#ffffff" stroke="#ddd6fe" stroke-width="1" filter="url(#pill-shadow)" />
+      <circle cx="28" cy="34" r="14" fill="#dcfce7" />
+      <text x="28" y="39" font-size="14" text-anchor="middle">🛡️</text>
+      <text x="54" y="28" font-size="13.5" font-weight="700" fill="#0f172a">Tindakan Administratif</text>
+      <text x="54" y="48" font-size="11.5" fill="#64748b">Otorisasi resmi untuk melindungi DJS</text>
+    </g>
+
+    <text x="170" y="380" font-size="11" font-weight="700" fill="#7c3aed" text-anchor="middle">Keputusan Mutlak Berada pada Manusia</text>
+  </g>
+</svg>

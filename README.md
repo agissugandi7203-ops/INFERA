@@ -106,47 +106,31 @@
 
 ## 1. Ringkasan Eksekutif & Value Proposition
 
-**INFERA (Intelligent Fraud & Risk Analysis Agent)** merupakan solusi berbasis *Artificial Intelligence* (AI) yang dirancang sebagai asisten virtual untuk membantu proses identifikasi dan analisis potensi risiko dalam penyelenggaraan Program Jaminan Kesehatan Nasional (JKN) yang dikelola oleh BPJS Kesehatan. INFERA berfokus pada pemanfaatan data aktivitas dan log sistem untuk mengidentifikasi pola, ketidaksesuaian, serta indikator yang memerlukan perhatian lebih lanjut. Pada tahap pengembangan dan simulasi, sistem menggunakan data dummy sebagai pengganti data operasional asli sehingga proses pengujian dapat dilakukan tanpa menggunakan data peserta yang bersifat sensitif.
+**INFERA (Intelligent Fraud & Risk Analysis Agent)** hadir sebagai asisten intelijen dan sistem pendukung keputusan (*Decision Support System*) berbasis kecerdasan buatan (*Artificial Intelligence*) untuk memperkuat integritas penyelenggaraan Program Jaminan Kesehatan Nasional (JKN) di bawah kelolaan BPJS Kesehatan. Fokus utama INFERA tertuju pada identifikasi dini serta analisis anomali perilaku risiko peserta secara komprehensif melalui pemrosesan log sistem dan aliran aktivitas pelayanan kesehatan secara *real-time*.
 
-Dalam prosesnya, INFERA menggabungkan analisis berbasis **AI Agent dengan Retrieval-Augmented Generation (RAG)**. Data dummy digunakan untuk mensimulasikan aktivitas dan berbagai skenario risiko, sedangkan basis pengetahuan berupa regulasi dan ketentuan yang relevan digunakan sebagai landasan referensi dalam proses analisis. Melalui RAG, INFERA dapat mengambil regulasi yang berkaitan dengan suatu kasus sehingga rekomendasi yang dihasilkan memiliki dasar informasi yang lebih relevan dan dapat ditelusuri. Sistem kemudian mengolah berbagai indikator dan fakta yang ditemukan dalam data untuk menghasilkan sebuah **Indeks Keraguan (Risk Score)**, yaitu tingkat indikasi yang menunjukkan sejauh mana suatu aktivitas memerlukan pemeriksaan atau verifikasi lebih lanjut.
+Dalam rangka pengujian dan validasi teknologi yang etis serta mematuhi **UU Pelindungan Data Pribadi (UU PDP No. 27/2022)**, seluruh proses simulasi INFERA memanfaatkan data sintetis (*dynamic dummy data*) yang dirancang mencerminkan ekosistem pelayanan JKN sesungguhnya tanpa menyentuh data riil peserta yang bersifat privat.
+
+### Pendekatan Solutif: Sinergi AI Agent & RAG Terintegrasi
+INFERA menjembatani kesenjangan antara sistem pemantauan konvensional yang kaku (*static rule-based*) dengan dinamika transaksi di lapangan:
+1. **Analisis Agen Mandiri (*Autonomous AI Agent*):** Bekerja proaktif mengurai anomali log klaim, menguji hipotesis kecurangan menggunakan kalkulasi matematika deterministik, dan menjalankan investigasi terpandu.
+2. **Regulatory Grounding via RAG (*Retrieval-Augmented Generation*):** Setiap temuan anomali secara otomatis dicocokkan dengan basis pengetahuan regulasi resmi JKN (UU No. 40/2004, UU No. 24/2011, Permenkes No. 16/2019, Permenkes No. 3/2023, hingga KUHP), sehingga setiap rekomendasi audit memiliki rujukan hukum positif yang transparan dan dapat dipertanggungjawabkan (*auditable & explainable*).
+3. **Indeks Keraguan Terukur (*Multi-Factor Risk Score*):** Menghasilkan skor risiko berskala 0–100 untuk membantu tim verifikator memetakan skala prioritas telaah klaim secara objektif.
 
 > [!IMPORTANT]
-> **Prinsip Human-in-the-Loop & Anti-Penjatuhan Vonis Otonom:**  
-> INFERA tidak dirancang untuk secara langsung menentukan bahwa seseorang atau suatu pihak telah melakukan pelanggaran. Sebaliknya, sistem berperan sebagai *decision support* dan *investigation assistant* yang membantu administrator atau pihak berwenang dalam melakukan prioritisasi pemeriksaan. Setiap hasil analisis dilengkapi dengan indikator yang ditemukan, fakta dari data yang dianalisis, serta regulasi yang relevan sebagai dasar rekomendasi. Dengan demikian, keputusan akhir terkait audit, verifikasi, teguran, maupun tindakan administratif tetap berada pada pihak manusia yang memiliki kewenangan formal.
+> **Prinsip Human-in-the-Loop & Larangan Vonis Otonom:**  
+> INFERA memegang teguh etika kecerdasan buatan di mana AI **tidak pernah menjatuhkan sanksi atau membatalkan status peserta secara sepihak**. Sistem bertindak murni sebagai *investigative copilot* yang menyusun bukti, menguraikan kronologi, dan memberikan usulan rekomendasi berjenjang. Otoritas penegakan sanksi administratif, pemanggilan verifikasi, maupun eskalasi hukum tetap berada 100% di bawah kendali auditor dan pejabat berwenang manusia.
 
-Sebagai asisten virtual, INFERA juga menghadirkan interaksi berbasis suara yang memungkinkan pengguna berkomunikasi secara lebih natural dengan sistem. Pengguna dapat menanyakan informasi terkait kasus, tingkat risiko, alasan suatu aktivitas ditandai, maupun regulasi yang relevan. Dengan memanfaatkan data yang tersedia sebagai dasar respons, fitur ini memungkinkan dashboard pengawasan tidak hanya berfungsi sebagai media visualisasi data, tetapi juga sebagai sistem yang dapat berinteraksi dan membantu pengguna memahami informasi secara lebih cepat.
+### Interaksi Multimodal & Suara Alami
+Guna mempercepat adopsi dan kemudahan penelaahan, INFERA dilengkapi dengan asisten virtual berwujud avatar interaktif yang didukung sintesis suara neural alami (*low-latency neural TTS*). Auditor dapat berdialog secara langsung menggunakan bahasa percakapan sehari-hari untuk menggali latar belakang kasus, memeriksa alasan penandaan anomali, hingga meminta ringkasan pasal hukum yang relevan.
 
-INFERA dibangun berdasarkan pemikiran bahwa ekosistem digital JKN telah memiliki infrastruktur, dashboard, data, dan integrasi yang kuat. Oleh karena itu, **INFERA tidak bertujuan menggantikan sistem yang telah ada**, melainkan menjadi lapisan kecerdasan (*intelligence layer*) tambahan yang dapat membantu menganalisis aktivitas dalam skala besar. Tidak seluruh aktivitas atau potensi anomali dapat diperiksa secara mendalam oleh manusia secara bersamaan, sementara sistem berbasis aturan konvensional cenderung bekerja berdasarkan kondisi yang telah ditentukan sebelumnya (*static rules*). Dengan pendekatan AI yang lebih adaptif, INFERA dapat membantu mengubah proses analisis dari sistem yang bersifat statis menjadi sistem pendukung keputusan yang lebih dinamis dan interaktif.
+<p align="center">
+  <img src="docs/assets/infera-workflow.svg" alt="Diagram Alur Kerja Sistem INFERA" width="100%" />
+</p>
 
-Pada tahap simulasi saat ini, INFERA telah memiliki kemampuan untuk menggunakan data simulasi yang bersifat dinamis, menganalisis skenario kasus dummy, menghasilkan rekomendasi berdasarkan proses analisis yang dirancang, serta menyediakan interaksi berbasis suara dengan respons yang rendah latensi. Seluruh fitur inti yang dapat direalisasikan dalam lingkungan simulasi telah dikembangkan sesuai dengan ruang lingkup awal proyek. Ke depan, apabila memperoleh otorisasi dan memenuhi ketentuan keamanan serta perlindungan data yang berlaku (UU PDP No. 27/2022), konsep sistem dapat dikembangkan lebih lanjut untuk terintegrasi dengan sumber data operasional yang relevan.
-
-Meskipun demikian, INFERA masih memiliki batasan dalam tahap pengembangan saat ini, terutama terkait akses terhadap data operasional yang bersifat sensitif dan terbatas. Oleh karena itu, pengujian menggunakan data dummy menjadi pendekatan utama dalam membangun dan memvalidasi sistem tanpa memberikan risiko terhadap privasi pengguna. Pengujian terhadap jumlah pengguna, tingkat akurasi secara kuantitatif, serta dampak sistem dalam lingkungan operasional juga masih berada pada tahap pengembangan dan pengujian lanjutan.
-
-Secara keseluruhan, INFERA merupakan **Intelligent Fraud & Risk Analysis Agent** yang mengintegrasikan AI Agent, analisis data, Retrieval-Augmented Generation berbasis regulasi, Indeks Keraguan, dan interaksi suara untuk membantu proses identifikasi serta prioritisasi potensi risiko. INFERA dirancang bukan untuk menggantikan manusia dalam mengambil keputusan, melainkan untuk membantu administrator mengubah data dan aktivitas sistem menjadi informasi yang lebih mudah dianalisis, ditelusuri, dan ditindaklanjuti.
-
-```mermaid
-flowchart LR
-    subgraph Data & Aktivitas Peserta
-        A[Aktivitas Peserta / Log Transaksi] -->|Data Dinamis| B(Simulation Engine)
-    end
-    
-    subgraph Lapisan Intelligence INFERA
-        B --> C{Pattern & Anomaly Detection}
-        C --> D[Multi-Factor Risk Scoring]
-        D --> E[RAG Regulatory Grounding]
-        E --> F[AI Forensic Agent & Tools]
-    end
-
-    subgraph Human-in-the-Loop Decision
-        F --> G[Prioritisasi Kasus & Rekomendasi]
-        G -->|Verifikasi Bukti & Sanksi| H{Auditor / Verifikator Manusia}
-        H -->|Otorisasi Disetujui| I[Tindakan Administratif / Proteksi DJS]
-    end
-
-    style C fill:#0A7B83,stroke:#004D54,stroke-width:2px,color:#fff
-    style F fill:#6366F1,stroke:#4338CA,stroke-width:2px,color:#fff
-    style H fill:#009B4C,stroke:#006633,stroke-width:2px,color:#fff
-```
+Diagram di atas mengilustrasikan tiga lapisan arsitektur terpadu INFERA:
+- **Tahap 1 (Data & Aktivitas):** Transaksi pelayanan, penerbitan SEP, rujukan, dan resep diproses secara kontinu melalui *Simulation Engine* untuk memodelkan dinamika risiko kepesertaan secara dinamis.
+- **Tahap 2 (Lapisan Intelligence INFERA):** Mesin analitik melakukan deteksi pola, menghitung skor risiko multi-faktor, memvalidasi bukti terhadap korpus regulasi via RAG, dan mengorkestrasi 9 *forensic tools*.
+- **Tahap 3 (Keputusan Manusia - HITL):** Hasil investigasi dirangkum ke dalam antrean prioritas kasus bagi auditor manusia untuk ditelaah dan diputuskan sebelum eksekusi administratif perlindungan Dana Jaminan Sosial (DJS).
 
 ---
 
@@ -194,9 +178,9 @@ Setiap indikator memiliki bobot kontribusi terhadap *Risk Score* (0–100):
 - **CRITICAL (85–100):** Indikasi anomali berat terkonfirmasi (contoh: *impossible travel* lintas pulau atau diskordansi biologis paten).
 
 > **Contoh Kalkulasi Kasus Nyata:**  
-> **Risk Score: 82 — CRITICAL**  
-> *Indikator Terkorelasi:* Utilization Anomaly + Provider Switching Pattern + Temporal Anomaly + Repeated Service Pattern.  
-> Skor risiko digunakan untuk menentukan **prioritas pemeriksaan**, bukan sebagai vonis final.
+> **Risk Score: 88 — CRITICAL (Kasus Doctor Shopping Hendra Wijaya)**  
+> *Indikator Terkorelasi:* Kunjungan Redundan Multi-Faskes ($DSI = 1.00$) + Duplikasi Peresepan Simptomatis + Rujukan Berulang Tanpa Urgensi Klinis.  
+> Skor risiko digunakan sebagai instrumen objektif penentuan **skala prioritas audit lapangan**, bukan sebagai vonis final otomatis.
 
 ### 4. Proactive AI Agent
 Inilah keunggulan utama INFERA. AI tidak hanya bersifat pasif menunggu pertanyaan pengguna. Ketika sistem mendeteksi lonjakan anomali kritis, INFERA secara otomatis memberikan *early warning* kepada administrator:
@@ -234,129 +218,207 @@ Tindakan berjenjang yang direkomendasikan sistem meliputi:
 
 ## 5. Taksonomi Modus Fraud & Formulasi Algoritma Deteksi
 
-INFERA mengimplementasikan 4 mesin deteksi matematis untuk 4 tipologi modus risiko peserta sesuai regulasi resmi Kementerian Kesehatan dan BPJS Kesehatan:
+INFERA mengimplementasikan 4 mesin kalkulasi analitik deterministik yang memetakan 4 tipologi modus risiko peserta berdasarkan regulasi resmi Kementerian Kesehatan RI, BPJS Kesehatan, dan Kitab Undang-Undang Hukum Pidana (KUHP):
 
 ```
-┌───────────────────────────────────────────────────────────────────────────────────────┐
-│                           TAKSONOMI 4 MODUS FRAUD INFERA                              │
-├───────────────────────┬──────────────────────────┬────────────────────────────────────┤
-│ MODUS                 │ NAMA POLA FRAUD          │ FORMULA INTI / ENGINE              │
-├───────────────────────┼──────────────────────────┼────────────────────────────────────┤
-│ Modus 1               │ Pemalsuan Data/Identitas │ Biological Discordance & NIK Hash  │
-│ Modus 2               │ Kartu Pinjaman           │ Impossible Travel Haversine Speed  │
-│ Modus 3               │ Pelayanan Tidak Perlu    │ Doctor Shopping Index (DSI)        │
-│ Modus 4               │ Penyalahgunaan PRB/Alkes │ Prescription Overlap Ratio (POR)   │
-└───────────────────────┴──────────────────────────┴────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│                                     TAKSONOMI 4 MODUS FRAUD INFERA                                        │
+├─────────┬──────────────────────────┬──────────────────────────────────────┬─────────────┬─────────────────┤
+│ MODUS   │ NAMA TIPOLOGI FRAUD      │ FORMULASI MATEMATIS / ENGINE         │ THRESHOLD   │ DASAR HUKUM     │
+├─────────┼──────────────────────────┼──────────────────────────────────────┼─────────────┼─────────────────┤
+│ Modus 1 │ Pemalsuan Identitas      │ Absolute Biological Discordance      │ Metric = 1  │ KUHP Ps. 263    │
+│ Modus 2 │ Kartu Pinjaman Bersama   │ Impossible Travel Haversine Velocity │ V > 100 km/h│ PMK 16/2019 P.7 │
+│ Modus 3 │ Doctor Shopping          │ Doctor Shopping Index (DSI)          │ DSI ≥ 0.50  │ PMK 16/2019 P.7 │
+│ Modus 4 │ Resale Obat PRB & Alkes  │ Prescription Overlap Ratio & Cooling │ POR > 140%  │ PMK 3/2023 P.33 │
+└─────────┴──────────────────────────┴──────────────────────────────────────┴─────────────┴─────────────────┘
 ```
 
 ---
 
-### A. Modus 1 & 2: Pemalsuan & Penyalahgunaan Identitas (Impossible Travel)
+### A. Modus 1 & 2: Pemalsuan Identitas & Kartu Pinjaman (Impossible Travel & Diskordansi Biologis)
+
+Penyalahgunaan kartu oleh pihak yang tidak berhak merupakan salah satu kebocoran terbesar Dana Jaminan Sosial (DJS). INFERA mendeteksinya melalui dua pilar verifikasi fisik: **Kecepatan Perpindahan Geodesik** dan **Konsistensi Biologis Mutlak**.
 
 #### 1. Kecepatan Perjalanan Spasial-Temporal (Impossible Travel Velocity)
-Mendeteksi apakah kartu peserta yang sama diterbitkan SEP di dua fasilitas kesehatan yang berbeda dalam selang waktu yang secara fisik mustahil ditempuh:
+Mendeteksi apakah kartu peserta yang sama diterbitkan Surat Eligibilitas Peserta (SEP) di dua fasilitas kesehatan yang terpisah secara geografis dalam selang waktu transit yang mustahil ditempuh secara fisik:
 
 $$V_{\text{travel}} = \frac{d(\text{lat}_1, \text{lng}_1, \text{lat}_2, \text{lng}_2)}{\Delta t}$$
 
-Dimana jarak geodesik dihitung menggunakan formula **Haversine**:
+Jarak lingkaran besar (*great-circle geodesic distance*) dihitung dengan formula **Haversine**:
 
 $$a = \sin^2\left(\frac{\Delta \phi}{2}\right) + \cos(\phi_1)\cos(\phi_2)\sin^2\left(\frac{\Delta \lambda}{2}\right)$$
 
 $$d = 2R \cdot \text{atan2}\left(\sqrt{a}, \sqrt{1-a}\right)$$
 
-- $R = 6.371\text{ km}$ (Radius rata-rata bumi).
-- $\phi_1, \phi_2$ adalah lintang (latitude) faskes 1 dan faskes 2 dalam radian.
-- $\Delta \lambda$ adalah selisih bujur (longitude) faskes dalam radian.
-- $\Delta t = |t_2 - t_1|$ dalam satuan jam.
+**Definisi Variabel & Parameter:**
+- $R = 6.371\text{ km}$: Jari-jari volumetrik bumi rata-rata (*volumetric mean radius*) sesuai standar geodesi internasional WGS84 (*World Geodetic System 1984*). Nilai ini menghasilkan deviasi jarak $< 0.3\%$ untuk seluruh wilayah kepulauan Indonesia.
+- $\phi_1, \phi_2$: Koordinat lintang (*latitude*) faskes 1 dan faskes 2 yang dikonversi ke radian ($\text{rad} = \text{deg} \times \frac{\pi}{180}$).
+- $\Delta \lambda$: Selisih koordinat bujur (*longitude*) faskes 1 dan faskes 2 dalam radian.
+- $\Delta t = \frac{|t_2 - t_1|}{3.600.000\text{ ms}}$: Selisih waktu penerbitan SEP antar faskes dalam satuan jam desimal.
 
-**Threshold Keputusan:**
-- $V_{\text{travel}} > 100\text{ km/jam}$ dengan $\Delta t \le 2\text{ jam}$: **HIGH RISK** (Penyalahgunaan Identitas / Kartu Pinjaman).
-- $V_{\text{travel}} > 150\text{ km/jam}$ atau $\Delta t \le 45\text{ menit}$ lintas kota: **CRITICAL RISK** (Pasti Anomali Fisik / Kartu Digandakan).
+**Rasional Logistik, Klinis & Regulasi Penetapan Batasan (Thresholds):**
+- **Mengapa $\Delta t \le 2\text{ jam}$?**  
+  Berdasarkan Standar Pelayanan Minimal (SPM) Rumah Sakit dan SOP Admisi Pasien BPJS Kesehatan (Permenkes No. 28/2014), siklus pelayanan pasien sejak antrean registrasi, validasi biometrik sidik jari/KTP, asesmen triase awal perawat, konsultasi dokter penanggung jawab pelayanan (DPJP), hingga cetak berkas SEP membutuhkan waktu minimal 30 hingga 60 menit. Apabila pasien baru saja terbit SEP di Faskes A, waktu efektif yang tersisa untuk berpindah secara fisik ke Faskes B menjadi sangat sempit.
+- **Mengapa Ambang $V_{\text{travel}} > 100\text{ km/jam}$ dikategorikan `HIGH RISK`?**  
+  Kecepatan tempuh rata-rata kendaraan bermotor antarkota di Indonesia via jalan tol/arteri berkisar antara 60 hingga 80 km/jam (Peraturan Pemerintah No. 79/2013 tentang Batas Kecepatan Maksimum Tol 100 km/jam). Kecepatan perpindahan *point-to-point* $> 100\text{ km/jam}$ tanpa jeda waktu parkir dan administrasi ulang adalah anomali logistik yang mengindikasikan kartu fisik/digital dibawa oleh orang yang berbeda.
+- **Mengapa Ambang $V_{\text{travel}} > 150\text{ km/jam}$ atau $\Delta t \le 45\text{ menit}$ Lintas Kota dikategorikan `CRITICAL RISK` (Skor 95–100)?**  
+  Kecepatan di atas 150 km/jam melampaui kemampuan transportasi darat komersial di Indonesia. Dalam selang waktu $\le 45\text{ menit}$ antarkota, terjadinya penerbitan dua SEP sekaligus membuktikan fenomena **teleportasi fisik yang mustahil**. Ini membuktikan secara konklusif bahwa satu nomor kartu digunakan serentak oleh dua individu berbeda di dua faskes terpisah. Perbuatan ini melanggar **Permenkes No. 16 Tahun 2019 Pasal 7 ayat (1) huruf a** juncto **Pasal 263 KUHP** (pemalsuan dan penggunaan identitas bukan haknya).
+
+---
 
 #### 2. Diskordansi Biologis Mutlak (Absolute Biological Discordance)
-Mengevaluasi kesesuaian parameter demografi biologis paten (jenis kelamin) terhadap diagnosis ICD-10 dan tindakan medis:
+Mengevaluasi keselarasan parameter demografi anatomis paten (jenis kelamin terdaftar di database master kepesertaan) terhadap tindakan medis atau diagnosis penyakit organ reproduksi spesifik:
 
 $$\text{Discordance}(\text{Peserta}, \text{SEP}) = 
 \begin{cases} 
-1 & \text{jika } \text{Gender}(\text{Peserta}) = \text{'L'} \land \text{Diagnosa} \in \{\text{O00-O99}\} \text{ (Obstetri/Sesar)} \\
-1 & \text{jika } \text{Gender}(\text{Peserta}) = \text{'P'} \land \text{Diagnosa} \in \{\text{N40-N51}\} \text{ (Prostat/Testis)} \\
-0 & \text{lainnya (Biologis Selaras)}
+1, & \text{jika } \text{Gender}(\text{Peserta}) = \text{'L'} \ \land \ \text{Diagnosa} \in \{\text{O00-O99}\} \text{ (Obstetri / Persalinan / Sesar)} \\
+1, & \text{jika } \text{Gender}(\text{Peserta}) = \text{'P'} \land \text{Diagnosa} \in \{\text{N40-N51}\} \text{ (Penyakit Organ Genital Pria)} \\
+0, & \text{lainnya (Biologis Selaras)}
 \end{cases}$$
 
-Jika nilai bernilai 1, sistem langsung menetapkan skor keparahan **99/100 (CRITICAL)** karena terbukti mutlak terjadi pemalsuan identitas untuk klaim pihak ketiga.
+**Rasional Klinis & Regulasi:**
+- **Kategori ICD-10 `O00-O99` (Bab XV):** Klasifikasi WHO khusus *Pregnancy, childbirth and the puerperium* (misal: Seksio Sesarea `O82.0`, Partus Spontan `O80.0`). Secara anatomi fisiologis biologis, diagnosis dan tindakan ini mutlak hanya dapat dialami oleh individu dengan rahim wanita.
+- **Kategori ICD-10 `N40-N51` (Bab XIV):** Klasifikasi WHO khusus *Diseases of male genital organs*, mencakup hiperplasia prostat jinak (`N40`), prostatitis (`N41`), hingga orchitis/gangguan testis (`N45`). Secara anatomi, organ ini mutlak tidak dimiliki oleh wanita.
+- **Mengapa Diberi Skor DeterministiK 99/100 (`CRITICAL`)?**  
+  Berbeda dengan anomali statistik yang probabilistik, ketidaksesuaian anatomi biologis memiliki probabilitas kesalahan acak mendekati nol ($p \approx 0$). Ketika nilai bernilai $1$, sistem mengabaikan perataan bobot linier (*non-linear deterministic override*) dan langsung memicu status darurat audit guna mencegah klaim fiktif atau peminjaman kartu beda gender sebelum dana DJS ditransfer.
 
 ---
 
 ### B. Modus 3: Pelayanan Tidak Perlu & Doctor Shopping (DSI)
 
-Peserta berpindah-pindah dokter atau rumah sakit dalam interval waktu sangat pendek untuk keluhan subjektif yang sama (*frequent flyers*), demi memperoleh pemeriksaan penunjang mahal berulang atau penimbunan resep simptomatis.
+Modus *Doctor Shopping* merugikan keuangan JKN karena peserta mendatangi beberapa dokter atau rumah sakit dalam selang waktu sangat singkat untuk keluhan subjektif yang sama (*frequent flyer*). Tujuannya beragam: meminta pemeriksaan penunjang canggih berulang (CT-Scan, MRI, USG) yang tidak berindikasi medis, atau menimbun obat penenang/analgetik.
 
-#### Formula Doctor Shopping Index ($DSI$):
+#### Formulasi Doctor Shopping Index ($DSI$):
 
-$$DSI = \frac{\sum_{i=1}^{N-1} \mathbb{I}\Big(\Delta t_{(i, i+1)} \le 7\text{ hari} \ \land \ \text{ICD}_{i} \sim \text{ICD}_{i+1} \ \land \ \text{PPK}_i \ne \text{PPK}_{i+1}\Big)}{N_{\text{total\_kunjungan}} - 1}$$
+$$DSI = \frac{\sum_{i=1}^{N-1} \mathbb{I}\Big(\Delta t_{(i, i+1)} \le 7\text{ hari} \ \land \ \text{ICD}_{i}^{3\text{char}} = \text{ICD}_{i+1}^{3\text{char}} \ \land \ \text{PPK}_i \ne \text{PPK}_{i+1}\Big)}{N_{\text{total\_kunjungan}} - 1}$$
 
-Dimana:
-- $\mathbb{I}(\dots)$ adalah operator indikator logika biner (1 jika kondisi terpenuhi, 0 jika tidak).
-- $\text{ICD}_{i} \sim \text{ICD}_{i+1}$ menunjukkan kesamaan *3-character category* ICD-10 (misalnya `R42` Vertigo).
-- $\text{PPK}_i \ne \text{PPK}_{i+1}$ menandakan kunjungan dilakukan pada fasilitas kesehatan yang berbeda.
+**Keterangan Notasi Matematis:**
+- $\mathbb{I}(\dots)$: Operator indikator logika biner Kronecker (bernilai 1 jika seluruh kondisi dalam tanda kurung terpenuhi, bernilai 0 jika tidak).
+- $N_{\text{total\_kunjungan}}$: Total kunjungan rawat jalan peserta dalam periode observasi 30 hari.
+- $(N - 1)$: Jumlah transisi interval waktu antar kunjungan berurutan, sehingga rentang nilai $DSI$ terstandarisasi tepat pada interval tertutup $[0, 1.0]$.
 
-**Threshold Keputusan:**
-- $DSI \ge 0.50$ dengan kunjungan $\ge 3$ faskes dalam 14 hari: **HIGH RISK** (Indikasi kuat *Doctor Shopping*).
-- $DSI \ge 0.80$ dengan frekuensi $\ge 5$ faskes dalam 10 hari: **CRITICAL RISK** (Klaim redundan tidak berindikasi medis).
+**Rasional Penetapan Parameter & Ambang Batas:**
+- **Mengapa Interval Pengamatan $\Delta t_{(i, i+1)} \le 7\text{ hari}$?**  
+  Menurut **Peraturan BPJS Kesehatan No. 1 Tahun 2014 tentang Penyelenggaraan Pelayanan Jaminan Kesehatan** dan Panduan Praktik Klinis (PPK) Kemenkes, masa observasi evaluasi respons terapi obat rawat jalan minimal adalah 3 hingga 7 hari sebelum dokter penanggung jawab pelayanan (DPJP) melakukan kontrol ulang. Kunjungan mandiri ke faskes lain sebelum 7 hari tanpa surat rujukan balik resmi adalah deviasi perilaku medis yang melanggar sistem rujukan berjenjang.
+- **Mengapa Pencocokan Diagnosis Berbasis 3 Karakter ICD-10 ($\text{ICD}^{3\text{char}}$)?**  
+  Pemadanan pada tingkat 3 karakter (kategori blok utama, misal `R42` untuk Dizziness/Vertigo, `M54` untuk Nyeri Punggung) dirancang untuk menutup celah penghindaran (*false negative evasion*). Apabila dokter di RS 1 memberi kode `R42.0` (vertigo perifer) dan dokter di RS 2 memberi kode `R42.9` (vertigo unspecified), sistem tetap mendeteksinya sebagai keluhan klinis yang sama.
+- **Mengapa Harus Fasilitas Kesehatan Berbeda ($\text{PPK}_i \ne \text{PPK}_{i+1}$)?**  
+  Memastikan kunjungan kontrol berkala yang sah pada dokter yang sama di faskes yang sama (*routine scheduled follow-up*) tidak dianggap sebagai anomali. Anomali hanya dihitung bila peserta berpindah-pindah faskes tanpa rujukan horizontal yang sah.
+
+**Tabel Interpretasi Nilai $DSI$:**
+
+| Nilai $DSI$ | Frekuensi Kunjungan | Tingkat Risiko | Interpretasi Medis & Rekomendasi Tindakan |
+| :---: | :---: | :---: | :--- |
+| **$< 0.30$** | $< 2$ faskes dalam 30 hari | `LOW` | **Perilaku Wajar:** Konsultasi rujukan normal atau pencarian *second opinion* yang sah. |
+| **$0.30 - 0.49$** | $2$ faskes dalam 14 hari | `MEDIUM` | **Perhatian Khusus:** Verifikasi catatan resume medis elektronik (RME) oleh verifikator. |
+| **$0.50 - 0.79$** | $\ge 3$ faskes dalam 14 hari | `HIGH` | **Doctor Shopping Terkonfirmasi:** $\ge 50\%$ perpindahan faskes redundan. Terbitkan surat pembinaan dan kunci eligibilitas rujukan spesialis mandiri. |
+| **$\ge 0.80$** | $\ge 5$ faskes dalam 10 hari | `CRITICAL` | **Klaim Redundan Masif:** Indikasi penimbunan obat/pemeriksaan radiologi berulang. Bekukan hak rujukan mandiri dan jadwalkan konseling dokter keluarga di FKTP terdaftar. |
 
 ---
 
 ### C. Modus 4: Penyalahgunaan Obat Kronis PRB & Alat Kesehatan
 
-#### 1. Rasio Tumpang Tindih Resep Kronis (Prescription Overlap Ratio - $POR$)
-Mendeteksi praktik penebusan resep Program Rujuk Balik (PRB) diabetes melitus atau hipertensi sebelum jatah 30 hari habis di multi-apotek jejaring untuk motif penjualan kembali (*resale arbitrage*):
+Modus ini mengeksploitasi fasilitas penjaminan obat Program Rujuk Balik (PRB) untuk 9 penyakit kronis (Diabetes Melitus, Hipertensi, Asma, PPOK, Jantung, dsb.) serta masa tunggu klaim alat kesehatan bernilai tinggi.
 
-$$POR = \frac{\sum_{k} \text{Kuantitas Hari Suplai Obat Diperoleh dalam Jendela } T}{T_{\text{hari}}} \times 100\%$$
+#### 1. Rasio Tumpang Tindih Peresepan Kronis (Prescription Overlap Ratio - $POR$)
+Mendeteksi penimbunan obat kronis bernilai tinggi (seperti Insulin Pen analog, Antihipertensi ARB, Statin) yang ditebus di beberapa apotek jejaring sebelum jatah konsumsi periode sebelumnya habis:
 
-- $T_{\text{hari}} = 30\text{ hari}$ (Standar siklus penjaminan obat kronis BPJS Kesehatan).
-- Jika pasien menebus 90 hari suplai obat dalam tempo 22 hari, maka:
+$$POR = \frac{\sum_{k=1}^{M} S_k}{T_{\text{siklus}}} \times 100\%$$
 
-$$POR = \frac{90}{30} \times 100\% = 300\% \quad (\text{Surplus } 200\%)$$
+Dimana $S_k$ adalah durasi hari suplai obat ke-$k$ yang telah ditebus peserta, dan $T_{\text{siklus}}$ adalah periode siklus penjaminan baku.
 
-**Threshold Keputusan:**
-- $POR \le 100\%$: Normal (Sesuai dosis medis standar).
-- $101\% - 130\%$: Normal Variance (Toleransi fleksibilitas jadwal kontrol dokter).
-- $> 140\%$: **CRITICAL RISK** (Penimbunan obat PRB bernilai tinggi).
-
-#### 2. Pelanggaran Masa Tunggu Alat Kesehatan (Cooling-off Period)
-Berdasarkan ketentuan penjaminan alat kesehatan BPJS Kesehatan:
-
-$$\Delta t_{\text{alkes}} = t_{\text{klaim\_baru}} - t_{\text{klaim\_sebelumnya}}$$
-
-$$\text{Valid}(\text{Alkes}) = 
-\begin{cases} 
-\text{Tolak Klaim} & \text{jika Kacamata } \land \Delta t_{\text{alkes}} < 730\text{ hari (2 Tahun)} \\
-\text{Tolak Klaim} & \text{jika Kursi Roda } \land \Delta t_{\text{alkes}} < 1.825\text{ hari (5 Tahun)} \\
-\text{Tolak Klaim} & \text{jika Alat Bantu Dengar } \land \Delta t_{\text{alkes}} < 1.825\text{ hari (5 Tahun)} \\
-\text{Setujui} & \text{jika memenuhi masa tunggu}
-\end{cases}$$
+**Rasional Medis, Farmakokinetik & Regulasi:**
+- **Mengapa $T_{\text{siklus}} = 30\text{ hari}$?**  
+  Merupakan batas waktu statutory siklus peresepan Program Rujuk Balik (PRB) berdasarkan **Keputusan Menteri Kesehatan No. HK.01.07/MENKES/6477/2021** dan Petunjuk Teknis PRB BPJS Kesehatan. Resep PRB hanya boleh diresepkan untuk kebutuhan konsumsi stabil maksimal 30 hari kalender.
+- **Mengapa Disediakan Batas Fleksibilitas Wajar ($100\% - 130\%$ / hingga 39 hari suplai)?**  
+  Regulasi BPJS memperbolehkan peserta mengambil obat kronis 3 hingga 5 hari sebelum obat sebelumnya habis guna mengantisipasi hari libur apotek atau kendala logistik pasien. Oleh karena itu, $POR$ hingga $130\%$ dianggap variansi klinis yang sah (*legitimate therapy buffer*).
+- **Mengapa $POR > 140\%$ Menjadi Ambang `HIGH RISK`?**  
+  Akumulasi obat melampaui 42 hari konsumsi dalam jendela 30 hari tanpa disertai surat instruksi penyesuaian dosis (*dose titration*) tertulis dari dokter spesialis.
+- **Mengapa $POR \ge 200\% - 300\%$ Menjadi Bukti Konklusif Resale Arbitrage (`CRITICAL`)?**  
+  *Justifikasi Toksikologi Klinis:* Mengonsumsi obat diabetes (Insulin Glargine / Metformin) atau obat antihipertensi (Amlodipine / Candesartan) sebanyak $2\times$ hingga $3\times$ lipat dari dosis harian akan mengakibatkan **koma hipoglikemia mematikan** atau **syok hipotensi kardiogenik fatal**.  
+  Secara medis mustahil obat tersebut diminum sendiri oleh pasien. Fenomena penebusan 90 hari suplai dalam 22 hari ($POR = 300\%$) membuktikan secara ilmiah bahwa obat tersebut ditimbun untuk **diperjualbelikan kembali (*resale arbitrage*) ke apotek/klinik swasta non-BPJS**, menimbulkan kerugian langsung bagi Dana Jaminan Sosial (Permenkes No. 16/2019 Pasal 7).
 
 ---
 
-### D. Matriks Scoring Risiko Multi-Faktor
+#### 2. Pelanggaran Masa Tunggu Alat Kesehatan (Cooling-off Period $\Delta t_{\text{alkes}}$)
+Klaim alat kesehatan memiliki ketentuan masa tunggu retensi penggantian (*replacement cooling-off period*) resmi:
 
-Skor risiko komprehensif ($S_{\text{total}}$) dihitung dengan model pembobotan multi-dimensi ternormalisasi (0 - 100):
+$$\Delta t_{\text{alkes}} = \frac{t_{\text{klaim\_saat\_ini}} - t_{\text{klaim\_sebelumnya}}}{86.400.000\text{ ms/hari}}$$
 
-$$S_{\text{total}} = \min\left(100, \sum_{m=1}^{4} w_m \cdot S_m + \sum \beta_{\text{penambah}}\right)$$
+Klaim dinyatakan sah hanya jika memenuhi masa tunggu statutory ($\Delta t_{\text{alkes}} \ge \tau_{\text{regulasi}}$):
 
-| Komponen | Bobot ($w_m$) | Parameter Evaluasi |
-| :--- | :---: | :--- |
-| **Penyalahgunaan Identitas** | 0.35 | $V_{\text{travel}}$, anomali geospasial, NIK duplikasi |
-| **Diskordansi Biologis** | 0.40 | Gender vs diagnosa obstetri / urologi spesifik |
-| **Doctor Shopping & Over-Utilization** | 0.25 | Indeks DSI, rasio kunjungan poli rawat jalan |
-| **Penyalahgunaan Farmasi & Alkes**| 0.25 | Rasio POR obat kronis, pelanggaran cooling-off |
+$$\text{Validasi}(\text{Alkes}) = 
+\begin{cases} 
+\text{Tolak Pra-Bayar (Pre-Payment Denial)}, & \text{jika } \Delta t_{\text{alkes}} < \tau_{\text{regulasi}} \\
+\text{Setujui Verifikasi Administrasi}, & \text{jika } \Delta t_{\text{alkes}} \ge \tau_{\text{regulasi}}
+\end{cases}$$
 
-| Rentang Skor | Level Risiko | Rekomendasi Tindakan Default |
-| :---: | :---: | :--- |
-| **$0 - 39$** | `LOW` | Penjaminan Normal (*Fast-Track Payment Approved*) |
-| **$40 - 69$** | `MEDIUM` | Verifikasi Administrasi Lanjutan & Audit Sampel Berkala |
-| **$70 - 84$** | `HIGH` | Penerbitan Surat Peringatan & Konseling Dokter Keluarga |
-| **$85 - 100$** | `CRITICAL` | **Penangguhan Sementara Eligibilitas & Investigasi Lapangan** |
+**Tabel Masa Tunggu Statutory Sesuai Regulasi Resmi Kemenkes RI:**
+
+| Jenis Alat Kesehatan | Masa Tunggu ($\tau_{\text{regulasi}}$) | Dasar Regulasi Resmi | Ketentuan Klinis & Syarat Klaim |
+| :--- | :---: | :--- | :--- |
+| **Kacamata Koreksi** | **$730\text{ hari}$ (2 Tahun)** | **Permenkes No. 3/2023 Ps. 33 ayat (1)** | Minimal sferis 0.5 Dioptri atau silindris 0.25 Dioptri, resep dari dokter spesialis mata. |
+| **Kursi Roda** | **$1.825\text{ hari}$ (5 Tahun)** | **Permenkes No. 3/2023 Ps. 35 ayat (1)** | Diberikan bagi peserta dengan disabilitas motorik berat menetap/permanen. |
+| **Alat Bantu Dengar** | **$1.825\text{ hari}$ (5 Tahun)** | **Permenkes No. 3/2023 Ps. 34 ayat (1)** | Dibatasi maksimal 1x per 5 tahun per telinga atas rekomendasi dokter THT. |
+| **Protesa Gigi (Tiruan)** | **$730\text{ hari}$ (2 Tahun)** | **Permenkes No. 3/2023 Ps. 36 ayat (1)** | Diberikan paling cepat 2 tahun sekali untuk rahang yang sama. |
+| **Korset Tulang Belakang** | **$730\text{ hari}$ (2 Tahun)** | **Permenkes No. 3/2023 Ps. 37 ayat (1)** | Rekomendasi dokter spesialis bedah ortopedi/saraf. |
+| **Collar Leher / Kruk** | **$730\text{ hari}$ (2 Tahun)** | **Permenkes No. 3/2023 Ps. 37 ayat (2)** | Trauma servikal atau pemulihan fraktur pasca operasi. |
+
+Klaim yang diajukan sebelum $\tau_{\text{regulasi}}$ terpenuhi secara otomatis dibatalkan pada lapisan pra-bayar (*pre-payment denial*) dengan kode kesalahan `ERR_COOLING_OFF_ACTIVE`.
+
+---
+
+### D. Matriks Scoring Risiko Multi-Faktor & Rule Override
+
+Untuk menghasilkan nilai risiko yang objektif, transparan, dan dapat dipertanggungjawabkan, INFERA menggabungkan **model pembobotan aktuaria linier (*convex combination*)** dengan **mekanisme pemutus darurat deterministik (*deterministic safety override*)**:
+
+#### 1. Formulasi Skor Komposit Linier ($S_{\text{composite}}$):
+
+$$S_{\text{composite}} = \sum_{m=1}^{4} w_m \cdot s_m + \beta_{\text{riwayat}}$$
+
+Dengan konstrain normalisasi bobot ketat:
+
+$$\sum_{m=1}^{4} w_m = 1.00 \quad (w_m > 0)$$
+
+#### 2. Formulasi Skor Risiko Final ($S_{\text{final}}$):
+
+$$S_{\text{final}} = 
+\begin{cases} 
+\max\left(S_{\text{composite}}, S_{\text{critical\_override}}\right), & \text{jika } \text{Flag}_{\text{deterministik}} = 1 \\
+\min\left(100, S_{\text{composite}}\right), & \text{jika anomali probabilistik biasa}
+\end{cases}$$
+
+**Tabel Bobot Aktuaria & Rasional Penetapan Bobot:**
+
+| Komponen Risiko | Bobot ($w_m$) | Parameter Evaluasi Matematis | Rasional Aktuaria & Yuridis (Mengapa Bobot Ini?) |
+| :--- | :---: | :--- | :--- |
+| **Penyalahgunaan Identitas & Spasial** | **$0.35$ (35%)** | $V_{\text{travel}}$, jarak Haversine, duplikasi NIK | Bobot tertinggi karena melibatkan delik pidana pemalsuan (KUHP 263) dan potensi kerugian DJS per klaim sangat besar (tarif rawat inap). |
+| **Diskordansi Biologis Demografi** | **$0.30$ (30%)** | Gender vs ICD-10 obstetri / organ reproduksi | Kepastian bukti fisik mutlak ($p \approx 0$). Membuktikan fraud data atau kartu dipinjamkan ke pihak berlainan jenis. |
+| **Doctor Shopping & Redundansi** | **$0.20$ (20%)** | Indeks DSI, rasio kunjungan poli $\Delta t \le 7\text{ hari}$ | Menilai inefisiensi operasional rawat jalan. Diberi porsi 20% untuk mengakomodasi sebagian kecil pasien yang memang membutuhkan konsultasi lanjutan. |
+| **Penyalahgunaan Farmasi & Alkes** | **$0.15$ (15%)** | Rasio $POR$ obat PRB, masa tunggu $\Delta t_{\text{alkes}}$ | Menilai deviasi kuota obat kronis dan masa tunggu alkes untuk mencegah penimbunan dan klaim prematur. |
+
+- **Parameter Penambah Riwayat ($\beta_{\text{riwayat}} \in [0, 10]$):** Penalti tambahan apabila data riwayat audit menunjukkan peserta pernah menerima surat teguran resmi atau catatan verifikasi dalam 12 bulan terakhir.
+- **Nilai Override Deterministik ($S_{\text{critical\_override}} \ge 95$):** Menjamin bahwa jika terjadi diskordansi biologis mutlak atau *impossible travel* $> 150\text{ km/jam}$, skor risiko peserta **langsung melompat ke level CRITICAL**, tanpa tereduksi oleh komponen lain yang bernilai 0.
+
+#### 3. Matriks Tingkat Risiko & Tata Kelola Tindakan Administratif:
+
+```
+┌────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│                              MATRIKS 4 LEVEL RISIKO & AKSI ADMINISTRATIF                               │
+├────────────┬─────────────┬────────────────────────────────────┬────────────────────────────────────────┤
+│ SKOR TOTAL │ TINGKAT     │ DEFINISI AKTUAL                    │ REKOMENDASI TINDAKAN & TATA KELOLA     │
+├────────────┼─────────────┼────────────────────────────────────┼────────────────────────────────────────┤
+│ 0 - 39     │ LOW         │ Pemanfaatan layanan wajar & sah    │ Fast-Track Payment / Klaim Bersih      │
+│ 40 - 69    │ MEDIUM      │ Deviasi pola minor / perlu pantau  │ Verifikasi Administrasi Dokumen RME    │
+│ 70 - 84    │ HIGH        │ Anomali multi-faktor terindikasi   │ Surat Peringatan & Kunci Rujukan Mandiri│
+│ 85 - 100   │ CRITICAL    │ Pelanggaran berat terkonfirmasi    │ Suspensi Sementara & Audit Investigasi │
+└────────────┴─────────────┴────────────────────────────────────┴────────────────────────────────────────┘
+```
+
+- **Level LOW (0–39):** Tidak ditemukan indikasi kecurangan. Berkas klaim diteruskan melalui jalur cepat (*fast-track pre-settlement*) tanpa hambatan administratif.
+- **Level MEDIUM (40–69):** Ditemukan indikator non-kritis (misal: $POR = 115\%$ atau kunjungan 2 faskes tanpa indikasi gawat darurat). Tindakan: pencatatan dalam antrean pemantauan berkala dan pengambilan sampel acak (*random audit sample*).
+- **Level HIGH (70–84):** Pola anomali signifikan teridentifikasi (misal: $DSI \ge 0.50$ atau $V_{\text{travel}} > 100\text{ km/jam}$). Tindakan: penerbitan Surat Peringatan (SP-1), penguncian eligibilitas rujukan spesialis mandiri, dan kewajiban konseling dokter keluarga di FKTP terdaftar.
+- **Level CRITICAL (85–100):** Bukti kecurangan deterministik terkonfirmasi (Diskordansi Biologis, Impossible Travel lintas kota dalam 45 menit, atau $POR \ge 200\%$). Tindakan: **Penangguhan sementara penjaminan kartu (*temporary eligibility freeze*)**, penolakan pembayaran klaim pra-bayar, dan penerbitan berkas investigasi lapangan oleh Tim Pencegahan Kecurangan JKN (PK-JKN).
 
 ---
 
