@@ -1,12 +1,23 @@
-# INFERA: Integrated Fraud Early-Warning & Risk Analytics
-### Enterprise Anti-Fraud Decision Support System & Autonomous Investigation Agent for BPJS Kesehatan
-**BPJS Kesehatan HealthAthon — Kategori Inovasi: Efisiensi Risiko pada Peserta**
+<div align="center">
 
----
+# INFERA
+### Intelligent Fraud & Risk Analysis Agent
+**Enterprise Decision Support System & Autonomous Investigation Agent for BPJS Kesehatan**  
+*HealthKathon BPJS Kesehatan 2026 — Kategori Inovasi: Efisiensi Risiko pada Peserta*
 
-[![BPJS Kesehatan](https://img.shields.io/badge/BPJS_Kesehatan-HealthAthon_2026-009B4C?style=flat-square&logo=shield&logoColor=white)](https://bpjs-kesehatan.go.id/)
-[![Team](https://img.shields.io/badge/Team-MAMAH%2C%20AKU%20IKUT%20HEALTHKATHON-E11D48?style=flat-square&logo=target&logoColor=white)](https://github.com/agissugandi7203-ops/Healthkathon)
-[![Category](https://img.shields.io/badge/Track-Efisiensi_Risiko_Peserta-0A7B83?style=flat-square)](https://bpjs-kesehatan.go.id/)
+<br/>
+
+**Tim Pengembang: MAMAH, AKU IKUT HEALTHKATHON**  
+**Arief Fajar** &nbsp;•&nbsp; **Clarisa Nathania Christie** &nbsp;•&nbsp; **Diana Aliffa Puteri**
+
+<br/>
+
+[![BPJS Kesehatan](https://img.shields.io/badge/BPJS_Kesehatan-HealthAthon_2026-009B4C?style=for-the-badge&logo=shield&logoColor=white)](https://bpjs-kesehatan.go.id/)
+[![Team](https://img.shields.io/badge/Team-MAMAH%2C%20AKU%20IKUT%20HEALTHKATHON-E11D48?style=for-the-badge&logo=target&logoColor=white)](https://github.com/agissugandi7203-ops/Healthkathon)
+[![Category](https://img.shields.io/badge/Track-Efisiensi_Risiko_Peserta-0A7B83?style=for-the-badge)](https://bpjs-kesehatan.go.id/)
+
+<br/>
+
 [![React 19](https://img.shields.io/badge/React-19_/_18.3-20232A?style=flat-square&logo=react&logoColor=61DAFB)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-007ACC?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-38B2AC?style=flat-square&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
@@ -17,6 +28,8 @@
 [![Swagger OpenAPI 3.0](https://img.shields.io/badge/OpenAPI-3.0_Swagger_UI-85EA2D?style=flat-square&logo=swagger&logoColor=black)](http://localhost:4000/docs)
 [![Architecture](https://img.shields.io/badge/Architecture-Clean_Monorepo-0F172A?style=flat-square&logo=turborepo&logoColor=white)](https://turbo.build/)
 
+<br/>
+
 ```
  ██╗███╗   ██╗███████╗███████╗██████╗  █████╗ 
  ██║████╗  ██║██╔════╝██╔════╝██╔══██╗██╔══██╗
@@ -24,94 +37,197 @@
  ██║██║╚██╗██║██╔══╝  ██╔══╝  ██╔══██╗██╔══██║
  ██║██║ ╚████║██║     ███████╗██║  ██║██║  ██║
  ╚═╝╚═╝  ╚═══╝╚═╝     ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝
- Integrated Fraud Early-Warning & Risk Analytics
+       Intelligent Fraud & Risk Analysis Agent
 ```
+
+### Tagline
+### *“See the Pattern. Understand the Risk. Act Smarter.”*
+
+<p align="center">
+<b>Brand Statement:</b><br/>
+<i>“INFERA watches the data, understands the pattern, explains the risk, and helps you decide what to investigate next.”</i>
+</p>
+
+<p align="center">
+<b>One-Line Product Description:</b><br/>
+<i>INFERA adalah AI Agent proaktif yang mengubah data JKN menjadi deteksi pola, risk intelligence, dan rekomendasi investigasi dalam satu dashboard interaktif.</i>
+</p>
+
+---
+
+<p align="center" style="max-width: 850px; margin: auto;">
+<i>INFERA merupakan solusi berbasis Artificial Intelligence (AI) yang dirancang sebagai asisten virtual untuk membantu proses identifikasi dan analisis potensi risiko dalam penyelenggaraan Program Jaminan Kesehatan Nasional (JKN). INFERA berfokus pada pemanfaatan data aktivitas dan log sistem untuk mengidentifikasi pola, ketidaksesuaian, serta indikator yang memerlukan perhatian lebih lanjut. Pada tahap pengembangan dan simulasi, sistem menggunakan data dummy sebagai pengganti data operasional asli sehingga proses pengujian dapat dilakukan tanpa menggunakan data peserta yang bersifat sensitif.</i>
+</p>
+
+</div>
 
 ---
 
 ## Daftar Isi
 
 1. [Ringkasan Eksekutif & Value Proposition](#1-ringkasan-eksekutif--value-proposition)
-2. [Latar Belakang Integritas Dana Jaminan Sosial (DJS)](#2-latar-belakang-integritas-dana-jaminan-sosial-djs)
-3. [Taksonomi Modus Fraud & Formulasi Algoritma Deteksi](#3-taksonomi-modus-fraud--formulasi-algoritma-deteksi)
+2. [Gambaran Project & Prinsip Simulasi](#2-gambaran-project--prinsip-simulasi)
+3. [Cara Kerja & Pipeline INFERA](#3-cara-kerja--pipeline-infera)
+4. [Regulatory Intelligence & RAG](#4-regulatory-intelligence--rag)
+5. [Taksonomi Modus Fraud & Formulasi Algoritma Deteksi](#5-taksonomi-modus-fraud--formulasi-algoritma-deteksi)
    - [Modus 1 & 2: Pemalsuan & Penyalahgunaan Kartu (Impossible Travel)](#a-modus-1--2-pemalsuan--penyalahgunaan-identitas-impossible-travel)
    - [Modus 3: Pelayanan Tidak Perlu & Doctor Shopping (DSI)](#b-modus-3-pelayanan-tidak-perlu--doctor-shopping-dsi)
    - [Modus 4: Penyalahgunaan Obat PRB & Alat Kesehatan](#c-modus-4-penyalahgunaan-obat-kronis-prb--alat-kesehatan)
    - [Matriks Scoring Risiko Multi-Faktor](#d-matriks-scoring-risiko-multi-faktor)
-4. [Arsitektur Agen AI Forensik & Orchestrator Tools](#4-arsitektur-agen-ai-forensik--orchestrator-tools)
+6. [Arsitektur Agen AI Forensik & Orchestrator Tools](#6-arsitektur-agen-ai-forensik--orchestrator-tools)
    - [Alur Kerja SSE (Server-Sent Events)](#a-alur-kerja-sse-server-sent-events)
    - [Katalog 9 Forensic Investigation Tools](#b-katalog-9-forensic-investigation-tools)
    - [Strict Two-Way Human-in-the-Loop Governance](#c-strict-two-way-human-in-the-loop-governance)
    - [Matriks Hak Akses Berjenjang (RBAC Matrix)](#d-matriks-hak-akses-berjenjang-rbac-matrix)
-5. [4 Kasus Forensik Benchmark Terverifikasi](#5-4-kasus-forensik-benchmark-terverifikasi)
-6. [Fitur Unggulan Platform](#6-fitur-unggulan-platform)
-   - [Interactive AI Multimodal Voice & Avatar Engine (Vera & Luna)](#a-interactive-ai-multimodal-voice--avatar-engine-vera--luna)
-   - [Real-Time Live Claim Stream Simulation Engine](#b-real-time-live-claim-stream-simulation-engine)
-   - [Enterprise SaaS UI dengan Dark & Light Mode Persistence](#c-enterprise-saas-ui-dengan-dark--light-mode-persistence)
-7. [Arsitektur Monorepo & Struktur Direktori](#7-arsitektur-monorepo--struktur-direktori)
-8. [Konfigurasi Lingkungan & Variabel (.env)](#8-konfigurasi-lingkungan--variabel-env)
-9. [Panduan Instalasi & Menjalankan Lokal](#9-panduan-instalasi--menjalankan-lokal)
-10. [Dokumentasi Interaktif API (Swagger / OpenAPI 3.0)](#10-dokumentasi-interaktif-api-swagger--openapi-30)
-11. [Panduan Deployment Produksi](#11-panduan-deployment-produksi)
+7. [4 Kasus Forensik Benchmark Terverifikasi](#7-4-kasus-forensik-benchmark-terverifikasi)
+8. [Komponen Dashboard & Fitur Unggulan](#8-komponen-dashboard--fitur-unggulan)
+   - [Live Risk Monitoring & Simulation Monitor](#a-live-risk-monitoring--simulation-monitor)
+   - [Interactive AI Multimodal Voice & Avatar Engine (Vera & Luna)](#b-interactive-ai-multimodal-voice--avatar-engine-vera--luna)
+   - [Real-Time Live Claim Stream Simulation Engine](#c-real-time-live-claim-stream-simulation-engine)
+   - [Enterprise SaaS UI dengan Dark & Light Mode Persistence](#d-enterprise-saas-ui-dengan-dark--light-mode-persistence)
+9. [Positioning, Nilai Utama & Tujuan Project](#9-positioning-nilai-utama--tujuan-project)
+10. [Arsitektur Monorepo & Struktur Direktori](#10-arsitektur-monorepo--struktur-direktori)
+11. [Konfigurasi Lingkungan & Variabel (.env)](#11-konfigurasi-lingkungan--variabel-env)
+12. [Panduan Instalasi & Menjalankan Lokal](#12-panduan-instalasi--menjalankan-lokal)
+13. [Dokumentasi Interaktif API (Swagger / OpenAPI 3.0)](#13-dokumentasi-interaktif-api-swagger--openapi-30)
+14. [Panduan Deployment Produksi](#14-panduan-deployment-produksi)
     - [Deployment Frontend di Vercel](#a-deployment-frontend-di-vercel)
     - [Deployment Backend API di Railway](#b-deployment-backend-api-di-railway)
     - [Migrasi Supabase Database & pgvector RAG](#c-migrasi-supabase-database--pgvector-rag)
-12. [Kepatuhan Regulasi & Landasan Hukum JKN](#12-kepatuhan-regulasi--landasan-hukum-jkn)
-13. [Tim Pengembang, Hak Cipta & Lisensi](#13-tim-pengembang-hak-cipta--lisensi)
+15. [Kepatuhan Regulasi & Landasan Hukum JKN](#15-kepatuhan-regulasi--landasan-hukum-jkn)
+16. [Tim Pengembang, Hak Cipta & Lisensi](#16-tim-pengembang-hak-cipta--lisensi)
 
 ---
 
 ## 1. Ringkasan Eksekutif & Value Proposition
 
-**INFERA (Integrated Fraud Early-Warning & Risk Analytics)** adalah sistem pendukung keputusan (*Clinical & Administrative Decision Support System*) dan asisten agen investigasi otonom berbasis *Artificial Intelligence* (AI) yang dirancang khusus untuk memitigasi inefisiensi dan indikasi kecurangan (*fraud*) pada Program Jaminan Kesehatan Nasional (JKN) yang dikelola oleh BPJS Kesehatan.
+**INFERA (Intelligent Fraud & Risk Analysis Agent)** merupakan solusi berbasis *Artificial Intelligence* (AI) yang dirancang sebagai asisten virtual untuk membantu proses identifikasi dan analisis potensi risiko dalam penyelenggaraan Program Jaminan Kesehatan Nasional (JKN) yang dikelola oleh BPJS Kesehatan. INFERA berfokus pada pemanfaatan data aktivitas dan log sistem untuk mengidentifikasi pola, ketidaksesuaian, serta indikator yang memerlukan perhatian lebih lanjut. Pada tahap pengembangan dan simulasi, sistem menggunakan data dummy sebagai pengganti data operasional asli sehingga proses pengujian dapat dilakukan tanpa menggunakan data peserta yang bersifat sensitif.
 
-Sistem audit konvensional yang mengandalkan verifikasi pasca-bayar (*post-payment audit*) memiliki kelemahan mendasar:
-1. **Retrospektif & Terlambat:** Klaim fraud baru teridentifikasi berminggu-minggu hingga berbulan-bulan setelah dana jaminan sosial (DJS) dicairkan ke faskes, menyebabkan *recovery rate* dana yang sangat rendah.
-2. **Kelebihan Beban Auditor Manusia:** Rasio jutaan transaksi klaim bulanan berbanding jumlah verifikator/auditor menciptakan *bottleneck* investigasi.
-3. **Analisis Sektoral Terisolasi (*Data Silos*):** Sering kali audit faskes, apotek, dan data demografi peserta terpisah, sehingga anomali lintas faskes seperti *impossible travel* atau *doctor shopping* luput dari pengawasan.
+Dalam prosesnya, INFERA menggabungkan analisis berbasis **AI Agent dengan Retrieval-Augmented Generation (RAG)**. Data dummy digunakan untuk mensimulasikan aktivitas dan berbagai skenario risiko, sedangkan basis pengetahuan berupa regulasi dan ketentuan yang relevan digunakan sebagai landasan referensi dalam proses analisis. Melalui RAG, INFERA dapat mengambil regulasi yang berkaitan dengan suatu kasus sehingga rekomendasi yang dihasilkan memiliki dasar informasi yang lebih relevan dan dapat ditelusuri. Sistem kemudian mengolah berbagai indikator dan fakta yang ditemukan dalam data untuk menghasilkan sebuah **Indeks Keraguan (Risk Score)**, yaitu tingkat indikasi yang menunjukkan sejauh mana suatu aktivitas memerlukan pemeriksaan atau verifikasi lebih lanjut.
 
-**INFERA memecahkan problematika tersebut melalui 3 pilar revolusioner:**
-- **Deteksi Real-Time di Hulu (Pre-Payment Early Warning):** Mengevaluasi setiap penerbitan Surat Eligibilitas Peserta (SEP) dan pengajuan klaim dalam latensi $< 30\text{ ms}$ menggunakan *deterministic analytical streaming*.
-- **Autonomous Forensic Agent dengan 9 Tools Function Calling:** LLM tidak bertindak sebagai *generative chatbot* yang mengarang data (*anti-hallucination*), melainkan sebagai orkestrator investigasi forensik berstandar kepolisian/kejaksaan yang memanggil *tools analitik terverifikasi*.
-- **Strict Two-Way Human-in-the-Loop Governance:** AI mengusulkan tindakan pencegahan berjenjang, namun seluruh aksi administratif destruktif (seperti pemblokiran kartu, pembatalan klaim, atau teguran faskes) **wajib** melalui persetujuan verifikator/auditor manusia melalui modal otorisasi formal berlandaskan hukum.
+> [!IMPORTANT]
+> **Prinsip Human-in-the-Loop & Anti-Penjatuhan Vonis Otonom:**  
+> INFERA tidak dirancang untuk secara langsung menentukan bahwa seseorang atau suatu pihak telah melakukan pelanggaran. Sebaliknya, sistem berperan sebagai *decision support* dan *investigation assistant* yang membantu administrator atau pihak berwenang dalam melakukan prioritisasi pemeriksaan. Setiap hasil analisis dilengkapi dengan indikator yang ditemukan, fakta dari data yang dianalisis, serta regulasi yang relevan sebagai dasar rekomendasi. Dengan demikian, keputusan akhir terkait audit, verifikasi, teguran, maupun tindakan administratif tetap berada pada pihak manusia yang memiliki kewenangan formal.
 
----
+Sebagai asisten virtual, INFERA juga menghadirkan interaksi berbasis suara yang memungkinkan pengguna berkomunikasi secara lebih natural dengan sistem. Pengguna dapat menanyakan informasi terkait kasus, tingkat risiko, alasan suatu aktivitas ditandai, maupun regulasi yang relevan. Dengan memanfaatkan data yang tersedia sebagai dasar respons, fitur ini memungkinkan dashboard pengawasan tidak hanya berfungsi sebagai media visualisasi data, tetapi juga sebagai sistem yang dapat berinteraksi dan membantu pengguna memahami informasi secara lebih cepat.
 
-## 2. Latar Belakang Integritas Dana Jaminan Sosial (DJS)
+INFERA dibangun berdasarkan pemikiran bahwa ekosistem digital JKN telah memiliki infrastruktur, dashboard, data, dan integrasi yang kuat. Oleh karena itu, **INFERA tidak bertujuan menggantikan sistem yang telah ada**, melainkan menjadi lapisan kecerdasan (*intelligence layer*) tambahan yang dapat membantu menganalisis aktivitas dalam skala besar. Tidak seluruh aktivitas atau potensi anomali dapat diperiksa secara mendalam oleh manusia secara bersamaan, sementara sistem berbasis aturan konvensional cenderung bekerja berdasarkan kondisi yang telah ditentukan sebelumnya (*static rules*). Dengan pendekatan AI yang lebih adaptif, INFERA dapat membantu mengubah proses analisis dari sistem yang bersifat statis menjadi sistem pendukung keputusan yang lebih dinamis dan interaktif.
 
-Berdasarkan laporan global *Healthcare Financial Management Association* (HFMA) dan *European Healthcare Fraud and Corruption Network* (EHFCN), kebocoran dana akibat kecurangan dalam skema asuransi kesehatan nasional berkisar antara **3% hingga 10%** dari total pengeluaran klaim tahunan.
+Pada tahap simulasi saat ini, INFERA telah memiliki kemampuan untuk menggunakan data simulasi yang bersifat dinamis, menganalisis skenario kasus dummy, menghasilkan rekomendasi berdasarkan proses analisis yang dirancang, serta menyediakan interaksi berbasis suara dengan respons yang rendah latensi. Seluruh fitur inti yang dapat direalisasikan dalam lingkungan simulasi telah dikembangkan sesuai dengan ruang lingkup awal proyek. Ke depan, apabila memperoleh otorisasi dan memenuhi ketentuan keamanan serta perlindungan data yang berlaku (UU PDP No. 27/2022), konsep sistem dapat dikembangkan lebih lanjut untuk terintegrasi dengan sumber data operasional yang relevan.
 
-Dalam skala Program JKN yang mencakup lebih dari **270 juta jiwa**, potensi kebocoran ini mencapai triliunan rupiah per tahun. Kategori lomba **"Efisiensi Risiko pada Peserta"** HealthAthon BPJS Kesehatan berfokus pada sisi yang selama ini paling sulit diawasi: **Fraud yang bersumber dari atau melibatkan penyalahgunaan identitas peserta**.
+Meskipun demikian, INFERA masih memiliki batasan dalam tahap pengembangan saat ini, terutama terkait akses terhadap data operasional yang bersifat sensitif dan terbatas. Oleh karena itu, pengujian menggunakan data dummy menjadi pendekatan utama dalam membangun dan memvalidasi sistem tanpa memberikan risiko terhadap privasi pengguna. Pengujian terhadap jumlah pengguna, tingkat akurasi secara kuantitatif, serta dampak sistem dalam lingkungan operasional juga masih berada pada tahap pengembangan dan pengujian lanjutan.
+
+Secara keseluruhan, INFERA merupakan **Intelligent Fraud & Risk Analysis Agent** yang mengintegrasikan AI Agent, analisis data, Retrieval-Augmented Generation berbasis regulasi, Indeks Keraguan, dan interaksi suara untuk membantu proses identifikasi serta prioritisasi potensi risiko. INFERA dirancang bukan untuk menggantikan manusia dalam mengambil keputusan, melainkan untuk membantu administrator mengubah data dan aktivitas sistem menjadi informasi yang lebih mudah dianalisis, ditelusuri, dan ditindaklanjuti.
 
 ```mermaid
 flowchart LR
-    subgraph Sisi Peserta
-        A[Peserta JKN / Oknum] -->|Modus 1 & 2| B(Pemalsuan / Kartu Pinjaman)
-        A -->|Modus 3| C(Doctor Shopping / Klaim Redundan)
-        A -->|Modus 4| D(Resale Obat Kronis PRB / Alkes)
+    subgraph Data & Aktivitas Peserta
+        A[Aktivitas Peserta / Log Transaksi] -->|Data Dinamis| B(Simulation Engine)
     end
     
-    subgraph Titik Intersepsi INFERA
-        B --> E{INFERA Pre-Payment Gateway}
-        C --> E
-        D --> E
+    subgraph Lapisan Intelligence INFERA
+        B --> C{Pattern & Anomaly Detection}
+        C --> D[Multi-Factor Risk Scoring]
+        D --> E[RAG Regulatory Grounding]
+        E --> F[AI Forensic Agent & Tools]
     end
 
-    subgraph Hasil Audit & Perlindungan DJS
-        E -->|Anomali Terkonfirmasi| F[Early Warning & Penguncian Pra-Klaim]
-        E -->|Peserta Bersih| G[Fast-Track Approval Klaim JKN]
-        F --> H[Pencegahan Defisit DJS Miliaran Rupiah]
+    subgraph Human-in-the-Loop Decision
+        F --> G[Prioritisasi Kasus & Rekomendasi]
+        G -->|Verifikasi Bukti & Sanksi| H{Auditor / Verifikator Manusia}
+        H -->|Otorisasi Disetujui| I[Tindakan Administratif / Proteksi DJS]
     end
 
-    style E fill:#0A7B83,stroke:#004D54,stroke-width:2px,color:#fff
+    style C fill:#0A7B83,stroke:#004D54,stroke-width:2px,color:#fff
+    style F fill:#6366F1,stroke:#4338CA,stroke-width:2px,color:#fff
     style H fill:#009B4C,stroke:#006633,stroke-width:2px,color:#fff
 ```
 
-INFERA menargetkan efisiensi fiskal DJS dengan menghentikan pembayaran klaim fiktif sebelum dana ditransfer, melindungi hak peserta yang sah, dan menjaga kesinambungan aktuaria jangka panjang BPJS Kesehatan.
+---
+
+## 2. Gambaran Project & Prinsip Simulasi
+
+INFERA dikembangkan dalam bentuk **platform simulasi berbasis web** yang merepresentasikan bagaimana sistem analisis risiko dapat bekerja pada lingkungan JKN.
+
+Karena penggunaan data peserta JKN riil memerlukan izin resmi dan tunduk pada UU Pelindungan Data Pribadi (UU PDP No. 27/2022), prototype INFERA menggunakan **data simulasi/dummy** yang dibuat menyerupai pola aktivitas dalam ekosistem JKN. Data tersebut terus bertumbuh secara dinamis melalui **Simulation Engine**, sehingga pengguna dapat melihat bagaimana suatu pola berkembang dari kondisi normal menjadi anomali dan kemudian menjadi kasus yang perlu diinvestigasi.
+
+Dalam simulasi tersebut, sistem dapat menghasilkan berbagai profil peserta, aktivitas pelayanan, riwayat penggunaan fasilitas kesehatan (FKTP dan FKRTL), perubahan kondisi kepesertaan, serta kejadian lain secara temporal. Dari data tersebut, INFERA menganalisis hubungan antaraktivitas untuk menemukan pola yang tidak biasa tanpa membocorkan privasi data riil.
 
 ---
 
-## 3. Taksonomi Modus Fraud & Formulasi Algoritma Deteksi
+## 3. Cara Kerja & Pipeline INFERA
+
+INFERA bekerja melalui siklus 6 tahapan terpadu:
+
+$$\textbf{Data Simulation} \longrightarrow \textbf{Pattern Analysis} \longrightarrow \textbf{Anomaly Detection} \longrightarrow \textbf{Risk Scoring} \longrightarrow \textbf{AI Investigation} \longrightarrow \textbf{Recommendation}$$
+
+### 1. Simulation Engine
+Sistem menghasilkan data peserta dan aktivitas secara sintetis berdasarkan berbagai kondisi dan skenario yang telah ditentukan. Data terus bertambah dari waktu ke waktu untuk menciptakan lingkungan simulasi yang dinamis:
+- Peserta baru muncul dalam sistem kepesertaan.
+- Aktivitas pelayanan bertambah secara temporal.
+- Peserta menggunakan fasilitas kesehatan primer maupun rujukan lanjutan.
+- Terjadi perubahan frekuensi penggunaan layanan kesehatan.
+- Muncul pola aktivitas yang menyimpang dari kurva normal.
+
+Dengan demikian, penguji dan juri tidak hanya melihat data statis, tetapi dapat menyaksikan secara langsung bagaimana risiko berkembang seiring bertambahnya aliran data.
+
+### 2. Pattern & Anomaly Detection
+INFERA menganalisis data untuk mencari pola yang menyimpang dari kondisi wajar:
+- Lonjakan utilisasi layanan medis dalam interval waktu singkat (*utilization spikes*).
+- Perpindahan fasilitas kesehatan yang tidak wajar atau melanggar hukum fisika (*provider switching & impossible travel*).
+- Frekuensi kunjungan yang meningkat secara signifikan pada diagnosis sejenis (*doctor shopping*).
+- Pola penebusan obat kronis berulang sebelum siklus habis (*prescription overlap*).
+- Kombinasi beberapa kejadian yang secara individual terlihat normal tetapi menjadi tidak wajar ketika dihubungkan.
+
+INFERA tidak langsung menyatakan bahwa seseorang melakukan kecurangan; sistem mengidentifikasi **indikator risiko dan anomali yang membutuhkan pemeriksaan lebih lanjut**.
+
+### 3. Risk Scoring (Indeks Keraguan)
+Setiap indikator memiliki bobot kontribusi terhadap *Risk Score* (0–100):
+- **LOW (0–39):** Pemanfaatan layanan wajar dan selaras pedoman klinis.
+- **MEDIUM (40–69):** Terdeteksi deviasi minor; disarankan pemantauan berkala.
+- **HIGH (70–84):** Deviasi signifikan multi-indikator; masuk antrean investigasi prioritas.
+- **CRITICAL (85–100):** Indikasi anomali berat terkonfirmasi (contoh: *impossible travel* lintas pulau atau diskordansi biologis paten).
+
+> **Contoh Kalkulasi Kasus Nyata:**  
+> **Risk Score: 82 — CRITICAL**  
+> *Indikator Terkorelasi:* Utilization Anomaly + Provider Switching Pattern + Temporal Anomaly + Repeated Service Pattern.  
+> Skor risiko digunakan untuk menentukan **prioritas pemeriksaan**, bukan sebagai vonis final.
+
+### 4. Proactive AI Agent
+Inilah keunggulan utama INFERA. AI tidak hanya bersifat pasif menunggu pertanyaan pengguna. Ketika sistem mendeteksi lonjakan anomali kritis, INFERA secara otomatis memberikan *early warning* kepada administrator:
+> *“Terdeteksi peningkatan anomali pada pola utilisasi dalam 30 menit terakhir. Terdapat 14 kasus dengan indikasi doctor shopping dan 3 kasus berisiko kritis yang memerlukan verifikasi berkas SEP.”*
+
+### 5. AI Virtual Assistant (Avatar Multimodal & Suara)
+INFERA menghadirkan asisten virtual interaktif berupa avatar digital dengan sinkronisasi bibir (*lip-sync*), ekspresi emosi (*happy*, *thinking*, *surprised*, *confused*, *normal*), dan suara neural alami (ElevenLabs profil Vera & Luna). Assistant berfungsi sebagai antarmuka percakapan natural untuk mengakses data intelligence:
+- *“Mengapa kasus ini memiliki skor risiko tinggi?”*
+- *“Pola apa yang menyebabkan aktivitas ini ditandai sebagai anomali?”*
+- *“Kasus mana yang harus diprioritaskan auditor hari ini?”*
+- *“Apa langkah pemeriksaan yang perlu dilakukan menurut Permenkes 16/2019?”*
+
+### 6. AI Tools & Function Calling
+Untuk memastikan akurasi tanpa halusinasi (*grounded & deterministic*), AI Agent dilengkapi dengan 9 forensic tools melalui arsitektur function calling:
+- **Regulation Search:** Pencarian pasal regulasi resmi JKN melalui RAG semantik.
+- **Historical Pattern Analysis:** Komparasi riwayat klaim historis antar-faskes.
+- **Case Analysis & Scoring:** Perhitungan deterministik $DSI$, Haversine velocity, dan $POR$.
+- **Investigation Report Export:** Pembuatan berkas resume audit forensik resmi.
+
+---
+
+## 4. Regulatory Intelligence & RAG
+
+Salah satu fitur pendukung INFERA adalah kemampuan menghubungkan hasil analisis risiko dengan regulasi atau ketentuan yang berlaku. Setelah menemukan kasus berisiko tinggi, sistem menyajikan alur telaah hukum yang transparan:
+
+$$\textbf{Temuan Bukti} \longrightarrow \textbf{Dasar Regulasi} \longrightarrow \textbf{Interpretasi Yuridis} \longrightarrow \textbf{Rekomendasi Tindakan}$$
+
+Tindakan berjenjang yang direkomendasikan sistem meliputi:
+- **Manual Review:** Verifikasi dokumen medis dan kroscek resume medis elektronik (RME).
+- **Verification:** Konfirmasi langsung kepada peserta dan dokter penanggung jawab pelayanan (DPJP).
+- **Notification:** Pengiriman surat peringatan atau klarifikasi ke fasilitas kesehatan terkait.
+- **Escalation:** Rekomendasi suspensi penjaminan sementara atau audit petik lapangan Tim Pencegahan Kecurangan (PK-JKN).
+
+---
+
+## 5. Taksonomi Modus Fraud & Formulasi Algoritma Deteksi
 
 INFERA mengimplementasikan 4 mesin deteksi matematis untuk 4 tipologi modus risiko peserta sesuai regulasi resmi Kementerian Kesehatan dan BPJS Kesehatan:
 
@@ -239,7 +355,7 @@ $$S_{\text{total}} = \min\left(100, \sum_{m=1}^{4} w_m \cdot S_m + \sum \beta_{\
 
 ---
 
-## 4. Arsitektur Agen AI Forensik & Orchestrator Tools
+## 6. Arsitektur Agen AI Forensik & Orchestrator Tools
 
 Inti inovasi teknologi INFERA adalah **Autonomous Investigation Agent** yang dijalankan oleh mesin orchestrator berbasis OpenRouter multi-LLM (`openai/gpt-oss-120b:nitro`, `google/gemini-2.0-flash-001`, `meta-llama/llama-3.3-70b-instruct`) dengan mekanisme *Tool / Function Calling*.
 
@@ -350,7 +466,7 @@ Sistem membedakan izin pemanggilan tools berdasarkan peran pengguna (*User Roles
 
 ---
 
-## 5. 4 Kasus Forensik Benchmark Terverifikasi
+## 7. 4 Kasus Forensik Benchmark Terverifikasi
 
 INFERA menyertakan 4 studi kasus benchmark riil yang mencerminkan skenario nyata audit kepesertaan JKN:
 
@@ -387,9 +503,29 @@ INFERA menyertakan 4 studi kasus benchmark riil yang mencerminkan skenario nyata
 
 ---
 
-## 6. Fitur Unggulan Platform
+## 8. Komponen Dashboard & Fitur Unggulan
 
-### A. Interactive AI Multimodal Voice & Avatar Engine (Vera & Luna)
+Seluruh proses analisis risiko, deteksi anomali, hingga telaah forensik disajikan dalam satu dashboard terintegrasi yang responsif dan elegan:
+
+### A. 6 Komponen Inti Dashboard Pengawasan:
+1. **Live Risk Monitoring:** Menampilkan matriks distribusi tingkat risiko secara real-time dari simulasi aliran data klaim:
+   - **LOW:** 1.284 kasus (Pemanfaatan layanan wajar)
+   - **MEDIUM:** 182 kasus (Deviasi utilisasi ringan)
+   - **HIGH:** 48 kasus (Anomali multi-faskes prioritas tinggi)
+   - **CRITICAL:** 12 kasus (Dugaan pelanggaran berat / kartu ganda)
+2. **Simulation Monitor:** Menampilkan volume pertumbuhan data secara dinamis dari waktu ke waktu:
+   - **Participants Audited:** 12.482 peserta
+   - **Service Events (SEP):** 84.321 transaksi layanan
+   - **Detected Anomalies:** 243 pola tidak wajar
+   - **High Risk Cases:** 48 kasus dalam antrean penanganan
+3. **Risk Timeline:** Menampilkan perubahan tingkat risiko secara temporal sehingga pola eskalasi kasus dapat diamati perkembangannya.
+4. **Investigation Queue:** Menampilkan antrean kasus yang harus diprioritaskan auditor berdasarkan kombinasi *risk score* dan indikator yang ditemukan.
+5. **AI Insight:** Menghasilkan ringkasan otomatis mengenai perubahan tren pola kecurangan yang sedang terjadi dalam sistem.
+6. **Virtual Assistant (Avatar & Voice):** Titik interaksi utama antara auditor dengan AI melalui percakapan teks natural maupun perintah suara real-time.
+
+---
+
+### B. Interactive AI Multimodal Voice & Avatar Engine (Vera & Luna)
 
 INFERA menghadirkan asisten avatar visual cerdas yang dilengkapi ekspresi emosional dan sintesis suara neural tingkat tinggi:
 - **Teknologi Render Canvas/SVG:** Dibangun di atas PixiJS v8 dan GSAP untuk render animasi 60 FPS tanpa membebani GPU/CPU pengguna.
@@ -407,7 +543,7 @@ INFERA menghadirkan asisten avatar visual cerdas yang dilengkapi ekspresi emosio
 
 ---
 
-### B. Real-Time Live Claim Stream Simulation Engine
+### C. Real-Time Live Claim Stream Simulation Engine
 
 Untuk pengujian tanpa henti (*zero-downtime demonstration*), INFERA dilengkapi mesin simulasi penerbitan klaim otomatis yang terkalibrasi dengan realitas data BPJS Kesehatan:
 - **Data Medis Realistis:** Diagnosis ICD-10 nyata, kode tindakan ICD-9-CM, pengelompokan tarif INA-CBG resmi, kelas RS (A, B, C, FKTP), dan jenis perawatan (Ranap vs Ralan).
@@ -416,7 +552,7 @@ Untuk pengujian tanpa henti (*zero-downtime demonstration*), INFERA dilengkapi m
 
 ---
 
-### C. Enterprise SaaS UI dengan Dark & Light Mode Persistence
+### D. Enterprise SaaS UI dengan Dark & Light Mode Persistence
 
 Antarmuka INFERA dirancang dengan standar desain enterprise modern:
 - **Medical Theme Palette:** Palet warna Emerald BPJS, Medical Cyan, Deep Slate, dan Crimson Alert yang ergonomis untuk auditor yang bekerja berjam-jam.
@@ -425,7 +561,70 @@ Antarmuka INFERA dirancang dengan standar desain enterprise modern:
 
 ---
 
-## 7. Arsitektur Monorepo & Struktur Direktori
+## 9. Positioning, Nilai Utama & Tujuan Project
+
+### A. Positioning Strategis
+> **INFERA bukan sekadar chatbot.**  
+> **INFERA bukan sekadar dashboard.**  
+> **INFERA bukan sekadar fraud detector.**
+
+INFERA merupakan **lapisan intelligence berbasis AI** yang menghubungkan data aktivitas, analisis risiko, investigasi forensik, regulasi JKN, dan interaksi manusia dalam satu ekosistem:
+
+$$\textbf{DATA} \longrightarrow \textbf{PATTERN} \longrightarrow \textbf{RISK} \longrightarrow \textbf{INSIGHT} \longrightarrow \textbf{ACTION}$$
+
+INFERA mengubah data yang sebelumnya hanya menjadi kumpulan log aktivitas menjadi informasi yang membantu petugas memahami:
+- **Apa yang terjadi?** (Identifikasi pola penyimpangan).
+- **Mengapa hal tersebut terjadi?** (Korelasi indikator medis & administratif).
+- **Seberapa besar risikonya?** (Kalkulasi skor risiko 0–100 dan potensi kerugian DJS).
+- **Apa yang perlu diperiksa selanjutnya?** (Rekomendasi audit berlandaskan regulasi resmi).
+
+---
+
+### B. 4 Nilai Utama INFERA
+1. **Proactive:** Sistem tidak menunggu administrator menemukan masalah terlebih dahulu; INFERA secara aktif mengamati perubahan pola dan memberikan *early warning*.
+2. **Explainable:** Setiap skor risiko disertai indikator pembentuk, fakta log, dan formula matematis yang dapat diverifikasi (*no black box*).
+3. **Actionable:** Output analisis tidak berhenti pada notifikasi anomali semata, melainkan diteruskan menjadi rekomendasi investigasi terstruktur dan penggunaan tools forensik yang relevan.
+4. **Human-in-the-Loop:** INFERA membantu petugas menganalisis dan menentukan prioritas audit, bukan menggantikan kewenangan keputusan manusia.
+
+---
+
+### C. Contoh Skenario Simulasi Nyata
+Sistem menghasilkan data peserta sintetis dengan profil:
+- **Lama Kepesertaan:** 3 tahun.
+- **Aktivitas Historis:** Rendah (pemanfaatan wajar di FKTP terdaftar).
+- **Aktivitas Periode Berjalan:** Meningkat tajam dalam kurun waktu singkat.
+
+Kemudian terjadi pola rujukan berantai:
+$$\text{RS A} \longrightarrow \text{RS B} \longrightarrow \text{RS C} \longrightarrow \text{RS D}$$
+dalam selang waktu yang sangat rapat dengan keluhan diagnosis sejenis.
+
+Secara individual, setiap kunjungan rumah sakit terlihat sah. Namun setelah seluruh data dihubungkan lintas faskes, INFERA mendeteksi kombinasi anomali:
+$$\textbf{Low Utilization Historis} + \textbf{Sudden Utilization Spike} + \textbf{Provider Switching} + \textbf{Repeated Service Pattern}$$
+
+Sistem mengkalkulasi skor:
+$$\textbf{Risk Score: 78 — HIGH}$$
+
+INFERA secara proaktif mengirimkan peringatan ke dashboard auditor:
+> *“Terdeteksi peningkatan risiko pada peserta berdasarkan kombinasi lonjakan utilisasi, perpindahan fasilitas kesehatan yang tidak wajar, dan pola layanan berulang. Kasus direkomendasikan untuk investigasi lebih lanjut.”*
+
+Saat auditor menanyakan via suara: *“Kenapa skor risikonya tinggi?”*, asisten virtual menjelaskan rincian indikator tersebut dan menyajikan pintasan audit berkas SEP secara instan.
+
+---
+
+### D. Tujuan Strategis Project
+INFERA dirancang untuk mencapai 8 sasaran utama:
+1. Mensimulasikan pertumbuhan data dan aktivitas kepesertaan dalam ekosistem JKN secara dinamis.
+2. Mengidentifikasi pola penyimpangan dan anomali dari data yang terus mengalir.
+3. Menghasilkan skor risiko multi-faktor untuk membantu memprioritaskan kasus audit.
+4. Memberikan notifikasi dan *early warning insights* secara proaktif tanpa menunggu laporan manual.
+5. Membantu investigasi melalui AI Virtual Assistant berbasis antarmuka teks dan suara natural.
+6. Menggunakan 9 AI tools dan *function calling* untuk penelusuran regulasi serta analisis kasus yang akurat.
+7. Menyajikan seluruh proses dalam satu dashboard analitik yang intuitif dan transparan.
+8. Mendukung proses pengambilan keputusan manusia dengan informasi yang berlandaskan hukum dan dapat dipertanggungjawabkan.
+
+---
+
+## 10. Arsitektur Monorepo & Struktur Direktori
 
 Repository ini menggunakan arsitektur **Turborepo / npm Workspaces** yang memisahkan tanggung jawab kode secara modular (*Strict Boundary Separation*):
 
@@ -525,7 +724,7 @@ infera-monorepo/
 
 ---
 
-## 8. Konfigurasi Lingkungan & Variabel (.env)
+## 11. Konfigurasi Lingkungan & Variabel (.env)
 
 Tersedia template konfigurasi di `.env.example`. Buat berkas `.env` pada root project, `apps/api/.env`, dan `apps/web/.env`.
 
@@ -568,7 +767,7 @@ VITE_ELEVENLABS_VOICE_ID=GgFtkxszsIQcD4MYvQax
 
 ---
 
-## 9. Panduan Instalasi & Menjalankan Lokal
+## 12. Panduan Instalasi & Menjalankan Lokal
 
 Pastikan komputer Anda telah terpasang **Node.js (versi >= 20.0.0)** dan **npm**.
 
@@ -629,7 +828,7 @@ Total Potential DJS Loss Prevented: Rp 2.450.000.000
 
 ---
 
-## 10. Dokumentasi Interaktif API (Swagger / OpenAPI 3.0)
+## 13. Dokumentasi Interaktif API (Swagger / OpenAPI 3.0)
 
 Backend `apps/api` telah dilengkapi dengan dokumentasi interaktif **Swagger UI** berbasis standar formal **OpenAPI 3.0.3**. Auditor, pengembang, dan juri dapat menguji seluruh endpoint secara langsung melalui peramban:
 
@@ -665,7 +864,7 @@ Backend `apps/api` telah dilengkapi dengan dokumentasi interaktif **Swagger UI**
 
 ---
 
-## 11. Panduan Deployment Produksi
+## 14. Panduan Deployment Produksi
 
 ### A. Deployment Frontend di Vercel
 
@@ -718,7 +917,7 @@ Backend `apps/api` telah dilengkapi dengan `railway.json` berbasis Nixpacks:
 
 ---
 
-## 12. Kepatuhan Regulasi & Landasan Hukum JKN
+## 15. Kepatuhan Regulasi & Landasan Hukum JKN
 
 INFERA dirancang dengan kepatuhan hukum yang ketat terhadap regulasi perundang-undangan Republik Indonesia yang mengatur Program Jaminan Kesehatan Nasional:
 
@@ -753,7 +952,7 @@ Setiap rekomendasi sanksi yang dihasilkan oleh agen AI selalu menyertakan sitasi
 
 ---
 
-## 13. Tim Pengembang, Hak Cipta & Lisensi
+## 16. Tim Pengembang, Hak Cipta & Lisensi
 
 Inovasi platform ini dikembangkan secara berdedikasi untuk kompetisi resmi **HealthKathon BPJS Kesehatan 2026** (Kategori Inovasi: **Efisiensi Risiko pada Peserta**):
 
