@@ -90,10 +90,10 @@ export const CHAT_SYSTEM_VOICE_PRESETS: VoicePreset[] = [
 export const ANIME_VOICE_PRESETS = AVATAR_VOICE_PRESETS;
 
 export const DEFAULT_SETTINGS: OpenRouterSettings = {
-  apiKey: (import.meta.env?.VITE_OPENROUTER_API_KEY as string) || '',
+  apiKey: '',
   model: (import.meta.env?.VITE_DEFAULT_MODEL as string) || 'openai/gpt-oss-120b:nitro',
   useBackendProxy: true,
-  elevenLabsApiKey: (import.meta.env?.VITE_ELEVENLABS_API_KEY as string) || '',
+  elevenLabsApiKey: '',
   avatarVoiceId: (import.meta.env?.VITE_ELEVENLABS_VOICE_ID as string) || VOICE_DEFAULT_ID,
   chatVoiceId: VOICE_CHAT_DEFAULT_ID,
   elevenLabsVoiceId: (import.meta.env?.VITE_ELEVENLABS_VOICE_ID as string) || VOICE_DEFAULT_ID,

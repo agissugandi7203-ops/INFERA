@@ -14,7 +14,7 @@ interface BarRankChartProps {
   barColorClass?: string;
 }
 
-export const BarRankChart: React.FC<BarRankChartProps> = ({
+export const BarRankChart: React.FC<BarRankChartProps> = React.memo(({
   title,
   subtitle,
   items,
@@ -23,10 +23,10 @@ export const BarRankChart: React.FC<BarRankChartProps> = ({
   const maxCount = Math.max(...items.map((i) => i.count), 1);
 
   return (
-    <div className="bg-white rounded-xl p-5 border border-slate-200/90 shadow-xs flex flex-col justify-between">
+    <div className="bg-white dark:bg-slate-900 rounded-xl p-5 border border-slate-200/90 dark:border-slate-800 shadow-xs flex flex-col justify-between">
       <div>
-        <h4 className="text-sm font-bold text-slate-900">{title}</h4>
-        {subtitle && <p className="text-xs text-slate-500 mt-0.5">{subtitle}</p>}
+        <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100">{title}</h4>
+        {subtitle && <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{subtitle}</p>}
       </div>
 
       <div className="space-y-3.5 my-4">
@@ -36,25 +36,25 @@ export const BarRankChart: React.FC<BarRankChartProps> = ({
             <div key={idx} className="space-y-1.5">
               <div className="flex items-center justify-between text-xs">
                 <div className="flex items-center gap-2">
-                  <span className="w-5 h-5 rounded-full bg-slate-100 text-slate-600 text-[10px] font-bold flex items-center justify-center shrink-0">
+                  <span className="w-5 h-5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-[10px] font-bold flex items-center justify-center shrink-0">
                     {idx + 1}
                   </span>
-                  <span className="font-medium text-slate-800">{item.label}</span>
+                  <span className="font-medium text-slate-800 dark:text-slate-200">{item.label}</span>
                   {item.secondaryText && (
-                    <span className="text-[11px] text-slate-400">({item.secondaryText})</span>
+                    <span className="text-[11px] text-slate-400 dark:text-slate-500">({item.secondaryText})</span>
                   )}
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="font-bold text-slate-900">{item.count.toLocaleString('id-ID')}</span>
+                  <span className="font-bold text-slate-900 dark:text-slate-100">{item.count.toLocaleString('id-ID')}</span>
                   {item.badge && (
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 font-semibold">
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-semibold">
                       {item.badge}
                     </span>
                   )}
                 </div>
               </div>
               {/* Progress bar */}
-              <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
+              <div className="w-full h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
                 <div
                   className={`h-full rounded-full ${barColorClass} transition-all duration-500`}
                   style={{ width: `${percent}%` }}
@@ -65,10 +65,11 @@ export const BarRankChart: React.FC<BarRankChartProps> = ({
         })}
       </div>
 
-      <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+      <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
         <span>Fokus Patroli Cabang Utama</span>
-        <span className="text-slate-400 font-mono">DJS Risk Map 2026</span>
+        <span className="text-slate-400 dark:text-slate-500 font-mono">DJS Risk Map 2026</span>
       </div>
     </div>
   );
-};
+});
+

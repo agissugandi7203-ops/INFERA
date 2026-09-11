@@ -68,22 +68,22 @@ export const TrendAreaChart: React.FC<TrendAreaChartProps> = ({
   const areaPath = `${linePath} L ${points[points.length - 1]!.x} ${height - paddingY} L ${points[0]!.x} ${height - paddingY} Z`;
 
   return (
-    <div className="relative bg-white rounded-2xl p-5 border border-slate-200/90 shadow-[0_4px_16px_-2px_rgba(0,0,0,0.05),0_2px_4px_-1px_rgba(0,0,0,0.03)] flex flex-col justify-between overflow-hidden">
-      <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-slate-200/80 to-transparent" />
+    <div className="relative bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200/90 dark:border-slate-800 shadow-[0_4px_16px_-2px_rgba(0,0,0,0.05),0_2px_4px_-1px_rgba(0,0,0,0.03)] flex flex-col justify-between overflow-hidden">
+      <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-slate-200/80 dark:via-slate-700/80 to-transparent" />
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <div>
-          <h4 className="text-sm font-bold text-slate-900">{title}</h4>
-          <p className="text-xs text-slate-500 mt-0.5">{subtitle}</p>
+          <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100">{title}</h4>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{subtitle}</p>
 
         </div>
         <div className="flex items-center gap-4 text-xs">
           <div className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-            <span className="text-slate-600 font-medium">Penyelamatan DJS (Juta Rp)</span>
+            <span className="text-slate-600 dark:text-slate-400 font-medium">Penyelamatan DJS (Juta Rp)</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-slate-300" />
-            <span className="text-slate-500">Jumlah Kasus</span>
+            <span className="w-2.5 h-2.5 rounded-full bg-slate-300 dark:bg-slate-600" />
+            <span className="text-slate-500 dark:text-slate-400">Jumlah Kasus</span>
           </div>
         </div>
       </div>
@@ -110,7 +110,7 @@ export const TrendAreaChart: React.FC<TrendAreaChartProps> = ({
                 y1={y}
                 x2={width - paddingX}
                 y2={y}
-                stroke="#f1f5f9"
+                className="stroke-slate-100 dark:stroke-slate-800"
                 strokeDasharray="4 4"
               />
             );
@@ -136,10 +136,9 @@ export const TrendAreaChart: React.FC<TrendAreaChartProps> = ({
                 cx={pt.x}
                 cy={pt.y}
                 r={hoverIndex === i ? 6 : 4}
-                fill="#ffffff"
+                className="cursor-pointer transition-all duration-150 fill-white dark:fill-slate-900"
                 stroke="#059669"
                 strokeWidth={hoverIndex === i ? 3 : 2}
-                className="cursor-pointer transition-all duration-150"
                 onMouseEnter={() => setHoverIndex(i)}
                 onMouseLeave={() => setHoverIndex(null)}
               />
@@ -148,7 +147,7 @@ export const TrendAreaChart: React.FC<TrendAreaChartProps> = ({
                 x={pt.x}
                 y={height - 6}
                 textAnchor="middle"
-                className="text-[10px] fill-slate-400 font-mono"
+                className="text-[10px] fill-slate-400 dark:fill-slate-500 font-mono"
               >
                 {pt.date}
               </text>
@@ -159,7 +158,7 @@ export const TrendAreaChart: React.FC<TrendAreaChartProps> = ({
         {/* Hover Tooltip */}
         {hoverIndex !== null && points[hoverIndex] && (
           <div
-            className="absolute top-2 pointer-events-none transform -translate-x-1/2 bg-slate-900 text-white px-3 py-1.5 rounded-lg shadow-lg text-xs z-20 space-y-0.5"
+            className="absolute top-2 pointer-events-none transform -translate-x-1/2 bg-slate-900 dark:bg-slate-700 text-white px-3 py-1.5 rounded-lg shadow-lg text-xs z-20 space-y-0.5"
             style={{ left: `${(points[hoverIndex]!.x / width) * 100}%` }}
           >
             <div className="font-semibold text-emerald-400">
@@ -172,9 +171,9 @@ export const TrendAreaChart: React.FC<TrendAreaChartProps> = ({
         )}
       </div>
 
-      <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
-        <span>Total Efisiensi Dicegah: <strong className="text-slate-900 font-bold">Rp 2.45 Miliar</strong></span>
-        <span className="text-slate-400">Sinkronisasi Harian SATUSEHAT</span>
+      <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+        <span>Total Efisiensi Dicegah: <strong className="text-slate-900 dark:text-slate-100 font-bold">Rp 2.45 Miliar</strong></span>
+        <span className="text-slate-400 dark:text-slate-500">Sinkronisasi Harian SATUSEHAT</span>
       </div>
     </div>
   );

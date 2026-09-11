@@ -57,23 +57,46 @@ export const chatStream = async (req: Request, res: Response): Promise<void> => 
   res.flushHeaders?.();
 
   const sendEvent = (event: string, data: unknown) => {
-    res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+    if (!res.writableEnded) {
+      res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+    }
   };
 
   const abortController = new AbortController();
+
+  // Connection timeout: 60s max per stream
+  const connectionTimeout = setTimeout(() => {
+    sendEvent('error', { message: 'Batas waktu koneksi streaming terlampaui (60s).' });
+    abortController.abort();
+    if (!res.writableEnded) res.end();
+  }, 60000);
+
+  // Heartbeat keep-alive ping every 15s to keep reverse proxies alive
+  const heartbeatInterval = setInterval(() => {
+    if (!res.writableEnded) {
+      res.write(': keep-alive\n\n');
+    }
+  }, 15000);
+
+  const cleanup = () => {
+    clearTimeout(connectionTimeout);
+    clearInterval(heartbeatInterval);
+  };
+
   req.on('close', () => {
     abortController.abort();
+    cleanup();
   });
 
   try {
-    // 1. Runtime RAG Retrieval (Executed before LLM generation)
+    // 1. Runtime RAG Retrieval (Bounded input length)
     const lastUserMsg = [...input.messages].reverse().find((m) => m.role === 'user');
     let ragResults: RagSearchResult[] = [];
 
     if (lastUserMsg && lastUserMsg.content.trim()) {
       try {
         ragResults = await ragService.search({
-          query: lastUserMsg.content,
+          query: lastUserMsg.content.slice(0, 500),
           matchCount: 3,
         });
       } catch (ragErr) {
@@ -94,7 +117,7 @@ export const chatStream = async (req: Request, res: Response): Promise<void> => 
 
     // 3. Assemble prompt context without polluting prior history
     const filteredMessages = input.messages
-      .filter((m) => m.role !== 'system')
+      .filter((m) => m.role === 'user' || m.role === 'assistant')
       .slice(-10);
 
     const assembledMessages = [
@@ -129,12 +152,19 @@ export const chatStream = async (req: Request, res: Response): Promise<void> => 
     if (!streamEnded && !abortController.signal.aborted) {
       sendEvent('done', { finishReason: 'stop' });
     }
-
-    res.end();
   } catch (err) {
-    if (!abortController.signal.aborted) {
-      const message = err instanceof Error ? err.message : 'Terjadi kesalahan saat memproses streaming AI';
+    if (!abortController.signal.aborted && !res.writableEnded) {
+      const message =
+        process.env.NODE_ENV === 'production'
+          ? 'Terjadi kendala pada pemrosesan streaming AI'
+          : err instanceof Error
+          ? err.message
+          : 'Unknown AI streaming error';
       sendEvent('error', { message });
+    }
+  } finally {
+    cleanup();
+    if (!res.writableEnded) {
       res.end();
     }
   }

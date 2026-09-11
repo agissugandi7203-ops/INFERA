@@ -193,8 +193,8 @@ export const UnnecessaryServicesPage: React.FC = () => {
           subtitle="Ambang batas aman BPJS: < 0.30"
           badgeText="Tinggi"
           icon={Repeat}
-          iconColorClass="text-rose-600"
-          iconBgClass="bg-rose-50"
+          iconColorClass="text-rose-600 dark:text-rose-400"
+          iconBgClass="bg-rose-50 dark:bg-rose-950/60 border border-rose-100 dark:border-rose-900/40"
         />
         <MetricCard
           title="Klaim Penunjang Redundan"
@@ -202,8 +202,8 @@ export const UnnecessaryServicesPage: React.FC = () => {
           subtitle="Lab / CT-Scan diulang dalam 7 hari"
           badgeText="Audit VEDIKA"
           icon={Building2}
-          iconColorClass="text-amber-600"
-          iconBgClass="bg-amber-50"
+          iconColorClass="text-amber-600 dark:text-amber-400"
+          iconBgClass="bg-amber-50 dark:bg-amber-950/60 border border-amber-100 dark:border-amber-900/40"
         />
         <MetricCard
           title="Efisiensi Biaya Dicegah"
@@ -211,8 +211,8 @@ export const UnnecessaryServicesPage: React.FC = () => {
           subtitle="Duplikasi berhasil dibatalkan"
           badgeText="DJS Efisien"
           icon={ShieldCheck}
-          iconColorClass="text-emerald-600"
-          iconBgClass="bg-emerald-50"
+          iconColorClass="text-emerald-600 dark:text-emerald-400"
+          iconBgClass="bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-100 dark:border-emerald-900/40"
         />
       </div>
 

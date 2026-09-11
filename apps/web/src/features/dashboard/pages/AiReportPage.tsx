@@ -59,6 +59,7 @@ interface DashboardOutletContextType {
   isSoundDetected?: boolean;
   onToggleClickToSpeak?: () => void;
   onStopSpeaking?: () => void;
+  onStopStreaming?: () => void;
   onToggleMobileSidebar?: () => void;
   onToggleSettings?: () => void;
 }
@@ -182,16 +183,17 @@ const MarkdownRenderer: React.FC<{ content: string }> = ({ content }) => {
         ),
         code: CodeBlock as any,
         a: ({ node, href, ...props }) => {
-          const isInternal = href && (href.startsWith('/') || href.startsWith('#'));
-          if (isInternal && href) {
+          const safeHref = href && /^(https?:|mailto:|\/|#)/i.test(href.trim()) ? href.trim() : '#';
+          const isInternal = safeHref.startsWith('/') || safeHref.startsWith('#');
+          if (isInternal && safeHref !== '#') {
             return (
               <a
-                href={href}
+                href={safeHref}
                 onClick={(e) => {
                   e.preventDefault();
-                  const target = href.startsWith('/dashboard')
-                    ? href
-                    : `/dashboard${href.startsWith('/') ? '' : '/'}${href}`;
+                  const target = safeHref.startsWith('/dashboard')
+                    ? safeHref
+                    : `/dashboard${safeHref.startsWith('/') ? '' : '/'}${safeHref}`;
                   navigate(target);
                 }}
                 className="text-emerald-600 dark:text-emerald-400 hover:underline font-semibold cursor-pointer"
@@ -201,9 +203,9 @@ const MarkdownRenderer: React.FC<{ content: string }> = ({ content }) => {
           }
           return (
             <a
-              href={href}
+              href={safeHref}
               target="_blank"
-              rel="noopener noreferrer"
+              rel="noopener noreferrer nofollow"
               className="text-emerald-600 dark:text-emerald-400 hover:underline font-medium inline-flex items-center gap-0.5"
               {...props}
             />
@@ -827,8 +829,8 @@ export const AiReportPage: React.FC = () => {
                 disabled={!inputText.trim() && !isLoading}
                 className={`w-8 h-8 rounded-full flex items-center justify-center text-white transition-all cursor-pointer shrink-0 ${
                   inputText.trim()
-                    ? 'bg-blue-600 hover:bg-blue-700 shadow-xs'
-                    : 'bg-blue-500/50 cursor-not-allowed'
+                    ? 'bg-[#007a3d] hover:bg-[#006834] shadow-xs'
+                    : 'bg-slate-300 dark:bg-slate-700 cursor-not-allowed'
                 }`}
               >
                 <ArrowUp className="w-4 h-4" />
@@ -1093,6 +1095,7 @@ export const AiReportPage: React.FC = () => {
                 ref={textareaRef}
                 rows={1}
                 value={inputText}
+                maxLength={3000}
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
                 placeholder="Tanyakan apa saja seputar audit integritas JKN..."
@@ -1132,9 +1135,12 @@ export const AiReportPage: React.FC = () => {
               {isLoading ? (
                 <button
                   type="button"
-                  onClick={() => outletContext?.onStopSpeaking?.()}
-                  className="w-8 h-8 rounded-full bg-blue-600 hover:bg-blue-700 flex items-center justify-center text-white transition-colors cursor-pointer shrink-0 mb-0.5 shadow-xs"
-                  title="Hentikan"
+                  onClick={() => {
+                    outletContext?.onStopStreaming?.();
+                    outletContext?.onStopSpeaking?.();
+                  }}
+                  className="w-8 h-8 rounded-full bg-rose-600 hover:bg-rose-700 flex items-center justify-center text-white transition-colors cursor-pointer shrink-0 mb-0.5 shadow-xs"
+                  title="Hentikan Analisis AI"
                 >
                   <Square className="w-3.5 h-3.5 fill-current" />
                 </button>
@@ -1145,8 +1151,8 @@ export const AiReportPage: React.FC = () => {
                   disabled={!inputText.trim()}
                   className={`w-8 h-8 rounded-full flex items-center justify-center text-white transition-all cursor-pointer shrink-0 mb-0.5 ${
                     inputText.trim()
-                      ? 'bg-blue-600 hover:bg-blue-700 shadow-xs'
-                      : 'bg-blue-500/40 cursor-not-allowed'
+                      ? 'bg-[#007a3d] hover:bg-[#006834] shadow-xs'
+                      : 'bg-slate-300 dark:bg-slate-700 cursor-not-allowed'
                   }`}
                   title="Kirim Pesan"
                 >

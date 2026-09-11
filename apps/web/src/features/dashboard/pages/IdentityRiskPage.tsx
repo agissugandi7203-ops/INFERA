@@ -215,8 +215,8 @@ export const IdentityRiskPage: React.FC = () => {
           subtitle="Kecepatan perpindahan > 80 km/jam"
           badgeText="Live Radar"
           icon={Navigation}
-          iconColorClass="text-rose-600"
-          iconBgClass="bg-rose-50"
+          iconColorClass="text-rose-600 dark:text-rose-400"
+          iconBgClass="bg-rose-50 dark:bg-rose-950/60 border border-rose-100 dark:border-rose-900/40"
         />
         <MetricCard
           title="Diskordansi Gender/Usia"
@@ -224,8 +224,8 @@ export const IdentityRiskPage: React.FC = () => {
           subtitle="Ketidaksesuaian klinis anatomis"
           badgeText="Kritikal"
           icon={UserX}
-          iconColorClass="text-amber-600"
-          iconBgClass="bg-amber-50"
+          iconColorClass="text-amber-600 dark:text-amber-400"
+          iconBgClass="bg-amber-50 dark:bg-amber-950/60 border border-amber-100 dark:border-amber-900/40"
         />
         <MetricCard
           title="Pencegahan Kebocoran"
@@ -233,8 +233,8 @@ export const IdentityRiskPage: React.FC = () => {
           subtitle="Klaim berhasil ditangguhkan"
           badgeText="DJS Selamat"
           icon={ShieldCheck}
-          iconColorClass="text-emerald-600"
-          iconBgClass="bg-emerald-50"
+          iconColorClass="text-emerald-600 dark:text-emerald-400"
+          iconBgClass="bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-100 dark:border-emerald-900/40"
         />
       </div>
 

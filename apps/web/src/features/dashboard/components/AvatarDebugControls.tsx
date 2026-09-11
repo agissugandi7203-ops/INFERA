@@ -131,17 +131,17 @@ export const AvatarDebugControls: React.FC<AvatarDebugControlsProps> = ({
 
   return (
     <div className="space-y-4 text-xs">
-      {/* Tab Switcher */}
-      <div className="flex bg-slate-100 p-0.5 rounded-lg gap-0.5">
+      {/* Tabs */}
+      <div className="flex bg-slate-100 dark:bg-slate-800 p-0.5 rounded-lg gap-0.5">
         {TABS.map((tab) => (
           <button
             key={tab.id}
             type="button"
             onClick={() => setActiveTab(tab.id)}
-            className={`flex-1 px-2.5 py-1.5 rounded-md text-[11px] font-medium transition-all ${
+            className={`flex-1 px-2.5 py-1.5 rounded-md text-[11px] font-medium transition-all cursor-pointer ${
               activeTab === tab.id
-                ? 'bg-white text-slate-900 shadow-2xs font-semibold'
-                : 'text-slate-500 hover:text-slate-800'
+                ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-2xs font-semibold'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
             }`}
           >
             {tab.label}
@@ -152,7 +152,7 @@ export const AvatarDebugControls: React.FC<AvatarDebugControlsProps> = ({
       {/* Model AI Tab */}
       {activeTab === 'model' && (
         <form onSubmit={handleSave} className="space-y-3">
-          <div className="flex items-center gap-1.5 font-semibold text-slate-700 mb-1">
+          <div className="flex items-center gap-1.5 font-semibold text-slate-700 dark:text-slate-200 mb-1">
             <Cpu className="w-3.5 h-3.5 text-[#007a3d]" />
             <span>Model Bahasa (LLM)</span>
           </div>
@@ -162,15 +162,15 @@ export const AvatarDebugControls: React.FC<AvatarDebugControlsProps> = ({
                 key={m.id}
                 type="button"
                 onClick={() => setSelectedModel(m.id)}
-                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl border text-left transition-colors ${
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl border text-left transition-colors cursor-pointer ${
                   selectedModel === m.id
-                    ? 'border-slate-900 bg-slate-900 text-white'
-                    : 'border-slate-200 bg-slate-50 hover:bg-white hover:border-slate-300 text-slate-700'
+                    ? 'border-slate-900 dark:border-emerald-500 bg-slate-900 dark:bg-emerald-950/40 text-white dark:text-emerald-200'
+                    : 'border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 hover:bg-white dark:hover:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-700 text-slate-700 dark:text-slate-300'
                 }`}
               >
                 <div>
                   <div className="font-semibold text-xs">{m.name}</div>
-                  <div className={`text-[10px] mt-0.5 ${selectedModel === m.id ? 'text-slate-300' : 'text-slate-400'}`}>
+                  <div className={`text-[10px] mt-0.5 ${selectedModel === m.id ? 'text-slate-300 dark:text-emerald-300/70' : 'text-slate-400'}`}>
                     {m.desc}
                   </div>
                 </div>

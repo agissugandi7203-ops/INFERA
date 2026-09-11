@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Users,
@@ -21,7 +21,7 @@ import { useSimulationStream } from '../simulation/SimulationContext';
 import { supabase } from '../../../lib/supabase';
 import type { ParticipantRiskMetrics, ParticipantAuditCase } from '@healthathon/shared';
 
-export const OverviewPage: React.FC = () => {
+export const OverviewPage: React.FC = React.memo(() => {
   const navigate = useNavigate();
   const { stats } = useSimulationStream();
   const [metrics, setMetrics] = useState<ParticipantRiskMetrics>(FALLBACK_METRICS);
@@ -62,8 +62,15 @@ export const OverviewPage: React.FC = () => {
     };
   }, []);
 
+  // Memoize computed metric values to avoid recalculating on every render
+  const computedMetrics = useMemo(() => ({
+    djsValue: `Rp ${((metrics.totalPotentialDjsLossPrevented + stats.totalDjsLossAmount) / 1_000_000_000).toFixed(2).replace('.', ',')} M`,
+    anomalyCount: (metrics.totalAnomaliesDetected + stats.totalAnomalies).toLocaleString('id-ID'),
+    auditCount: (metrics.totalParticipantsAudited + stats.totalClaims).toLocaleString('id-ID'),
+    cleanClaimsValue: `Rp ${((metrics.totalCleanClaimsApproved + stats.totalVerifiedAmount) / 1_000_000_000).toFixed(1).replace('.', ',')} M`,
+  }), [metrics, stats.totalDjsLossAmount, stats.totalAnomalies, stats.totalClaims, stats.totalVerifiedAmount]);
 
-  const donutSegments: DonutSegment[] = [
+  const donutSegments: DonutSegment[] = useMemo(() => [
     {
       key: 'IDENTITY_SHARING',
       label: 'Kartu Pinjaman',
@@ -92,13 +99,13 @@ export const OverviewPage: React.FC = () => {
       percentage: 10.8,
       color: '#e11d48',
     },
-  ];
+  ], [metrics.categoryDistribution]);
 
-  const topCitiesItems = metrics.topRiskCities.map((c) => ({
+  const topCitiesItems = useMemo(() => metrics.topRiskCities.map((c) => ({
     label: c.city,
     count: c.count,
     badge: 'Prioritas',
-  }));
+  })), [metrics.topRiskCities]);
 
   return (
     <div className="space-y-4">
@@ -149,44 +156,44 @@ export const OverviewPage: React.FC = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
         <MetricCard
           title="Potensi Efisiensi DJS"
-          value={`Rp ${((metrics.totalPotentialDjsLossPrevented + stats.totalDjsLossAmount) / 1_000_000_000).toFixed(2).replace('.', ',')} M`}
+          value={computedMetrics.djsValue}
           changeText="+18.4%"
           isPositive={true}
           icon={PiggyBank}
           iconColorClass="text-emerald-700"
-          iconBgClass="bg-emerald-50"
+          iconBgClass="bg-emerald-50 dark:bg-emerald-950/60"
           subtitle="Terselamatkan real-time"
         />
 
         <MetricCard
           title="Anomali Terdeteksi"
-          value={(metrics.totalAnomaliesDetected + stats.totalAnomalies).toLocaleString('id-ID')}
+          value={computedMetrics.anomalyCount}
           changeText="+6.2%"
           isPositive={false}
           icon={ShieldAlert}
-          iconColorClass="text-rose-700"
-          iconBgClass="bg-rose-50"
+          iconColorClass="text-rose-700 dark:text-rose-400"
+          iconBgClass="bg-rose-50 dark:bg-rose-950/60"
           subtitle="Audit investigasi"
         />
 
         <MetricCard
           title="Peserta Diaudit"
-          value={(metrics.totalParticipantsAudited + stats.totalClaims).toLocaleString('id-ID')}
+          value={computedMetrics.auditCount}
           changeText="+12.1%"
           isPositive={true}
           icon={Users}
-          iconColorClass="text-sky-600"
-          iconBgClass="bg-sky-50"
+          iconColorClass="text-sky-600 dark:text-sky-400"
+          iconBgClass="bg-sky-50 dark:bg-sky-950/60"
           subtitle="Stream real-time"
         />
 
         <MetricCard
           title="Klaim Valid JKN"
-          value={`Rp ${((metrics.totalCleanClaimsApproved + stats.totalVerifiedAmount) / 1_000_000_000).toFixed(1).replace('.', ',')} M`}
+          value={computedMetrics.cleanClaimsValue}
           subtitle="98.4% tingkat akurasi"
           icon={CheckCircle2}
-          iconColorClass="text-indigo-600"
-          iconBgClass="bg-indigo-50"
+          iconColorClass="text-indigo-600 dark:text-indigo-400"
+          iconBgClass="bg-indigo-50 dark:bg-indigo-950/60"
         />
       </div>
 
@@ -202,20 +209,20 @@ export const OverviewPage: React.FC = () => {
       </div>
 
       {/* Data-Dense Anomaly Audit Table (Linear / Supabase Style) */}
-      <div className="bg-white rounded-xl border border-slate-200/90 shadow-xs overflow-hidden">
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200/90 dark:border-slate-800 shadow-xs overflow-hidden">
         {/* Table Header */}
-        <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+        <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <span className="text-sm font-bold text-slate-900">
+            <span className="text-sm font-bold text-slate-900 dark:text-slate-100">
               Temuan Kasus Prioritas Audit Forensik
             </span>
-            <span className="px-2 py-0.5 rounded text-xs font-mono bg-slate-100 text-slate-700 font-semibold">
+            <span className="px-2 py-0.5 rounded text-xs font-mono bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold">
               4 Kasus Benchmark
             </span>
           </div>
           <button
             onClick={() => navigate('/dashboard/cases')}
-            className="text-xs font-semibold text-emerald-700 hover:text-emerald-800 flex items-center gap-1.5 transition-colors"
+            className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 flex items-center gap-1.5 transition-colors"
           >
             <span>Buka Detail Forensik Lengkap</span>
             <ChevronRight className="w-4 h-4" />
@@ -226,7 +233,7 @@ export const OverviewPage: React.FC = () => {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-slate-100 bg-slate-50/70 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              <tr className="border-b border-slate-100 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/50 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                 <th className="py-3 px-5">Kasus ID</th>
                 <th className="py-3 px-5">Peserta / NIK</th>
                 <th className="py-3 px-5">Tipologi Modus</th>
@@ -235,41 +242,41 @@ export const OverviewPage: React.FC = () => {
                 <th className="py-3 px-5 text-right">Tindakan</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 text-sm">
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-sm">
               {cases.map((row) => (
                 <tr
                   key={row.id}
                   onClick={() => navigate('/dashboard/cases')}
-                  className="hover:bg-slate-50/80 transition-colors cursor-pointer group"
+                  className="hover:bg-slate-50/80 dark:hover:bg-slate-800/60 transition-colors cursor-pointer group"
                 >
-                  <td className="py-3.5 px-5 font-mono font-semibold text-slate-900">
+                  <td className="py-3.5 px-5 font-mono font-semibold text-slate-900 dark:text-slate-100">
                     {row.caseCode}
                   </td>
-                  <td className="py-3.5 px-5 text-slate-700">
-                    <div className="font-semibold text-slate-900">{row.patientName}</div>
-                    <div className="text-xs font-mono text-slate-400 mt-0.5">{row.nikMasked}</div>
+                  <td className="py-3.5 px-5 text-slate-700 dark:text-slate-300">
+                    <div className="font-semibold text-slate-900 dark:text-slate-100">{row.patientName}</div>
+                    <div className="text-xs font-mono text-slate-400 dark:text-slate-500 mt-0.5">{row.nikMasked}</div>
                   </td>
-                  <td className="py-3.5 px-5 text-slate-600">
-                    <span className="font-medium text-slate-800 line-clamp-1">
+                  <td className="py-3.5 px-5 text-slate-600 dark:text-slate-400">
+                    <span className="font-medium text-slate-800 dark:text-slate-200 line-clamp-1">
                       {row.categoryLabel}
                     </span>
                   </td>
-                  <td className="py-3.5 px-5 text-right font-mono font-bold text-rose-600 tabular-nums">
+                  <td className="py-3.5 px-5 text-right font-mono font-bold text-rose-600 dark:text-rose-400 tabular-nums">
                     Rp {row.potentialLoss.toLocaleString('id-ID')}
                   </td>
                   <td className="py-3.5 px-5 text-center">
                     <span
                       className={`inline-block px-2.5 py-0.5 rounded-md text-xs font-bold ${
                         row.riskLevel === 'CRITICAL'
-                          ? 'bg-rose-50 text-rose-700 border border-rose-200'
-                          : 'bg-amber-50 text-amber-700 border border-amber-200'
+                          ? 'bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800'
+                          : 'bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800'
                       }`}
                     >
                       {row.riskLevel}
                     </span>
                   </td>
                   <td className="py-3.5 px-5 text-right">
-                    <button className="px-3 py-1.5 rounded-lg bg-slate-100 group-hover:bg-slate-900 group-hover:text-white text-slate-700 text-xs font-semibold transition-all">
+                    <button className="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 group-hover:bg-slate-900 dark:group-hover:bg-emerald-600 group-hover:text-white text-slate-700 dark:text-slate-300 text-xs font-semibold transition-all">
                       Audit Kasus
                     </button>
                   </td>
@@ -293,4 +300,5 @@ export const OverviewPage: React.FC = () => {
       </div>
     </div>
   );
-};
+});
+

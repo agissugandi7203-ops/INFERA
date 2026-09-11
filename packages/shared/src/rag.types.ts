@@ -12,6 +12,8 @@ export type RegulationCategory =
   | 'SPESIFIKASI_API'
   | 'SISTEM_BPJS'
   | 'KEBIJAKAN_TERKINI'
+  | 'FARMASI_ALKES'
+  | 'PELINDUNGAN_DATA'
   | 'STUDI_KASUS_AUDIT';
 
 export interface RegulationChunk {

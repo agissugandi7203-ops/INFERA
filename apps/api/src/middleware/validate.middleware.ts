@@ -42,3 +42,23 @@ export const validateQuery = (schema: AnyZodObject) => {
     }
   };
 };
+
+export const validateParams = (schema: AnyZodObject) => {
+  return async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
+    try {
+      req.params = await schema.parseAsync(req.params);
+      next();
+    } catch (error) {
+      if (error instanceof ZodError) {
+        const details: ApiErrorDetail[] = error.errors.map((err) => ({
+          field: err.path.join('.'),
+          message: err.message,
+          code: err.code,
+        }));
+        next(AppError.validation('URL parameter validation failed', details));
+      } else {
+        next(error);
+      }
+    }
+  };
+};

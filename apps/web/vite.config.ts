@@ -20,4 +20,18 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    chunkSizeWarningLimit: 800,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-pixi': ['pixi.js'],
+          'vendor-supabase': ['@supabase/supabase-js'],
+          'vendor-markdown': ['react-markdown', 'remark-gfm'],
+          'vendor-icons': ['lucide-react'],
+        },
+      },
+    },
+  },
 });

@@ -5,25 +5,50 @@ import morgan from 'morgan';
 import { env } from './config/env.js';
 import { API_PREFIX } from '@healthathon/shared';
 import apiRouter from './routes/api.routes.js';
+import docsRouter from './routes/docs.routes.js';
+import { swaggerSpec } from './config/swagger.js';
 import { notFoundHandler, errorHandler } from './middleware/error.middleware.js';
 import { generalLimiter } from './middleware/rate-limit.middleware.js';
 
 export const createApp = (): Application => {
   const app = express();
 
+  // Trust reverse proxy for accurate IP identification & rate limiting
+  app.set('trust proxy', 1);
+
   // Rate limiting (General API protection against spam & DOS)
   app.use(generalLimiter);
 
-  // Security headers
-  app.use(helmet());
+  // Security headers (Allow Swagger UI inline styles and scripts)
+  app.use(
+    helmet({
+      contentSecurityPolicy: false,
+      crossOriginEmbedderPolicy: false,
+    })
+  );
 
-  // CORS configuration (allow Vercel domains, custom domains, and local dev)
+  // CORS configuration (strictly whitelisted origins)
+  const allowedOrigins = [
+    env.CLIENT_URL,
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'http://127.0.0.1:5173',
+  ].filter(Boolean);
+
   app.use(
     cors({
-      origin: true,
+      origin: (origin, callback) => {
+        // Allow requests with no origin (curl, internal server calls) or whitelisted origins
+        if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
+          callback(null, true);
+        } else {
+          callback(new Error(`Origin '${origin}' tidak diizinkan oleh kebijakan keamanan CORS.`));
+        }
+      },
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+      maxAge: 86400,
     })
   );
 
@@ -36,21 +61,28 @@ export const createApp = (): Application => {
   app.use(express.json({ limit: '2mb' }));
   app.use(express.urlencoded({ extended: true, limit: '2mb' }));
 
-  // Root welcome route for both '/' and '/api'
-  app.get(['/', '/api'], (_req, res) => {
+  // Swagger Documentation Routes
+  app.use('/docs', docsRouter);
+  app.use('/api-docs', docsRouter);
+  app.use(`${API_PREFIX}/docs`, docsRouter);
+  app.get('/api-docs.json', (_req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+    res.json(swaggerSpec);
+  });
+
+  // Root welcome route
+  app.get('/', (_req, res) => {
     res.json({
       name: 'INFERA API Service',
       version: '1.0.0',
       status: 'online',
-      docs: `${API_PREFIX}/health`,
+      docs: '/docs',
+      health: `${API_PREFIX}/health`,
     });
   });
 
-  // Mount API Router under /api/v1, /v1, and /api for Vercel serverless routing
+  // Mount API Router strictly under API_PREFIX (/api/v1)
   app.use(API_PREFIX, apiRouter);
-  app.use('/api', apiRouter);
-  app.use('/v1', apiRouter);
-  app.use(apiRouter);
 
   // 404 and Global Error handling
   app.use(notFoundHandler);

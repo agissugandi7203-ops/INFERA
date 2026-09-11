@@ -8,13 +8,13 @@ import type {
 } from '@healthathon/shared';
 
 class SupabaseService {
-  private client: SupabaseClient | null = null;
+  private anonClient: SupabaseClient | null = null;
+  private adminClient: SupabaseClient | null = null;
   private isConfigured = false;
 
   constructor() {
-    if (env.SUPABASE_URL && (env.SUPABASE_SERVICE_ROLE_KEY || env.SUPABASE_ANON_KEY)) {
-      const key = env.SUPABASE_SERVICE_ROLE_KEY || env.SUPABASE_ANON_KEY;
-      this.client = createClient(env.SUPABASE_URL, key, {
+    if (env.SUPABASE_URL && env.SUPABASE_ANON_KEY) {
+      this.anonClient = createClient(env.SUPABASE_URL, env.SUPABASE_ANON_KEY, {
         auth: {
           persistSession: false,
           autoRefreshToken: false,
@@ -22,18 +22,59 @@ class SupabaseService {
       });
       this.isConfigured = true;
     }
+
+    if (env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY) {
+      this.adminClient = createClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, {
+        auth: {
+          persistSession: false,
+          autoRefreshToken: false,
+        },
+      });
+    }
   }
 
+  /**
+   * Default client respects PostgreSQL Row Level Security (RLS)
+   */
   public getClient(): SupabaseClient | null {
-    return this.client;
+    return this.anonClient || this.adminClient;
+  }
+
+  /**
+   * Admin client for internal background operations only
+   */
+  public getAdminClient(): SupabaseClient | null {
+    return this.adminClient || this.anonClient;
   }
 
   public hasCredentials(): boolean {
     return this.isConfigured;
   }
 
+  /**
+   * Strict validation to prevent Open Redirect vulnerabilities
+   */
+  public validateRedirectUrl(url?: string, defaultPath: string = '/reset-password'): string {
+    const fallback = `${env.CLIENT_URL.replace(/\/+$/, '')}${defaultPath.startsWith('/') ? defaultPath : `/${defaultPath}`}`;
+    if (!url) return fallback;
+
+    try {
+      const parsed = new URL(url);
+      const allowedOrigin = new URL(env.CLIENT_URL).origin;
+      const localhostOrigin = 'http://localhost:5173';
+
+      if (parsed.origin === allowedOrigin || parsed.origin === localhostOrigin || parsed.origin.endsWith('.vercel.app')) {
+        return url;
+      }
+      return fallback;
+    } catch {
+      return fallback;
+    }
+  }
+
   public async checkHealth(): Promise<ServiceHealth> {
-    if (!this.isConfigured || !this.client) {
+    const client = this.getClient();
+    if (!this.isConfigured || !client) {
       return {
         status: 'not_configured',
         message: 'Supabase credentials not configured in environment variables (SUPABASE_URL / SUPABASE_ANON_KEY)',
@@ -42,10 +83,13 @@ class SupabaseService {
 
     const start = Date.now();
     try {
-      const { error } = await this.client.auth.getSession();
+      const { error } = await client
+        .from('jkn_regulations')
+        .select('id')
+        .limit(1);
       const latencyMs = Date.now() - start;
 
-      if (error) {
+      if (error && error.code !== 'PGRST116') {
         return {
           status: 'degraded',
           message: error.message,
@@ -55,7 +99,7 @@ class SupabaseService {
 
       return {
         status: 'healthy',
-        message: 'Connected to Supabase successfully',
+        message: 'Connected to Supabase database successfully',
         latencyMs,
       };
     } catch (err) {
@@ -79,11 +123,12 @@ class SupabaseService {
   }
 
   public async signInWithPassword(email: string, password: string): Promise<AuthSessionDTO> {
-    if (!this.client) {
+    const client = this.getClient();
+    if (!client) {
       throw AppError.internal('Supabase client is not configured');
     }
 
-    const { data, error } = await this.client.auth.signInWithPassword({
+    const { data, error } = await client.auth.signInWithPassword({
       email,
       password,
     });
@@ -101,11 +146,12 @@ class SupabaseService {
   }
 
   public async signUp(email: string, password: string, fullName?: string): Promise<{ user: UserDTO; message: string }> {
-    if (!this.client) {
+    const client = this.getClient();
+    if (!client) {
       throw AppError.internal('Supabase client is not configured');
     }
 
-    const { data, error } = await this.client.auth.signUp({
+    const { data, error } = await client.auth.signUp({
       email,
       password,
       options: {
@@ -126,13 +172,14 @@ class SupabaseService {
   }
 
   public async resetPasswordForEmail(email: string, redirectTo?: string): Promise<{ message: string }> {
-    if (!this.client) {
+    const client = this.getClient();
+    if (!client) {
       throw AppError.internal('Supabase client is not configured');
     }
 
-    const redirect = redirectTo || `${env.CLIENT_URL}/reset-password`;
-    const { error } = await this.client.auth.resetPasswordForEmail(email, {
-      redirectTo: redirect,
+    const safeRedirect = this.validateRedirectUrl(redirectTo, '/reset-password');
+    const { error } = await client.auth.resetPasswordForEmail(email, {
+      redirectTo: safeRedirect,
     });
 
     if (error) {
@@ -145,15 +192,16 @@ class SupabaseService {
   }
 
   public async getOAuthSignInUrl(provider: 'google', redirectTo?: string): Promise<{ url: string }> {
-    if (!this.client) {
+    const client = this.getClient();
+    if (!client) {
       throw AppError.internal('Supabase client is not configured');
     }
 
-    const redirect = redirectTo || env.CLIENT_URL;
-    const { data, error } = await this.client.auth.signInWithOAuth({
+    const safeRedirect = this.validateRedirectUrl(redirectTo, '/');
+    const { data, error } = await client.auth.signInWithOAuth({
       provider,
       options: {
-        redirectTo: redirect,
+        redirectTo: safeRedirect,
         skipBrowserRedirect: true,
       },
     });
@@ -168,9 +216,10 @@ class SupabaseService {
   }
 
   public async getUserFromToken(token: string): Promise<UserDTO | null> {
-    if (!this.client) return null;
+    const client = this.getClient();
+    if (!client) return null;
 
-    const { data: { user }, error } = await this.client.auth.getUser(token);
+    const { data: { user }, error } = await client.auth.getUser(token);
     if (error || !user) return null;
 
     return this.mapUser(user);

@@ -94,6 +94,7 @@ const DashboardLayoutContent: React.FC<
   const emotionTimedownRef = useRef<NodeJS.Timeout | null>(null);
   const stopListeningRef = useRef<(() => void) | null>(null);
   const isVoiceProcessingRef = useRef<boolean>(false);
+  const activeStreamAbortRef = useRef<AbortController | null>(null);
 
   const handleSelectEmotion = (emo: CharacterEmotion, timedownMs = 5000) => {
     if (emotionTimedownRef.current) {
@@ -340,7 +341,11 @@ const DashboardLayoutContent: React.FC<
 
     handleSelectEmotion('thinking', 20000);
 
+    if (activeStreamAbortRef.current) {
+      activeStreamAbortRef.current.abort();
+    }
     const abortCtrl = new AbortController();
+    activeStreamAbortRef.current = abortCtrl;
 
     try {
       await runAgentInvestigationStream(
@@ -396,27 +401,27 @@ const DashboardLayoutContent: React.FC<
               )
             );
           },
-          onDone: (fullText, recommendations, shortcuts) => {
+          onDone: (fullText, recs, shortcuts) => {
             setMessages((prev) =>
               prev.map((m) =>
                 m.id === assistantMsgId
                   ? {
                       ...m,
                       content: fullText,
-                      recommendations:
-                        recommendations.length > 0 ? recommendations : m.recommendations,
+                      recommendations: recs,
                       shortcuts,
                       isStreaming: false,
                     }
                   : m
               )
             );
+            handleSelectEmotion('happy', 5000);
             setIsLoading(false);
-            handleSelectEmotion('normal', 0);
           },
-          onError: (streamErr) => {
-            setIsLoading(false);
+          onError: (err) => {
+            console.error('Agent Stream Error:', err);
             handleSelectEmotion('confused', 4000);
+            setIsLoading(false);
             setMessages((prev) =>
               prev.map((m) =>
                 m.id === assistantMsgId
@@ -424,7 +429,7 @@ const DashboardLayoutContent: React.FC<
                       ...m,
                       content:
                         m.content.trim() ||
-                        `Maaf, terjadi kendala koneksi AI: ${streamErr.message}`,
+                        `Maaf, terjadi kendala saat investigasi AI: ${err.message}`,
                       isStreaming: false,
                     }
                   : m
@@ -435,6 +440,7 @@ const DashboardLayoutContent: React.FC<
         abortCtrl.signal
       );
     } catch (err) {
+      console.error('Agent Investigation Error:', err);
       setIsLoading(false);
       handleSelectEmotion('confused', 4000);
       setMessages((prev) =>
@@ -452,8 +458,22 @@ const DashboardLayoutContent: React.FC<
             : m
         )
       );
+    } finally {
+      if (activeStreamAbortRef.current === abortCtrl) {
+        activeStreamAbortRef.current = null;
+      }
     }
   };
+
+  const handleStopStreaming = React.useCallback(() => {
+    if (activeStreamAbortRef.current) {
+      activeStreamAbortRef.current.abort();
+      activeStreamAbortRef.current = null;
+    }
+    SpeechService.stopSpeaking();
+    setIsLoading(false);
+    handleSelectEmotion('normal', 0);
+  }, [handleSelectEmotion]);
 
   const handleToggleClickToSpeak = () => {
     if (isListening) {
@@ -522,6 +542,31 @@ const DashboardLayoutContent: React.FC<
     );
   }, [settings.elevenLabsApiKey, settings.avatarVoiceId, settings.elevenLabsVoiceId]);
 
+  // Dedicated scroll preservation to prevent jumping to top on background data updates
+  const mainScrollRef = useRef<HTMLElement>(null);
+  const scrollPosRef = useRef<number>(0);
+
+  const handleMainScroll = React.useCallback((e: React.UIEvent<HTMLElement>) => {
+    scrollPosRef.current = e.currentTarget.scrollTop;
+  }, []);
+
+  // Restore scroll position if it accidentally drops to 0 during background stream ticks or anomaly alerts
+  useEffect(() => {
+    if (mainScrollRef.current && scrollPosRef.current > 0) {
+      if (mainScrollRef.current.scrollTop === 0) {
+        mainScrollRef.current.scrollTop = scrollPosRef.current;
+      }
+    }
+  }, [claims, latestAnomalyAlert]);
+
+  // Reset scroll position cleanly when navigating between pages
+  useEffect(() => {
+    scrollPosRef.current = 0;
+    if (mainScrollRef.current) {
+      mainScrollRef.current.scrollTop = 0;
+    }
+  }, [location.pathname]);
+
   const outletContextValue = React.useMemo(
     () => ({
       onTriggerAvatarSpeech: handleTriggerSpeechFromPage,
@@ -538,6 +583,7 @@ const DashboardLayoutContent: React.FC<
       isSoundDetected,
       onToggleClickToSpeak: handleToggleClickToSpeak,
       onStopSpeaking: () => SpeechService.stopSpeaking(),
+      onStopStreaming: handleStopStreaming,
       onToggleMobileSidebar: () => setIsMobileSidebarOpen((prev) => !prev),
       onToggleSettings: () => setShowSettingsModal((prev) => !prev),
       // Voice separation: AI Kanan uses avatarVoiceId, Inti AI Chat uses chatVoiceId
@@ -549,6 +595,7 @@ const DashboardLayoutContent: React.FC<
       messages,
       isLoading,
       handleStreamChat,
+      handleStopStreaming,
       handleClearHistory,
       handleSelectEmotion,
       settings.avatarVoiceId,
@@ -650,7 +697,10 @@ const DashboardLayoutContent: React.FC<
 
         {/* Dynamic Page Routed Content via Outlet */}
         <main
+          ref={mainScrollRef}
+          onScroll={handleMainScroll}
           id="dashboard-main-scroll"
+          style={{ overflowAnchor: 'auto' }}
           className={`flex-1 min-w-0 ${
             location.pathname === '/dashboard/ai-report'
               ? 'overflow-hidden flex flex-col bg-white dark:bg-slate-950 p-0'
@@ -728,12 +778,20 @@ const DashboardLayoutContent: React.FC<
 export const DashboardLayout: React.FC<DashboardLayoutProps> = (props) => {
   const [latestAnomalyAlert, setLatestAnomalyAlert] = useState<JknClaimRecord | null>(null);
 
+  const handleAnomalyDetected = React.useCallback((claim: JknClaimRecord) => {
+    setLatestAnomalyAlert(claim);
+  }, []);
+
+  const handleClearAnomalyAlert = React.useCallback(() => {
+    setLatestAnomalyAlert(null);
+  }, []);
+
   return (
-    <SimulationProvider onAnomalyDetected={(claim) => setLatestAnomalyAlert(claim)}>
+    <SimulationProvider onAnomalyDetected={handleAnomalyDetected}>
       <DashboardLayoutContent
         {...props}
         latestAnomalyAlert={latestAnomalyAlert}
-        clearAnomalyAlert={() => setLatestAnomalyAlert(null)}
+        clearAnomalyAlert={handleClearAnomalyAlert}
       />
     </SimulationProvider>
   );

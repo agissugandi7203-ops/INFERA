@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import type { JknClaimRecord, SimulationStats } from '@healthathon/shared';
 import {
   generateClaimByScenario,
@@ -115,27 +115,36 @@ export const SimulationProvider: React.FC<{
     };
   }, [isPaused, intervalSec, emitNewClaim]);
 
-  const togglePause = () => setIsPaused((prev) => !prev);
+  const togglePause = useCallback(() => setIsPaused((prev) => !prev), []);
+  const stableSetIntervalSec = useCallback((sec: number) => setIntervalSec(sec), []);
+  const stableSetSelectedClaim = useCallback((claim: JknClaimRecord | null) => setSelectedClaimForAudit(claim), []);
 
-  const anomalies = claims.filter((c) => c.isAnomaly);
-  const latestAnomaly = anomalies[0] || null;
+  // Memoize derived state to prevent recomputation on every render
+  const anomalies = useMemo(() => claims.filter((c) => c.isAnomaly), [claims]);
+  const latestAnomaly = useMemo(() => anomalies[0] || null, [anomalies]);
+
+  const resolvedSelectedClaim = selectedClaimForAudit || latestAnomaly;
+
+  // Memoize context value to prevent cascading re-renders in consumers
+  const contextValue = useMemo<SimulationContextType>(
+    () => ({
+      claims,
+      anomalies,
+      latestAnomaly,
+      stats,
+      isPaused,
+      intervalSec,
+      togglePause,
+      setIntervalSec: stableSetIntervalSec,
+      triggerManualClaim: emitNewClaim,
+      selectedClaimForAudit: resolvedSelectedClaim,
+      setSelectedClaimForAudit: stableSetSelectedClaim,
+    }),
+    [claims, anomalies, latestAnomaly, stats, isPaused, intervalSec, togglePause, stableSetIntervalSec, emitNewClaim, resolvedSelectedClaim, stableSetSelectedClaim]
+  );
 
   return (
-    <SimulationContext.Provider
-      value={{
-        claims,
-        anomalies,
-        latestAnomaly,
-        stats,
-        isPaused,
-        intervalSec,
-        togglePause,
-        setIntervalSec,
-        triggerManualClaim: emitNewClaim,
-        selectedClaimForAudit: selectedClaimForAudit || latestAnomaly,
-        setSelectedClaimForAudit,
-      }}
-    >
+    <SimulationContext.Provider value={contextValue}>
       {children}
     </SimulationContext.Provider>
   );

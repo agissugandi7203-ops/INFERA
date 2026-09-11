@@ -1,6 +1,6 @@
 import type { ApiResponse } from '@healthathon/shared';
 
-const BASE_URL = import.meta.env.VITE_API_URL || '/api/v1';
+const BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) || '/api/v1';
 
 export class ApiClientError extends Error {
   public code: string;
@@ -15,58 +15,74 @@ export class ApiClientError extends Error {
 }
 
 export const apiClient = {
-  async get<T>(endpoint: string, token?: string): Promise<T> {
+  async request<T>(endpoint: string, options: RequestInit = {}, token?: string): Promise<T> {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
+      ...((options.headers as Record<string, string>) || {}),
     };
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
     }
 
     const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
-    const response = await fetch(`${BASE_URL}${cleanEndpoint}`, {
-      method: 'GET',
-      headers,
-    });
+    const cleanBase = BASE_URL.replace(/\/+$/, '');
 
-    const data: ApiResponse<T> = await response.json();
-
-    if (!data.success) {
+    let response: Response;
+    try {
+      response = await fetch(`${cleanBase}${cleanEndpoint}`, {
+        ...options,
+        headers,
+      });
+    } catch (netErr) {
       throw new ApiClientError(
-        data.error.message || 'API request failed',
-        data.error.code,
-        data.error.details
+        'Koneksi jaringan gagal. Pastikan backend API aktif.',
+        'NETWORK_OFFLINE'
       );
+    }
+
+    const contentType = response.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) {
+      const text = await response.text();
+      throw new ApiClientError(
+        `Server mengembalikan respons non-JSON (${response.status}): ${text.slice(0, 100)}`,
+        `HTTP_${response.status}`
+      );
+    }
+
+    let data: ApiResponse<T>;
+    try {
+      data = await response.json();
+    } catch {
+      throw new ApiClientError(
+        'Format data respons JSON tidak valid dari server.',
+        'MALFORMED_JSON'
+      );
+    }
+
+    if (!response.ok || !data.success) {
+      const err = (data as any)?.error || {
+        message: `Permintaan API gagal dengan status ${response.status}`,
+        code: `HTTP_${response.status}`,
+      };
+      throw new ApiClientError(err.message, err.code, err.details);
     }
 
     return data.data;
   },
 
-  async post<T, B = unknown>(endpoint: string, body: B, token?: string): Promise<T> {
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-    };
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
+  get<T>(endpoint: string, token?: string): Promise<T> {
+    return this.request<T>(endpoint, { method: 'GET' }, token);
+  },
 
-    const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
-    const response = await fetch(`${BASE_URL}${cleanEndpoint}`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify(body),
-    });
-
-    const data: ApiResponse<T> = await response.json();
-
-    if (!data.success) {
-      throw new ApiClientError(
-        data.error.message || 'API request failed',
-        data.error.code,
-        data.error.details
-      );
-    }
-
-    return data.data;
+  post<T, B = unknown>(endpoint: string, body: B, token?: string): Promise<T> {
+    return this.request<T>(
+      endpoint,
+      {
+        method: 'POST',
+        body: JSON.stringify(body),
+      },
+      token
+    );
   },
 };
+
