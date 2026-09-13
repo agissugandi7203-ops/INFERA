@@ -605,10 +605,9 @@ export const AiReportPage: React.FC = () => {
         setIsDictatingSoundDetected(false);
         stopDictateRef.current = null;
         if (transcript.trim()) {
-          setInputText(baseInput ? `${baseInput} ${transcript.trim()}` : transcript.trim());
-          if (textareaRef.current) {
-            textareaRef.current.focus();
-          }
+          const finalPrompt = baseInput ? `${baseInput} ${transcript.trim()}` : transcript.trim();
+          setInputText('');
+          sendUserPrompt(finalPrompt, undefined, isDeepThinking);
         }
       },
       (listening) => {

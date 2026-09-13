@@ -1,46 +1,8 @@
-﻿import {
+import {
   VOICE_DEFAULT_ID,
   BASE_VOICE_SETTINGS,
   ElevenLabsVoiceSettings,
 } from './tts-processor';
-
-export function cleanAndDeduplicateTranscript(raw: string): string {
-  const text = raw.replace(/\s+/g, ' ').trim();
-  if (!text) return '';
-
-  const words = text.split(' ');
-  const n = words.length;
-
-  // Check repeating n-gram patterns from k = 1 up to floor(n/2)
-  for (let k = 1; k <= Math.floor(n / 2); k++) {
-    if (n % k === 0) {
-      const pattern = words.slice(0, k).join(' ').toLowerCase();
-      let allMatch = true;
-      for (let j = k; j < n; j += k) {
-        const block = words.slice(j, j + k).join(' ').toLowerCase();
-        if (block !== pattern) {
-          allMatch = false;
-          break;
-        }
-      }
-      if (allMatch) {
-        return words.slice(0, k).join(' ');
-      }
-    }
-  }
-
-  // Word-level sequential duplication (e.g. "audit audit peserta")
-  const dedupedWords: string[] = [];
-  for (let i = 0; i < words.length; i++) {
-    const word = words[i];
-    if (i > 0 && word.toLowerCase() === words[i - 1].toLowerCase()) {
-      continue;
-    }
-    dedupedWords.push(word);
-  }
-
-  return dedupedWords.join(' ');
-}
 
 export class SpeechService {
   private static synth = typeof window !== 'undefined' ? window.speechSynthesis : null;
@@ -112,23 +74,22 @@ export class SpeechService {
   }
 
   /**
-   * Speak using Backend ElevenLabs TTS Proxy, with graceful fallback to Web Speech API.
+   * Speak using ElevenLabs TTS (via backend proxy or direct key) with instant fallback to Web Speech API.
    */
   public static async speak(
     text: string,
     onLipSync: (mouthOpen: number) => void,
     onStart?: () => void,
     onEnd?: () => void,
-    _deprecatedApiKey?: string,
+    elevenLabsApiKey?: string,
     elevenLabsVoiceId: string = VOICE_DEFAULT_ID,
     voiceSettings?: ElevenLabsVoiceSettings
   ): Promise<void> {
     this.stopSpeaking();
-    this.stopListening(); // Matikan mikrofon agar suara speaker tidak masuk kembali (anti-echo loop)
+    this.stopListening();
     const sessionId = ++this.speakSessionId;
     this.speakingState = true;
 
-    // Clean text for speech (remove markdown formatting that sounds bad in TTS)
     const cleanText = text
       .replace(/[*_#`~\[\]\(\)]/g, ' ')
       .replace(/\s+/g, ' ')
@@ -140,22 +101,20 @@ export class SpeechService {
       return;
     }
 
-    // 1. Try Backend ElevenLabs Proxy first
     try {
       const audioBlob = await this.fetchElevenLabsAudio(
         cleanText,
         elevenLabsVoiceId,
         voiceSettings,
-        8000
+        elevenLabsApiKey,
+        6000
       );
 
-      // Jika user telah memicu sesi audio baru selama unduhan berlangsung, buang audio usang ini
       if (this.speakSessionId !== sessionId) return;
-
       await this.playAudioWithLipSync(audioBlob, onLipSync, onStart, onEnd);
       return;
     } catch (err) {
-      console.warn('[Speech] Backend ElevenLabs TTS gagal, beralih instan ke Web Speech:', err);
+      console.warn('[Speech] ElevenLabs TTS unavailable, falling back to Web Speech:', err);
       if (this.speakSessionId !== sessionId) return;
       this.speakWithWebSpeech(cleanText, onLipSync, onStart, onEnd);
     }
@@ -165,39 +124,68 @@ export class SpeechService {
     text: string,
     voiceId: string,
     voiceSettings?: ElevenLabsVoiceSettings,
-    timeoutMs: number = 8000
+    apiKey?: string,
+    timeoutMs: number = 6000
   ): Promise<Blob> {
-    const backendUrl = import.meta.env.VITE_API_URL || '/api/v1';
     const settings = voiceSettings || BASE_VOICE_SETTINGS;
     const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
     const timer = controller ? setTimeout(() => controller.abort(), timeoutMs) : null;
 
     try {
-      const res = await fetch(`${backendUrl}/voice/tts`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          text,
-          voiceId,
-          voiceSettings: {
-            stability: settings.stability,
-            similarity_boost: settings.similarity_boost,
-            style: settings.style,
-            use_speaker_boost: settings.use_speaker_boost,
-            speed: settings.speed,
-          },
-        }),
-        signal: controller?.signal,
-      });
+      const backendUrl = import.meta.env.VITE_API_URL || '/api/v1';
+      try {
+        const res = await fetch(`${backendUrl}/voice/tts`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            text,
+            voiceId,
+            voiceSettings: {
+              stability: settings.stability,
+              similarity_boost: settings.similarity_boost,
+              style: settings.style,
+              use_speaker_boost: settings.use_speaker_boost,
+              speed: settings.speed,
+            },
+          }),
+          signal: controller?.signal,
+        });
 
-      if (!res.ok) {
-        const errText = await res.text().catch(() => '');
-        throw new Error(`Voice Proxy Error (${res.status}): ${errText}`);
+        if (res.ok) {
+          return await res.blob();
+        }
+      } catch {
+        // Backend proxy failed, attempt direct
       }
 
-      return await res.blob();
+      if (apiKey && apiKey.trim().length > 5) {
+        const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+          method: 'POST',
+          headers: {
+            'xi-api-key': apiKey.trim(),
+            'Content-Type': 'application/json',
+            Accept: 'audio/mpeg',
+          },
+          body: JSON.stringify({
+            text,
+            model_id: 'eleven_multilingual_v2',
+            voice_settings: {
+              stability: settings.stability,
+              similarity_boost: settings.similarity_boost,
+              style: settings.style,
+              use_speaker_boost: settings.use_speaker_boost,
+              speed: settings.speed,
+            },
+          }),
+          signal: controller?.signal,
+        });
+
+        if (res.ok) {
+          return await res.blob();
+        }
+      }
+
+      throw new Error('All ElevenLabs TTS attempts failed');
     } finally {
       if (timer) clearTimeout(timer);
     }
@@ -245,7 +233,7 @@ export class SpeechService {
     try {
       await audio.play();
     } catch (playErr) {
-      console.warn('[Speech] Audio playback blocked or failed:', playErr);
+      console.warn('[Speech] Audio playback blocked or failed, settling state:', playErr);
       this.stopSpeaking();
       onLipSync(0);
       if (onEnd) onEnd();
@@ -358,7 +346,7 @@ export class SpeechService {
     onStateChange?: (isListening: boolean) => void,
     onError?: (error: string) => void,
     onSoundDetected?: (isSoundActive: boolean) => void,
-    _onInterim?: (liveText: string) => void
+    onInterim?: (liveText: string) => void
   ): () => void {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const win = typeof window !== 'undefined' ? (window as any) : {};
@@ -369,7 +357,6 @@ export class SpeechService {
       return () => {};
     }
 
-    // Pastikan tidak ada suara TTS yang sedang berputar sebelum membuka mic
     this.stopSpeaking();
     this.stopListening();
 
@@ -377,7 +364,7 @@ export class SpeechService {
       const recognition = new SpeechRecognition();
       this.activeRecognition = recognition;
       recognition.lang = 'id-ID';
-      recognition.interimResults = false;
+      recognition.interimResults = true;
       recognition.maxAlternatives = 1;
       recognition.continuous = false;
 
@@ -402,23 +389,12 @@ export class SpeechService {
         if (onSoundDetected) onSoundDetected(false);
       };
 
+      let lastHeardText = '';
       let hasDeliveredResult = false;
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      recognition.onresult = (event: any) => {
+      const deliver = (text: string) => {
         if (hasDeliveredResult) return;
-
-        let finalTranscript = '';
-        if (event.results) {
-          for (let i = event.resultIndex || 0; i < event.results.length; ++i) {
-            const item = event.results[i];
-            if (item && item[0]?.transcript) {
-              finalTranscript += item[0].transcript;
-            }
-          }
-        }
-
-        const trimmed = finalTranscript.trim();
+        const trimmed = text.trim();
         if (trimmed) {
           hasDeliveredResult = true;
           try {
@@ -429,8 +405,37 @@ export class SpeechService {
           if (SpeechService.activeRecognition === recognition) {
             SpeechService.activeRecognition = null;
           }
-          const cleaned = cleanAndDeduplicateTranscript(trimmed);
-          onResult(cleaned || trimmed);
+          onResult(trimmed);
+        }
+      };
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      recognition.onresult = (event: any) => {
+        let interimText = '';
+        let finalText = '';
+
+        if (event.results) {
+          for (let i = event.resultIndex || 0; i < event.results.length; ++i) {
+            const item = event.results[i];
+            if (item && item[0]?.transcript) {
+              if (item.isFinal) {
+                finalText += item[0].transcript;
+              } else {
+                interimText += item[0].transcript;
+              }
+            }
+          }
+        }
+
+        const currentLive = (finalText || interimText).trim();
+        if (currentLive) {
+          lastHeardText = currentLive;
+          if (onSoundDetected) onSoundDetected(true);
+          if (onInterim) onInterim(currentLive);
+        }
+
+        if (finalText.trim()) {
+          deliver(finalText.trim());
         }
       };
 
@@ -441,13 +446,26 @@ export class SpeechService {
           SpeechService.activeRecognition = null;
         }
         if (event.error !== 'no-speech' && event.error !== 'aborted') {
-          if (onError) onError(event.error);
+          let friendly = '';
+          if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+            friendly = 'Akses mikrofon diblokir oleh browser. Klik ikon gembok di sebelah URL dan ubah Mikrofon menjadi "Izinkan".';
+          } else if (event.error === 'audio-capture') {
+            friendly = 'Mikrofon tidak terdeteksi di Windows. Pastikan mikrofon aktif di pengaturan audio.';
+          } else if (event.error === 'network') {
+            friendly = 'Layanan Google Speech memerlukan koneksi internet aktif.';
+          } else {
+            friendly = `Kendala mikrofon: ${event.error}`;
+          }
+          if (onError) onError(friendly);
         }
         if (onStateChange) onStateChange(false);
         if (onSoundDetected) onSoundDetected(false);
       };
 
       recognition.onend = () => {
+        if (!hasDeliveredResult && lastHeardText) {
+          deliver(lastHeardText);
+        }
         if (SpeechService.activeRecognition === recognition) {
           SpeechService.activeRecognition = null;
         }
