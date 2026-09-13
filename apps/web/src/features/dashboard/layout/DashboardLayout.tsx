@@ -90,6 +90,8 @@ const DashboardLayoutContent: React.FC<
   const [isMinimized, setIsMinimized] = useState<boolean>(false);
   const [isListening, setIsListening] = useState<boolean>(false);
   const [isSoundDetected, setIsSoundDetected] = useState<boolean>(false);
+  const [liveVoiceText, setLiveVoiceText] = useState<string>('');
+  const [voiceErrorMessage, setVoiceErrorMessage] = useState<string | null>(null);
 
   const controllerRef = useRef<AvatarController | null>(null);
   const emotionTimedownRef = useRef<NodeJS.Timeout | null>(null);
@@ -564,11 +566,15 @@ const DashboardLayoutContent: React.FC<
     setIsListening(true);
     handleSelectEmotion('listening', 0);
 
+    setVoiceErrorMessage(null);
+    setLiveVoiceText('');
+
     const stopFn = SpeechService.startListening(
       (transcript) => {
         isListeningRef.current = false;
         setIsListening(false);
         setIsSoundDetected(false);
+        setLiveVoiceText('');
         stopListeningRef.current = null;
         if (transcript.trim()) {
           handleVoiceAssistant(transcript.trim());
@@ -579,6 +585,7 @@ const DashboardLayoutContent: React.FC<
         setIsListening(listening);
         if (!listening) {
           setIsSoundDetected(false);
+          setLiveVoiceText('');
           handleSelectEmotion('normal', 0);
         }
       },
@@ -587,11 +594,17 @@ const DashboardLayoutContent: React.FC<
         isListeningRef.current = false;
         setIsListening(false);
         setIsSoundDetected(false);
+        setLiveVoiceText('');
         stopListeningRef.current = null;
-        handleSelectEmotion('confused', 3000);
+        setVoiceErrorMessage(err);
+        setTimeout(() => setVoiceErrorMessage(null), 8000);
+        handleSelectEmotion('confused', 4000);
       },
       (soundActive) => {
         setIsSoundDetected(soundActive);
+      },
+      (liveText) => {
+        setLiveVoiceText(liveText);
       }
     );
 
@@ -831,6 +844,8 @@ const DashboardLayoutContent: React.FC<
         onClickToSpeak={handleToggleClickToSpeak}
         isListening={isListening}
         isSoundDetected={isSoundDetected}
+        liveTranscript={liveVoiceText}
+        errorMessage={voiceErrorMessage}
         onOpenChat={() => navigate('/dashboard/ai-report')}
         onMinimize={() => setIsMinimized(true)}
         isMinimized={isMinimized || location.pathname === '/dashboard/ai-report'}

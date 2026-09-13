@@ -28,6 +28,7 @@ import {
   MapPin,
   Stethoscope,
   Pill,
+  AlertCircle,
 } from 'lucide-react';
 import { ChatMessage, ChatAttachment, AiShortcut, getStoredSettings } from '../services/openrouter';
 import { CharacterEmotion } from '../avatar/AvatarController';
@@ -330,6 +331,8 @@ export const AiReportPage: React.FC = () => {
   const [isVoiceOpen, setIsVoiceOpen] = useState(false);
   const [userFeedback, setUserFeedback] = useState<Record<string, 'up' | 'down'>>({});
   const [isDictating, setIsDictating] = useState(false);
+  const [dictateError, setDictateError] = useState<string | null>(null);
+  const [isDictatingSoundDetected, setIsDictatingSoundDetected] = useState<boolean>(false);
   const isDictatingRef = useRef<boolean>(false);
   const lastDictateToggleTimeRef = useRef<number>(0);
   const stopDictateRef = useRef<(() => void) | null>(null);
@@ -613,6 +616,7 @@ export const AiReportPage: React.FC = () => {
         stopDictateRef.current = null;
       }
       setIsDictating(false);
+      setIsDictatingSoundDetected(false);
       return;
     }
 
@@ -620,6 +624,7 @@ export const AiReportPage: React.FC = () => {
     SpeechService.stopSpeaking();
     isDictatingRef.current = true;
     setIsDictating(true);
+    setDictateError(null);
 
     const baseInput = inputText.trim();
 
@@ -627,6 +632,7 @@ export const AiReportPage: React.FC = () => {
       (transcript) => {
         isDictatingRef.current = false;
         setIsDictating(false);
+        setIsDictatingSoundDetected(false);
         stopDictateRef.current = null;
         if (transcript.trim()) {
           setInputText(baseInput ? `${baseInput} ${transcript.trim()}` : transcript.trim());
@@ -638,14 +644,22 @@ export const AiReportPage: React.FC = () => {
       (listening) => {
         isDictatingRef.current = listening;
         setIsDictating(listening);
+        if (!listening) {
+          setIsDictatingSoundDetected(false);
+        }
       },
       (err) => {
         console.warn('[Dictate] Speech recognition error:', err);
         isDictatingRef.current = false;
         setIsDictating(false);
+        setIsDictatingSoundDetected(false);
         stopDictateRef.current = null;
+        setDictateError(err);
+        setTimeout(() => setDictateError(null), 8000);
       },
-      undefined,
+      (soundActive) => {
+        setIsDictatingSoundDetected(soundActive);
+      },
       (liveText) => {
         if (liveText.trim()) {
           setInputText(baseInput ? `${baseInput} ${liveText.trim()}` : liveText.trim());
@@ -993,6 +1007,36 @@ export const AiReportPage: React.FC = () => {
                     </button>
                   </div>
                 ))}
+              </div>
+            )}
+
+            {/* Live Dictation / Error Feedback */}
+            {dictateError && (
+              <div className="w-full mb-3 p-3 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-xs flex items-center gap-2 animate-in fade-in duration-200 shadow-sm">
+                <AlertCircle className="w-4 h-4 shrink-0 text-rose-500" />
+                <span className="flex-1 font-medium">{dictateError}</span>
+                <button type="button" onClick={() => setDictateError(null)} className="text-rose-400 hover:text-rose-600 cursor-pointer">
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
+
+            {isDictating && (
+              <div className="w-full mb-3 px-3.5 py-2 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 text-xs flex items-center justify-between shadow-sm animate-pulse">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
+                  <Mic className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                  <span className="font-semibold">
+                    {isDictatingSoundDetected ? 'Mendengarkan suara Anda...' : 'Mikrofon aktif — silakan bicara sekarang...'}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleToggleDictate}
+                  className="text-[11px] font-bold text-emerald-700 dark:text-emerald-300 underline cursor-pointer"
+                >
+                  Selesai
+                </button>
               </div>
             )}
 
@@ -1420,6 +1464,36 @@ export const AiReportPage: React.FC = () => {
                     </button>
                   </div>
                 ))}
+              </div>
+            )}
+
+            {/* Live Dictation / Error Feedback */}
+            {dictateError && (
+              <div className="w-full mb-2 p-2.5 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-xs flex items-center gap-2 animate-in fade-in duration-200 shadow-sm">
+                <AlertCircle className="w-4 h-4 shrink-0 text-rose-500" />
+                <span className="flex-1 font-medium">{dictateError}</span>
+                <button type="button" onClick={() => setDictateError(null)} className="text-rose-400 hover:text-rose-600 cursor-pointer">
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
+
+            {isDictating && (
+              <div className="w-full mb-2 px-3.5 py-2 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 text-xs flex items-center justify-between shadow-sm animate-pulse">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
+                  <Mic className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                  <span className="font-semibold">
+                    {isDictatingSoundDetected ? 'Mendengarkan suara Anda...' : 'Mikrofon aktif — silakan bicara sekarang...'}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleToggleDictate}
+                  className="text-[11px] font-bold text-emerald-700 dark:text-emerald-300 underline cursor-pointer"
+                >
+                  Selesai
+                </button>
               </div>
             )}
 

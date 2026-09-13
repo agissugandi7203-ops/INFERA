@@ -85,6 +85,9 @@ export class SpeechService {
   private static lastSpeakEndTime = 0;
   private static lastSpokenText = '';
   private static speakingState = false;
+  private static micStream: MediaStream | null = null;
+  private static audioCtx: AudioContext | null = null;
+  private static soundMeterInterval: number | null = null;
 
   public static isSpeechSupported(): boolean {
     return typeof window !== 'undefined' && 'speechSynthesis' in window;
@@ -149,6 +152,28 @@ export class SpeechService {
 
   public static stopListening(): void {
     this.recognitionSessionId++;
+
+    if (this.soundMeterInterval) {
+      clearInterval(this.soundMeterInterval);
+      this.soundMeterInterval = null;
+    }
+    if (this.micStream) {
+      try {
+        this.micStream.getTracks().forEach((track) => track.stop());
+      } catch {
+        // ignore
+      }
+      this.micStream = null;
+    }
+    if (this.audioCtx && this.audioCtx.state !== 'closed') {
+      try {
+        this.audioCtx.close().catch(() => {});
+      } catch {
+        // ignore
+      }
+      this.audioCtx = null;
+    }
+
     if (this.activeRecognition) {
       try {
         this.activeRecognition.onstart = null;
@@ -481,214 +506,232 @@ export class SpeechService {
     onSoundDetected?: (isSoundActive: boolean) => void,
     onInterim?: (liveText: string) => void
   ): () => void {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const win = window as any;
+    const win = typeof window !== 'undefined' ? (window as any) : {};
     const SpeechRecognition = win.SpeechRecognition || win.webkitSpeechRecognition;
 
     if (!SpeechRecognition) {
-      if (onError) onError('Browser Anda tidak mendukung Speech Recognition.');
+      if (onError) {
+        onError('Browser Anda belum mendukung Speech Recognition. Gunakan browser Google Chrome atau Microsoft Edge terbaru.');
+      }
       return () => {};
     }
 
-    // Pastikan tidak ada suara TTS yang sedang berputar sebelum membuka mic
+    // Stop existing audio and priming
     this.stopSpeaking();
     this.stopListening();
-    this.unlockAudio(); // Unlock audio context on user mic gesture
+    this.unlockAudio();
 
     const currentSession = ++this.recognitionSessionId;
     let isExplicitlyStopped = false;
     let accumulatedFinalText = '';
     let currentInterimText = '';
     let silenceTimer: any = null;
+    let restartTimer: any = null;
+    let hasDelivered = false;
+    const sessionStartTime = Date.now();
 
-    try {
-      const recognition = new SpeechRecognition();
-      this.activeRecognition = recognition;
-      recognition.lang = 'id-ID';
-      recognition.interimResults = true;
-      recognition.maxAlternatives = 1;
-      recognition.continuous = true;
-
-      const finishAndDeliver = () => {
-        if (silenceTimer) {
-          clearTimeout(silenceTimer);
-          silenceTimer = null;
-        }
-        const full = (accumulatedFinalText + ' ' + currentInterimText).trim();
-        const cleaned = cleanAndDeduplicateTranscript(full);
-
-        if (cleaned) {
-          // Acoustic echo check: if the transcript is the AI echoing its own text within 2 seconds
-          const elapsed = Date.now() - SpeechService.lastSpeakEndTime;
-          if (
-            elapsed < 2000 &&
-            SpeechService.lastSpokenText &&
-            (cleaned.toLowerCase() === SpeechService.lastSpokenText ||
-              SpeechService.lastSpokenText.includes(cleaned.toLowerCase()))
-          ) {
-            console.log('[Speech] Ignored acoustic echo of AI voice:', cleaned);
+    // 1. Hardware Microphone Stream & RMS Sound Detection
+    if (typeof navigator !== 'undefined' && navigator.mediaDevices?.getUserMedia) {
+      navigator.mediaDevices
+        .getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } })
+        .then((stream) => {
+          if (isExplicitlyStopped || SpeechService.recognitionSessionId !== currentSession) {
+            stream.getTracks().forEach((t) => t.stop());
             return;
           }
+          SpeechService.micStream = stream;
 
-          onResult(cleaned);
+          try {
+            const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+            if (AudioContextClass) {
+              const ctx = new AudioContextClass();
+              SpeechService.audioCtx = ctx;
+              const source = ctx.createMediaStreamSource(stream);
+              const analyser = ctx.createAnalyser();
+              analyser.fftSize = 256;
+              analyser.smoothingTimeConstant = 0.3;
+              source.connect(analyser);
+
+              const dataArray = new Uint8Array(analyser.frequencyBinCount);
+              SpeechService.soundMeterInterval = window.setInterval(() => {
+                if (isExplicitlyStopped || SpeechService.recognitionSessionId !== currentSession) {
+                  return;
+                }
+                analyser.getByteFrequencyData(dataArray);
+                let sum = 0;
+                for (let i = 0; i < dataArray.length; i++) {
+                  sum += dataArray[i];
+                }
+                const average = sum / dataArray.length;
+                const isVoiceActive = average > 14; // Real sound threshold
+                if (onSoundDetected) onSoundDetected(isVoiceActive);
+              }, 60);
+            }
+          } catch (audioErr) {
+            console.warn('[Speech] Web Audio volume analyzer optional error:', audioErr);
+          }
+        })
+        .catch((err) => {
+          console.warn('[Speech] getUserMedia permission notification:', err);
+          if (err?.name === 'NotAllowedError' || err?.name === 'PermissionDeniedError') {
+            if (onError) {
+              onError(
+                'Akses mikrofon diblokir browser. Mohon izinkan akses mikrofon di samping bilah alamat URL (ikon gembok/setelan situs).'
+              );
+            }
+          }
+        });
+    }
+
+    const finishAndDeliver = () => {
+      if (hasDelivered) return;
+      if (silenceTimer) {
+        clearTimeout(silenceTimer);
+        silenceTimer = null;
+      }
+      const full = (accumulatedFinalText + ' ' + currentInterimText).trim();
+      const cleaned = cleanAndDeduplicateTranscript(full);
+
+      if (cleaned) {
+        hasDelivered = true;
+        // Echo check: only discard if EXACT match to last spoken sentence within 600ms
+        const elapsed = Date.now() - SpeechService.lastSpeakEndTime;
+        if (
+          elapsed < 600 &&
+          SpeechService.lastSpokenText &&
+          cleaned.toLowerCase() === SpeechService.lastSpokenText.toLowerCase()
+        ) {
+          console.log('[Speech] Ignored acoustic echo of AI voice:', cleaned);
+          return;
         }
-      };
 
-      recognition.onstart = () => {
-        if (SpeechService.recognitionSessionId !== currentSession) return;
-        if (onStateChange) onStateChange(true);
-        if (onSoundDetected) onSoundDetected(false);
-      };
+        onResult(cleaned);
+      }
+    };
 
-      recognition.onspeechstart = () => {
-        if (SpeechService.recognitionSessionId !== currentSession) return;
-        if (onSoundDetected) onSoundDetected(true);
-      };
+    const cleanup = () => {
+      isExplicitlyStopped = true;
+      if (silenceTimer) {
+        clearTimeout(silenceTimer);
+        silenceTimer = null;
+      }
+      if (restartTimer) {
+        clearTimeout(restartTimer);
+        restartTimer = null;
+      }
+      SpeechService.stopListening();
+      if (onStateChange) onStateChange(false);
+      if (onSoundDetected) onSoundDetected(false);
+    };
 
-      recognition.onspeechend = () => {
-        if (SpeechService.recognitionSessionId !== currentSession) return;
-        if (onSoundDetected) onSoundDetected(false);
-      };
+    const createAndRunRecognition = () => {
+      if (isExplicitlyStopped || SpeechService.recognitionSessionId !== currentSession) return;
 
-      recognition.onsoundstart = () => {
-        if (SpeechService.recognitionSessionId !== currentSession) return;
-        if (onSoundDetected) onSoundDetected(true);
-      };
+      try {
+        const recognition = new SpeechRecognition();
+        SpeechService.activeRecognition = recognition;
+        recognition.lang = 'id-ID';
+        recognition.interimResults = true;
+        recognition.maxAlternatives = 1;
+        recognition.continuous = true;
 
-      recognition.onsoundend = () => {
-        if (SpeechService.recognitionSessionId !== currentSession) return;
-        if (onSoundDetected) onSoundDetected(false);
-      };
+        recognition.onstart = () => {
+          if (SpeechService.recognitionSessionId !== currentSession) return;
+          if (onStateChange) onStateChange(true);
+        };
 
-      recognition.onresult = (event: any) => {
-        if (isExplicitlyStopped || SpeechService.recognitionSessionId !== currentSession) return;
+        recognition.onresult = (event: any) => {
+          if (isExplicitlyStopped || SpeechService.recognitionSessionId !== currentSession) return;
 
-        let interim = '';
-        let newlyFinalized = '';
-
-        if (event.results) {
+          let interim = '';
           for (let i = event.resultIndex; i < event.results.length; ++i) {
             const res = event.results[i];
+            const text = res[0]?.transcript || '';
             if (res.isFinal) {
-              newlyFinalized += ' ' + res[0].transcript;
+              accumulatedFinalText = (accumulatedFinalText + ' ' + text).trim();
             } else {
-              interim += ' ' + res[0].transcript;
+              interim += ' ' + text;
             }
           }
-        }
+          currentInterimText = interim.trim();
 
-        if (newlyFinalized.trim()) {
-          accumulatedFinalText = (accumulatedFinalText + ' ' + newlyFinalized).trim();
-        }
-        currentInterimText = interim.trim();
+          const currentCombined = (accumulatedFinalText + ' ' + currentInterimText).trim();
+          if (currentCombined) {
+            if (onSoundDetected) onSoundDetected(true);
+            if (onInterim) onInterim(currentCombined);
 
-        const currentCombined = (accumulatedFinalText + ' ' + currentInterimText).trim();
-        if (currentCombined) {
-          if (onSoundDetected) onSoundDetected(true);
-          if (onInterim) onInterim(currentCombined);
+            // Debounce silence: deliver 2.2s after user stops talking
+            if (silenceTimer) clearTimeout(silenceTimer);
+            silenceTimer = setTimeout(() => {
+              if (!isExplicitlyStopped && SpeechService.recognitionSessionId === currentSession) {
+                finishAndDeliver();
+                cleanup();
+              }
+            }, 2200);
+          }
+        };
 
-          // Reset silence timer: auto-deliver after 2.2 seconds of silence once speech was detected
-          if (silenceTimer) clearTimeout(silenceTimer);
-          silenceTimer = setTimeout(() => {
-            if (!isExplicitlyStopped && SpeechService.recognitionSessionId === currentSession) {
-              isExplicitlyStopped = true;
+        recognition.onerror = (event: any) => {
+          if (SpeechService.recognitionSessionId !== currentSession) return;
+          const errType = event.error;
+          console.warn('[Speech] Speech recognition notification:', errType);
+
+          // Non-fatal notifications
+          if (errType === 'no-speech' || errType === 'aborted') {
+            return;
+          }
+
+          let friendly = '';
+          if (errType === 'not-allowed') {
+            friendly =
+              'Akses mikrofon diblokir oleh browser. Silakan klik ikon gembok di sebelah URL browser dan ubah Mikrofon menjadi "Izinkan" (Allow).';
+          } else if (errType === 'audio-capture') {
+            friendly = 'Perangkat mikrofon tidak terdeteksi. Pastikan mikrofon terpasang dan aktif.';
+          } else if (errType === 'network') {
+            friendly = 'Layanan pengenalan suara browser memerlukan koneksi internet aktif.';
+          } else if (errType === 'language-not-supported') {
+            friendly = 'Bahasa id-ID belum didukung oleh browser Anda.';
+          }
+
+          if (friendly && onError) {
+            onError(friendly);
+          }
+        };
+
+        recognition.onend = () => {
+          if (SpeechService.recognitionSessionId !== currentSession) return;
+
+          // If session is still alive and user didn't explicitly stop
+          if (!isExplicitlyStopped && !hasDelivered) {
+            const totalElapsed = Date.now() - sessionStartTime;
+            // Allow up to 25 seconds total session duration
+            if (totalElapsed < 25000) {
+              if (restartTimer) clearTimeout(restartTimer);
+              restartTimer = setTimeout(() => {
+                if (!isExplicitlyStopped && SpeechService.recognitionSessionId === currentSession) {
+                  createAndRunRecognition();
+                }
+              }, 120);
+              return;
+            } else if (accumulatedFinalText.trim() || currentInterimText.trim()) {
               finishAndDeliver();
-              SpeechService.stopListening();
-              if (onStateChange) onStateChange(false);
-              if (onSoundDetected) onSoundDetected(false);
             }
-          }, 2200);
-        }
-      };
-
-      recognition.onerror = (event: any) => {
-        if (SpeechService.recognitionSessionId !== currentSession) return;
-        const errType = event.error;
-        console.warn('[Speech] Speech recognition event notification:', errType);
-
-        // 'no-speech' is NOT fatal — the user is just pausing or hasn't started speaking yet
-        if (errType === 'no-speech') {
-          return;
-        }
-
-        // 'aborted' happens normally when stopped/canceled by user or another action
-        if (errType === 'aborted') {
-          return;
-        }
-
-        // Real fatal errors (not-allowed, audio-capture, etc.)
-        if (SpeechService.activeRecognition === recognition) {
-          SpeechService.activeRecognition = null;
-        }
-        if (onError) onError(errType);
-        if (onStateChange) onStateChange(false);
-        if (onSoundDetected) onSoundDetected(false);
-      };
-
-      recognition.onend = () => {
-        if (SpeechService.recognitionSessionId !== currentSession) return;
-
-        // If continuous recognition ended automatically by browser but user did not stop it
-        if (!isExplicitlyStopped && SpeechService.activeRecognition === recognition) {
-          // If we had detected speech, deliver it
-          if (accumulatedFinalText.trim() || currentInterimText.trim()) {
-            finishAndDeliver();
-            if (onStateChange) onStateChange(false);
-            if (onSoundDetected) onSoundDetected(false);
-            SpeechService.activeRecognition = null;
-            return;
           }
 
-          // If no speech yet, try restarting once to give user time to speak
-          try {
-            recognition.start();
-            return;
-          } catch {
-            // failed restart, finish gracefully
-          }
-        }
+          cleanup();
+        };
 
-        if (SpeechService.activeRecognition === recognition) {
-          SpeechService.activeRecognition = null;
-        }
-        if (onStateChange) onStateChange(false);
-        if (onSoundDetected) onSoundDetected(false);
-      };
+        recognition.start();
+      } catch (err) {
+        console.warn('[Speech] Recognition start error:', err);
+      }
+    };
 
-      // CRITICAL: Call recognition.start() synchronously to maintain browser User Activation token!
-      recognition.start();
+    createAndRunRecognition();
 
-      return () => {
-        isExplicitlyStopped = true;
-        if (silenceTimer) {
-          clearTimeout(silenceTimer);
-          silenceTimer = null;
-        }
-
-        // Deliver whatever was accumulated so far before closing
-        finishAndDeliver();
-
-        try {
-          if (typeof recognition.abort === 'function') {
-            recognition.abort();
-          } else {
-            recognition.stop();
-          }
-        } catch {
-          // ignore
-        }
-        if (SpeechService.activeRecognition === recognition) {
-          SpeechService.activeRecognition = null;
-        }
-        if (onStateChange) onStateChange(false);
-        if (onSoundDetected) onSoundDetected(false);
-      };
-    } catch (err) {
-      this.activeRecognition = null;
-      console.error('Failed to start speech recognition:', err);
-      if (onError) onError(err instanceof Error ? err.message : 'Gagal mengakses mikrofon.');
-      if (onStateChange) onStateChange(false);
-      return () => {};
-    }
+    return () => {
+      finishAndDeliver();
+      cleanup();
+    };
   }
 }

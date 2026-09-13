@@ -10,6 +10,7 @@ import {
   Volume2,
   ChevronRight,
   Check,
+  AlertCircle,
 } from 'lucide-react';
 import {
   VOICE_DEFAULT_ID,
@@ -23,6 +24,8 @@ interface FloatingAvatarWidgetProps {
   onClickToSpeak: () => void;
   isListening?: boolean;
   isSoundDetected?: boolean;
+  liveTranscript?: string;
+  errorMessage?: string | null;
   onOpenChat?: () => void;
   onMinimize: () => void;
   isMinimized?: boolean;
@@ -45,6 +48,8 @@ export const FloatingAvatarWidget: React.FC<FloatingAvatarWidgetProps> = ({
   onClickToSpeak,
   isListening = false,
   isSoundDetected = false,
+  liveTranscript,
+  errorMessage,
   onOpenChat,
   onMinimize,
   isMinimized = false,
@@ -271,20 +276,30 @@ export const FloatingAvatarWidget: React.FC<FloatingAvatarWidgetProps> = ({
         className={`select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
         title="Klik untuk berbicara • Klik & tahan untuk geser • Klik kanan untuk opsi"
       >
-        {/* Listening Indicator (inside canvas — not in toolbar) */}
+        {/* Listening Indicator / Live Speech Preview */}
         {isListening && (
           <div
-            className={`absolute top-10 left-1/2 -translate-x-1/2 flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold shadow-lg transition-colors duration-200 pointer-events-none z-30 whitespace-nowrap ${
+            className={`absolute top-10 left-1/2 -translate-x-1/2 max-w-[340px] flex items-center gap-2 px-3.5 py-2 rounded-full text-xs font-semibold shadow-xl transition-all duration-200 pointer-events-none z-30 ${
               isSoundDetected
-                ? 'bg-emerald-600 text-white ring-2 ring-emerald-400/50'
-                : 'bg-slate-800/90 backdrop-blur-md text-slate-100 border border-slate-700/80'
+                ? 'bg-emerald-600 text-white ring-2 ring-emerald-400/60'
+                : 'bg-slate-800/95 backdrop-blur-md text-slate-100 border border-slate-700/80'
             }`}
           >
             <Mic className={`w-3.5 h-3.5 flex-shrink-0 ${isSoundDetected ? 'animate-pulse' : 'text-slate-300'}`} />
             {isSoundDetected && (
               <span className="absolute -top-0.5 right-1 w-2 h-2 rounded-full bg-emerald-300 animate-ping" />
             )}
-            <span>{isSoundDetected ? 'Mendengarkan...' : 'Menunggu suara...'}</span>
+            <span className="truncate">
+              {liveTranscript ? `"${liveTranscript}"` : (isSoundDetected ? 'Mendengarkan...' : 'Menunggu suara Anda...')}
+            </span>
+          </div>
+        )}
+
+        {/* Microphone Error Notification */}
+        {errorMessage && (
+          <div className="absolute top-10 left-1/2 -translate-x-1/2 max-w-[320px] flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-medium bg-rose-600/95 text-white shadow-2xl z-30 pointer-events-none border border-rose-400/60 leading-snug">
+            <AlertCircle className="w-4 h-4 shrink-0 text-rose-200" />
+            <span>{errorMessage}</span>
           </div>
         )}
 
