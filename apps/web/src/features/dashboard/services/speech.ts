@@ -85,9 +85,6 @@ export class SpeechService {
   private static lastSpeakEndTime = 0;
   private static lastSpokenText = '';
   private static speakingState = false;
-  private static micStream: MediaStream | null = null;
-  private static audioCtx: AudioContext | null = null;
-  private static soundMeterInterval: number | null = null;
 
   public static isSpeechSupported(): boolean {
     return typeof window !== 'undefined' && 'speechSynthesis' in window;
@@ -152,27 +149,6 @@ export class SpeechService {
 
   public static stopListening(): void {
     this.recognitionSessionId++;
-
-    if (this.soundMeterInterval) {
-      clearInterval(this.soundMeterInterval);
-      this.soundMeterInterval = null;
-    }
-    if (this.micStream) {
-      try {
-        this.micStream.getTracks().forEach((track) => track.stop());
-      } catch {
-        // ignore
-      }
-      this.micStream = null;
-    }
-    if (this.audioCtx && this.audioCtx.state !== 'closed') {
-      try {
-        this.audioCtx.close().catch(() => {});
-      } catch {
-        // ignore
-      }
-      this.audioCtx = null;
-    }
 
     if (this.activeRecognition) {
       try {
@@ -527,78 +503,23 @@ export class SpeechService {
 
     const currentSession = ++this.recognitionSessionId;
     console.log('[Speech] Session ID:', currentSession);
+
     let isExplicitlyStopped = false;
     let accumulatedFinalText = '';
     let currentInterimText = '';
     let silenceTimer: any = null;
-    let restartTimer: any = null;
+    let inactivityTimer: any = null;
     let hasDelivered = false;
-    const sessionStartTime = Date.now();
-
-    // Volume meter setup function — called AFTER recognition starts to avoid mic access race
-    const startVolumeMeter = () => {
-      if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
-        console.warn('[Speech] ⚠ navigator.mediaDevices.getUserMedia not available');
-        return;
-      }
-      console.log('[Speech] Requesting getUserMedia for volume meter...');
-      navigator.mediaDevices
-        .getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } })
-        .then((stream) => {
-          console.log('[Speech] ✓ getUserMedia OK — mic stream active, tracks:', stream.getAudioTracks().length);
-          if (isExplicitlyStopped || SpeechService.recognitionSessionId !== currentSession) {
-            stream.getTracks().forEach((t) => t.stop());
-            return;
-          }
-          SpeechService.micStream = stream;
-
-          try {
-            const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
-            if (AudioContextClass) {
-              const ctx = new AudioContextClass();
-              SpeechService.audioCtx = ctx;
-              const source = ctx.createMediaStreamSource(stream);
-              const analyser = ctx.createAnalyser();
-              analyser.fftSize = 256;
-              analyser.smoothingTimeConstant = 0.3;
-              source.connect(analyser);
-
-              const dataArray = new Uint8Array(analyser.frequencyBinCount);
-              let logCounter = 0;
-              SpeechService.soundMeterInterval = window.setInterval(() => {
-                if (isExplicitlyStopped || SpeechService.recognitionSessionId !== currentSession) {
-                  return;
-                }
-                analyser.getByteFrequencyData(dataArray);
-                let sum = 0;
-                for (let i = 0; i < dataArray.length; i++) {
-                  sum += dataArray[i];
-                }
-                const average = sum / dataArray.length;
-                const isVoiceActive = average > 14;
-                if (onSoundDetected) onSoundDetected(isVoiceActive);
-                logCounter++;
-                if (logCounter % 30 === 0) {
-                  console.log('[Speech] 🎤 Volume avg:', average.toFixed(1), isVoiceActive ? '🟢 VOICE' : '⚪ silent');
-                }
-              }, 60);
-              console.log('[Speech] ✓ Web Audio volume meter started');
-            }
-          } catch (audioErr) {
-            console.warn('[Speech] Web Audio volume analyzer optional error:', audioErr);
-          }
-        })
-        .catch((err) => {
-          console.warn('[Speech] ⚠ getUserMedia for volume meter failed (non-critical):', err?.name, err?.message);
-          // Volume meter is optional — SpeechRecognition still works without it
-        });
-    };
 
     const finishAndDeliver = () => {
       if (hasDelivered) return;
       if (silenceTimer) {
         clearTimeout(silenceTimer);
         silenceTimer = null;
+      }
+      if (inactivityTimer) {
+        clearTimeout(inactivityTimer);
+        inactivityTimer = null;
       }
       const full = (accumulatedFinalText + ' ' + currentInterimText).trim();
       const cleaned = cleanAndDeduplicateTranscript(full);
@@ -629,132 +550,158 @@ export class SpeechService {
         clearTimeout(silenceTimer);
         silenceTimer = null;
       }
-      if (restartTimer) {
-        clearTimeout(restartTimer);
-        restartTimer = null;
+      if (inactivityTimer) {
+        clearTimeout(inactivityTimer);
+        inactivityTimer = null;
       }
       SpeechService.stopListening();
       if (onStateChange) onStateChange(false);
       if (onSoundDetected) onSoundDetected(false);
     };
 
-    const createAndRunRecognition = () => {
-      if (isExplicitlyStopped || SpeechService.recognitionSessionId !== currentSession) return;
-
-      try {
-        const recognition = new SpeechRecognition();
-        SpeechService.activeRecognition = recognition;
-        recognition.lang = 'id-ID';
-        recognition.interimResults = true;
-        recognition.maxAlternatives = 1;
-        recognition.continuous = true;
-
-        recognition.onstart = () => {
-          console.log('[Speech] ✓ Recognition STARTED — listening for speech...');
-          if (SpeechService.recognitionSessionId !== currentSession) return;
-          if (onStateChange) onStateChange(true);
-          // Start volume meter AFTER recognition has successfully acquired the mic
-          startVolumeMeter();
-        };
-
-        recognition.onresult = (event: any) => {
-          if (isExplicitlyStopped || SpeechService.recognitionSessionId !== currentSession) return;
-
-          let interim = '';
-          for (let i = event.resultIndex; i < event.results.length; ++i) {
-            const res = event.results[i];
-            const text = res[0]?.transcript || '';
-            if (res.isFinal) {
-              console.log('[Speech] 📝 Final result:', text);
-              accumulatedFinalText = (accumulatedFinalText + ' ' + text).trim();
-            } else {
-              interim += ' ' + text;
-            }
-          }
-          currentInterimText = interim.trim();
-
-          const currentCombined = (accumulatedFinalText + ' ' + currentInterimText).trim();
-          if (currentCombined) {
-            if (onSoundDetected) onSoundDetected(true);
-            if (onInterim) onInterim(currentCombined);
-            console.log('[Speech] 💬 Combined text:', currentCombined);
-
-            // Debounce silence: deliver 2.2s after user stops talking
-            if (silenceTimer) clearTimeout(silenceTimer);
-            silenceTimer = setTimeout(() => {
-              if (!isExplicitlyStopped && SpeechService.recognitionSessionId === currentSession) {
-                console.log('[Speech] ⏱ Silence timer fired — delivering result');
-                finishAndDeliver();
-                cleanup();
-              }
-            }, 2200);
-          }
-        };
-
-        recognition.onerror = (event: any) => {
-          if (SpeechService.recognitionSessionId !== currentSession) return;
-          const errType = event.error;
-          console.warn('[Speech] ⚠ Recognition error:', errType, event.message || '');
-
-          // Non-fatal notifications
-          if (errType === 'no-speech' || errType === 'aborted') {
-            return;
-          }
-
-          let friendly = '';
-          if (errType === 'not-allowed' || errType === 'service-not-allowed') {
-            friendly =
-              'Akses mikrofon diblokir oleh browser. Silakan klik ikon gembok di sebelah URL browser dan ubah Mikrofon menjadi "Izinkan" (Allow).';
-          } else if (errType === 'audio-capture') {
-            friendly = 'Perangkat mikrofon tidak terdeteksi. Pastikan mikrofon terpasang dan aktif.';
-          } else if (errType === 'network') {
-            friendly = 'Layanan pengenalan suara browser memerlukan koneksi internet aktif.';
-          } else if (errType === 'language-not-supported') {
-            friendly = 'Bahasa id-ID belum didukung oleh browser Anda.';
-          } else {
-            friendly = `Kesalahan pengenalan suara: ${errType}`;
-          }
-
-          if (friendly && onError) {
-            onError(friendly);
-          }
-        };
-
-        recognition.onend = () => {
-          console.log('[Speech] Recognition ENDED. isExplicitlyStopped:', isExplicitlyStopped, 'hasDelivered:', hasDelivered, 'accum:', accumulatedFinalText, 'interim:', currentInterimText);
-          if (SpeechService.recognitionSessionId !== currentSession) return;
-
-          // If session is still alive and user didn't explicitly stop
-          if (!isExplicitlyStopped && !hasDelivered) {
-            const totalElapsed = Date.now() - sessionStartTime;
-            // Allow up to 25 seconds total session duration
-            if (totalElapsed < 25000) {
-              console.log('[Speech] 🔄 Auto-restarting recognition (elapsed:', totalElapsed, 'ms)');
-              if (restartTimer) clearTimeout(restartTimer);
-              restartTimer = setTimeout(() => {
-                if (!isExplicitlyStopped && SpeechService.recognitionSessionId === currentSession) {
-                  createAndRunRecognition();
-                }
-              }, 120);
-              return;
-            } else if (accumulatedFinalText.trim() || currentInterimText.trim()) {
-              console.log('[Speech] ⏰ Session expired (25s) — delivering accumulated text');
-              finishAndDeliver();
-            }
-          }
-
-          cleanup();
-        };
-
-        console.log('[Speech] Starting recognition.start()...');
-        recognition.start();
-        console.log('[Speech] ✓ recognition.start() called successfully');
-      } catch (err) {
-        console.error('[Speech] ✗ Recognition start FAILED:', err);
+    // Auto-timeout if user clicks mic but stays completely silent for 7s
+    inactivityTimer = setTimeout(() => {
+      if (!hasDelivered && !accumulatedFinalText && !currentInterimText) {
+        console.log('[Speech] ⏱ Inactivity timeout (7s no speech) — closing mic');
+        cleanup();
       }
-    };
+    }, 7000);
 
-    createAndRunRecognition();
+    try {
+      const recognition = new SpeechRecognition();
+      SpeechService.activeRecognition = recognition;
+      recognition.lang = 'id-ID';
+      recognition.interimResults = true;
+      recognition.maxAlternatives = 1;
+      // continuous = false ensures browser automatically detects utterance completion and fires onend
+      recognition.continuous = false;
+
+      recognition.onstart = () => {
+        console.log('[Speech] ✓ Recognition STARTED — listening for speech...');
+        if (SpeechService.recognitionSessionId !== currentSession) return;
+        if (onStateChange) onStateChange(true);
+      };
+
+      recognition.onsoundstart = () => {
+        if (SpeechService.recognitionSessionId !== currentSession) return;
+        if (onSoundDetected) onSoundDetected(true);
+      };
+
+      recognition.onsoundend = () => {
+        if (SpeechService.recognitionSessionId !== currentSession) return;
+        if (onSoundDetected) onSoundDetected(false);
+      };
+
+      recognition.onspeechstart = () => {
+        if (SpeechService.recognitionSessionId !== currentSession) return;
+        if (inactivityTimer) {
+          clearTimeout(inactivityTimer);
+          inactivityTimer = null;
+        }
+        if (onSoundDetected) onSoundDetected(true);
+      };
+
+      recognition.onspeechend = () => {
+        console.log('[Speech] 🛑 Browser detected speech end — triggering fast deliver');
+        if (SpeechService.recognitionSessionId !== currentSession) return;
+        if (onSoundDetected) onSoundDetected(false);
+        // Fast cutoff: deliver within 350ms of user stopping talking
+        if (silenceTimer) clearTimeout(silenceTimer);
+        silenceTimer = setTimeout(() => {
+          if (!isExplicitlyStopped && SpeechService.recognitionSessionId === currentSession) {
+            finishAndDeliver();
+            cleanup();
+          }
+        }, 350);
+      };
+
+      recognition.onresult = (event: any) => {
+        if (isExplicitlyStopped || SpeechService.recognitionSessionId !== currentSession) return;
+
+        if (inactivityTimer) {
+          clearTimeout(inactivityTimer);
+          inactivityTimer = null;
+        }
+
+        let interim = '';
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          const res = event.results[i];
+          const text = res[0]?.transcript || '';
+          if (res.isFinal) {
+            console.log('[Speech] 📝 Final result chunk:', text);
+            accumulatedFinalText = (accumulatedFinalText + ' ' + text).trim();
+          } else {
+            interim += ' ' + text;
+          }
+        }
+        currentInterimText = interim.trim();
+
+        const currentCombined = (accumulatedFinalText + ' ' + currentInterimText).trim();
+        if (currentCombined) {
+          if (onSoundDetected) onSoundDetected(true);
+          if (onInterim) onInterim(currentCombined);
+          console.log('[Speech] 💬 Live text:', currentCombined);
+
+          // Debounce silence: deliver 1.0s after user pauses
+          if (silenceTimer) clearTimeout(silenceTimer);
+          silenceTimer = setTimeout(() => {
+            if (!isExplicitlyStopped && SpeechService.recognitionSessionId === currentSession) {
+              console.log('[Speech] ⏱ Silence debounce fired — delivering result');
+              finishAndDeliver();
+              cleanup();
+            }
+          }, 1000);
+        }
+      };
+
+      recognition.onerror = (event: any) => {
+        if (SpeechService.recognitionSessionId !== currentSession) return;
+        const errType = event.error;
+        console.warn('[Speech] ⚠ Recognition error:', errType, event.message || '');
+
+        // Non-fatal notifications
+        if (errType === 'no-speech' || errType === 'aborted') {
+          return;
+        }
+
+        let friendly = '';
+        if (errType === 'not-allowed' || errType === 'service-not-allowed') {
+          friendly =
+            'Akses mikrofon diblokir oleh browser. Silakan klik ikon gembok di sebelah URL browser dan ubah Mikrofon menjadi "Izinkan" (Allow).';
+        } else if (errType === 'audio-capture') {
+          friendly = 'Perangkat mikrofon tidak terdeteksi. Pastikan mikrofon terpasang dan aktif.';
+        } else if (errType === 'network') {
+          friendly = 'Layanan pengenalan suara browser memerlukan koneksi internet aktif.';
+        } else if (errType === 'language-not-supported') {
+          friendly = 'Bahasa id-ID belum didukung oleh browser Anda.';
+        } else {
+          friendly = `Kesalahan pengenalan suara: ${errType}`;
+        }
+
+        if (friendly && onError) {
+          onError(friendly);
+        }
+      };
+
+      recognition.onend = () => {
+        console.log('[Speech] Recognition onend. isExplicitlyStopped:', isExplicitlyStopped, 'hasDelivered:', hasDelivered);
+        if (SpeechService.recognitionSessionId !== currentSession) return;
+
+        // If user has spoken something, deliver it now!
+        if (accumulatedFinalText.trim() || currentInterimText.trim()) {
+          finishAndDeliver();
+        }
+
+        cleanup();
+      };
+
+      console.log('[Speech] Calling recognition.start()...');
+      recognition.start();
+      console.log('[Speech] ✓ recognition.start() called successfully');
+    } catch (err) {
+      console.error('[Speech] ✗ Recognition start FAILED:', err);
+      cleanup();
+    }
 
     return () => {
       console.log('[Speech] ■ Manual stop requested');

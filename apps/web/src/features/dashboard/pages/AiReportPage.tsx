@@ -478,42 +478,24 @@ export const AiReportPage: React.FC = () => {
   };
 
   /**
-   * Smoothly aligns the latest user prompt at the very top of the container.
-   * This pushes previous conversation up out of view, providing a clean, fresh screen
-   * where the user's prompt is at the top and the AI response flows downwards cleanly.
+   * Smoothly scrolls to the latest content at the bottom of the conversation.
    */
-  const scrollToLatestPrompt = (smooth = true) => {
-    const container = scrollContainerRef.current;
-    if (!container) return;
-
-    const latestUserMsg = [...messages].reverse().find((m) => m.role === 'user');
-    if (latestUserMsg) {
-      const el = document.getElementById(`msg-${latestUserMsg.id}`);
-      if (el) {
-        const containerRect = container.getBoundingClientRect();
-        const elRect = el.getBoundingClientRect();
-        const delta = elRect.top - containerRect.top;
-        container.scrollTo({
-          top: Math.max(0, container.scrollTop + delta - 12),
-          behavior: smooth ? 'smooth' : 'auto',
-        });
-        setIsUserScrolledUp(false);
-        setHasNewUnseenResponse(false);
-        return;
-      }
+  const scrollToBottom = (smooth = true) => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto' });
     }
-
-    // Fallback if user element not found
-    messagesEndRef.current?.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto' });
     setIsUserScrolledUp(false);
     setHasNewUnseenResponse(false);
   };
 
-  // Centralized user prompt dispatcher that guarantees prompt-anchored scroll to top
+  const scrollToLatestPrompt = scrollToBottom;
+
+  // Centralized user prompt dispatcher
   const sendUserPrompt = (text: string, atts?: ChatAttachment[], reasoning?: boolean) => {
     shouldFocusLatestPromptRef.current = true;
     setIsUserScrolledUp(false);
     onSendMessage(text, atts, reasoning ?? isDeepThinking);
+    setTimeout(() => scrollToBottom(true), 50);
   };
 
   // Handle auto-dispatched prompt from "Uji AI" navigation (e.g. TransactionsPage)
@@ -534,33 +516,21 @@ export const AiReportPage: React.FC = () => {
   const prevMsgCountRef = useRef(messages.length);
   useEffect(() => {
     if (messages.length > prevMsgCountRef.current) {
-      if (shouldFocusLatestPromptRef.current) {
-        // User just sent a prompt: prioritize positioning this prompt at the very top of the window
-        shouldFocusLatestPromptRef.current = false;
-        setIsUserScrolledUp(false);
-        setHasNewUnseenResponse(false);
-        scrollToLatestPrompt(false);
-        requestAnimationFrame(() => scrollToLatestPrompt(true));
-        setTimeout(() => scrollToLatestPrompt(true), 60);
-        setTimeout(() => scrollToLatestPrompt(true), 200);
-      } else if (isUserScrolledUp) {
-        // Pengecualian: jika user sedang membaca riwayat di atas, JANGAN paksa scroll ke bawah!
-        setHasNewUnseenResponse(true);
+      if (!isUserScrolledUp) {
+        scrollToBottom(true);
       } else {
-        setTimeout(() => {
-          scrollToLatestPrompt(true);
-        }, 50);
+        setHasNewUnseenResponse(true);
       }
     }
     prevMsgCountRef.current = messages.length;
   }, [messages.length, isUserScrolledUp]);
 
-  // If streaming occurs while user is scrolled up reading earlier text, show unseen pill indicator
+  // If streaming occurs while user is not scrolled up, follow the streaming text smoothly
   useEffect(() => {
-    if (isLoading && isUserScrolledUp) {
-      setHasNewUnseenResponse(true);
+    if (isLoading && !isUserScrolledUp) {
+      scrollToBottom(false);
     }
-  }, [isLoading, isUserScrolledUp]);
+  }, [messages, isLoading, isUserScrolledUp]);
 
   // Adjust textarea height dynamically
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -969,7 +939,9 @@ export const AiReportPage: React.FC = () => {
           <div
             ref={scrollContainerRef}
             onScroll={handleScroll}
-            className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col justify-between relative scroll-smooth"
+            className={`flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 py-4 relative scroll-smooth ${
+              !isChatActive ? 'flex flex-col justify-center' : ''
+            }`}
           >
         {!isChatActive ? (
           /* Empty / Welcome State (Exact match to ChatGPT media_1788920242379.png) */
@@ -1173,7 +1145,7 @@ export const AiReportPage: React.FC = () => {
           </div>
         ) : (
           /* Chat Thread Area (Exact match to ChatGPT media_1788920238372.png) */
-          <div className="max-w-3xl mx-auto w-full space-y-6 pb-[85vh] pt-2">
+          <div className="max-w-3xl mx-auto w-full space-y-6 pb-36 pt-2">
             {messages.map((msg) => {
               const isUser = msg.role === 'user';
               const isPlayingAudio = activeSpeechMsgId === msg.id;
