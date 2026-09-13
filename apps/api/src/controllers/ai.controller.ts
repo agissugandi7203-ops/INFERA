@@ -9,7 +9,7 @@ export function isSimpleGreetingOrChat(text: string): boolean {
   if (!text) return true;
   const t = text.toLowerCase().trim().replace(/[.,!?;:'"]/g, '');
   const greetings = [
-    'halo', 'halo asisten', 'halo vera', 'halo luna', 'halo ai', 'halo infera',
+    'halo', 'halo asisten', 'halo fera', 'halo vera', 'halo luna', 'halo ai', 'halo infera',
     'hai', 'hi', 'hello', 'hey', 'hei',
     'selamat pagi', 'selamat siang', 'selamat sore', 'selamat malam',
     'pagi', 'siang', 'sore', 'malam',
@@ -29,7 +29,7 @@ export function isSimpleGreetingOrChat(text: string): boolean {
 function buildSystemPrompt(mode: 'chat' | 'voice', ragContextBlock: string): string {
   if (mode === 'voice') {
     return (
-      'Identitas: Anda adalah Vera / Luna, asisten digital suara BPJS Kesehatan untuk sistem INFERA. Karakter Anda ramah, cerdas, cekatan, dan berwibawa.\n' +
+      'Identitas: Anda adalah FERA / Luna, asisten digital suara BPJS Kesehatan untuk sistem INFERA. Karakter Anda ramah, cerdas, cekatan, dan berwibawa.\n' +
       'Prinsip Respon Suara:\n' +
       '1. Deteksi Konteks Percakapan: Jika pengguna hanya menyapa (misal "halo", "selamat pagi", "apa kabar") atau menyapa santai, balaslah dengan ramah, hangat, dan ringkas (1-2 kalimat). JANGAN mengeluarkan rujukan regulasi, angka klaim, atau laporan panjang yang tidak diminta.\n' +
       '2. Berbasis Data & Fakta Nyata: Bila pengguna menanyakan kasus, aturan, atau temuan fraud tertentu, jelaskan temuan, status risiko, atau ketentuan regulasi JKN secara akurat dan to the point.\n' +

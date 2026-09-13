@@ -267,7 +267,7 @@ const ParagraphRenderer: React.FC<{ children?: React.ReactNode }> = ({ children 
 
     if (parts.length > 1) {
       return (
-        <p className="text-[15px] sm:text-base leading-relaxed text-slate-800 dark:text-slate-200 my-2">
+        <div className="text-[15px] sm:text-base leading-relaxed text-slate-800 dark:text-slate-200 my-2">
           {parts.map((part, idx) => {
             if (part.startsWith('[KRITIS:')) {
               const label = part.replace(/^\[KRITIS:\s*/, '').replace(/\]$/, '');
@@ -335,15 +335,15 @@ const ParagraphRenderer: React.FC<{ children?: React.ReactNode }> = ({ children 
             }
             return part;
           })}
-        </p>
+        </div>
       );
     }
   }
 
   return (
-    <p className="text-[15px] sm:text-base leading-relaxed text-slate-800 dark:text-slate-200 my-2">
+    <div className="text-[15px] sm:text-base leading-relaxed text-slate-800 dark:text-slate-200 my-2">
       {children}
-    </p>
+    </div>
   );
 };
 

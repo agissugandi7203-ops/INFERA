@@ -143,7 +143,7 @@ const DashboardLayoutContent: React.FC<
     setSettings(newSettings);
     saveStoredSettings(newSettings);
 
-    const voiceLabel = validVoiceId === VOICE_DEFAULT_ID ? 'Vera (AI Kanan)' : 'Luna (AI Kanan)';
+    const voiceLabel = validVoiceId === VOICE_DEFAULT_ID ? 'Fera (AI Kanan)' : 'Luna (AI Kanan)';
     handleSelectEmotion('happy', 3500);
 
     const confirmText = `Suara avatar AI Kanan telah diubah ke ${voiceLabel}. Saya siap membantu!`;

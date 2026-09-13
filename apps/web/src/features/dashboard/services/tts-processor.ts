@@ -1,6 +1,7 @@
 // 1. Suara AI Kanan (Avatar Asisten Virtual 2D - Interaktif & Percakapan Santai)
 export const VOICE_AVATAR_INFERA = '3bAVnCtF2Efx7MOj2bJ0'; // INFERA (Default Suara Utama — Ramah & Ekspresif)
-export const VOICE_AVATAR_VERA = VOICE_AVATAR_INFERA;
+export const VOICE_AVATAR_FERA = VOICE_AVATAR_INFERA;
+export const VOICE_AVATAR_VERA = VOICE_AVATAR_FERA;
 export const VOICE_AVATAR_LUNA = 'cgSgspJ2msm6clMCkdW9'; // Luna (Alternatif AI Kanan — Ceria, Hangat & Lembut)
 export const VOICE_DEFAULT_ID = VOICE_AVATAR_INFERA;
 export const VOICE_SECONDARY_ID = VOICE_AVATAR_LUNA;

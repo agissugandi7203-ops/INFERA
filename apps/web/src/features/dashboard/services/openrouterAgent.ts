@@ -132,7 +132,7 @@ export function isSimpleGreetingOrChat(text: string): boolean {
   if (!text) return true;
   const t = text.toLowerCase().trim().replace(/[.,!?;:'"\\/]/g, '');
   const greetings = [
-    'halo', 'halo asisten', 'halo vera', 'halo luna', 'halo ai', 'halo infera',
+    'halo', 'halo asisten', 'halo fera', 'halo vera', 'halo luna', 'halo ai', 'halo infera',
     'hai', 'hi', 'hello', 'hey', 'hei',
     'selamat pagi', 'selamat siang', 'selamat sore', 'selamat malam',
     'pagi', 'siang', 'sore', 'malam',

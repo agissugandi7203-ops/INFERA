@@ -20,7 +20,7 @@ interface AvatarDebugControlsProps {
 }
 
 const AVATAR_VOICE_OPTIONS = [
-  { id: VOICE_DEFAULT_ID, name: 'Vera (AI Kanan)', desc: 'Avatar 2D — Ramah, hangat & interaktif' },
+  { id: VOICE_DEFAULT_ID, name: 'Fera (AI Kanan)', desc: 'Avatar 2D — Ramah, hangat & interaktif' },
   { id: VOICE_SECONDARY_ID, name: 'Luna (AI Kanan)', desc: 'Avatar 2D — Ceria, ekspresif & lembut' },
 ];
 

@@ -5,13 +5,14 @@ import type { ServiceHealth, AiChatRequest, AiChatResponse } from '@healthathon/
 
 export const CHAT_FALLBACK_MODELS = [
   'openai/gpt-oss-120b:nitro',
-  'google/gemini-2.0-flash-001',
   'meta-llama/llama-3.3-70b-instruct',
+  'openai/gpt-4o-mini',
 ];
 
 export const VOICE_FALLBACK_MODELS = [
-  'google/gemini-2.0-flash-001',
   'meta-llama/llama-3.3-70b-instruct',
+  'openai/gpt-4o-mini',
+  'meta-llama/llama-3.1-8b-instruct',
 ];
 
 export interface StreamChunkResult {
@@ -66,7 +67,7 @@ class OpenRouterService {
   public async chat(request: AiChatRequest): Promise<AiChatResponse> {
     const isVoice = request.mode === 'voice';
     const fallbackList = isVoice ? VOICE_FALLBACK_MODELS : CHAT_FALLBACK_MODELS;
-    const model = request.model || (isVoice ? 'google/gemini-2.0-flash-001' : env.OPENROUTER_DEFAULT_MODEL);
+    const model = request.model || env.OPENROUTER_DEFAULT_MODEL || 'openai/gpt-oss-120b:nitro';
     const maxTokens = request.maxTokens ?? (isVoice ? 220 : 2500);
     const temperature = request.temperature ?? (isVoice ? 0.7 : 0.5);
 
@@ -114,10 +115,8 @@ class OpenRouterService {
         provider: {
           allow_fallbacks: true,
         },
-        // Thinking/reasoning integrated only when requested
-        reasoning: isVoice
-          ? { effort: 'none', exclude: true }
-          : request.reasoning,
+        // Thinking/reasoning integrated only when explicitly requested
+        ...(isVoice || !request.reasoning ? {} : { reasoning: request.reasoning }),
       };
 
       if (plugins && plugins.length > 0) {
@@ -185,7 +184,7 @@ class OpenRouterService {
   ): AsyncGenerator<StreamChunkResult> {
     const isVoice = request.mode === 'voice';
     const fallbackList = isVoice ? VOICE_FALLBACK_MODELS : CHAT_FALLBACK_MODELS;
-    const model = request.model || (isVoice ? 'google/gemini-2.0-flash-001' : env.OPENROUTER_DEFAULT_MODEL);
+    const model = isVoice ? 'meta-llama/llama-3.3-70b-instruct' : (request.model || env.OPENROUTER_DEFAULT_MODEL);
     const maxTokens = request.maxTokens ?? (isVoice ? 220 : 2500);
     const temperature = request.temperature ?? (isVoice ? 0.7 : 0.5);
 
@@ -230,10 +229,8 @@ class OpenRouterService {
       provider: {
         allow_fallbacks: true,
       },
-      // Thinking/reasoning integrated only when requested
-      reasoning: isVoice
-        ? { effort: 'none', exclude: true }
-        : request.reasoning,
+      // Thinking/reasoning integrated only when explicitly requested
+      ...(isVoice || !request.reasoning ? {} : { reasoning: request.reasoning }),
     };
 
     if (plugins && plugins.length > 0) {

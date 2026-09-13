@@ -91,7 +91,7 @@ export interface OpenRouterSettings {
   model: string;
   useBackendProxy: boolean;
   elevenLabsApiKey?: string;
-  avatarVoiceId?: string; // Khusus AI Kanan (Avatar Karakter Virtual: Vera / Luna)
+  avatarVoiceId?: string; // Khusus AI Kanan (Avatar Karakter Virtual: Fera / Luna)
   chatVoiceId?: string;   // Khusus Inti AI Chat (Narator Sistem Resmi: Auditor / Analis)
   elevenLabsVoiceId?: string; // Kompatibilitas mundur untuk avatarVoiceId
 }
@@ -108,7 +108,7 @@ export interface VoicePreset {
 export const AVATAR_VOICE_PRESETS: VoicePreset[] = [
   {
     id: VOICE_DEFAULT_ID,
-    name: 'INFERA (Vera)',
+    name: 'INFERA (Fera)',
     character: 'INFERA Voice (Suara Resmi — Hangat & Jelas)',
     description: 'Karakter suara utama asisten cerdas INFERA BPJS Kesehatan.',
     tier: 'free',
@@ -316,7 +316,7 @@ export function getStreamingVisibleText(raw: string): string {
   return raw;
 }
 
-export const VOICE_STREAM_SYSTEM_PROMPT = `Identitas: Anda adalah Vera / Luna, asisten digital suara BPJS Kesehatan untuk INFERA. Karakter Anda ramah, cerdas, cekatan, dan berwibawa.
+export const VOICE_STREAM_SYSTEM_PROMPT = `Identitas: Anda adalah FERA / Luna, asisten digital suara BPJS Kesehatan untuk INFERA. Karakter Anda ramah, cerdas, cekatan, dan berwibawa.
 Prinsip Respon Suara:
 1. Respon Percakapan Santai / Sapaan: Jika pengguna hanya menyapa ("halo", "hai", "selamat pagi", "apa kabar"), balaslah secara ramah, santun, dan singkat (1-2 kalimat). JANGAN membaca regulasi atau melaporkan audit jika pengguna tidak memintanya.
 2. Berbasis Data & Fakta Nyata: Jika pengguna menanyakan kasus atau regulasi, jelaskan temuan anomali, status risiko, angka klaim, atau pasal regulasi JKN secara akurat dari data yang tersedia. Jangan hanya basa-basi atau pemanis semata.
@@ -683,7 +683,7 @@ export async function sendOpenRouterChat(
         body: JSON.stringify({
           messages,
           mode,
-          model: settings.model || (mode === 'voice' ? 'google/gemini-2.0-flash-001' : 'openai/gpt-oss-120b:nitro'),
+          model: mode === 'voice' ? 'meta-llama/llama-3.3-70b-instruct' : (settings.model || 'openai/gpt-oss-120b:nitro'),
         }),
       });
 
@@ -723,7 +723,7 @@ export async function sendOpenRouterChat(
     { role: 'user', content: userText },
   ];
 
-  const targetModel = settings.model || 'openai/gpt-oss-120b:nitro';
+  const targetModel = mode === 'voice' ? 'meta-llama/llama-3.3-70b-instruct' : (settings.model || 'openai/gpt-oss-120b:nitro');
 
   const payload: Record<string, unknown> = {
     model: targetModel,

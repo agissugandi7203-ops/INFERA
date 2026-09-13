@@ -99,7 +99,7 @@
 7. [4 Kasus Forensik Benchmark Terverifikasi](#7-4-kasus-forensik-benchmark-terverifikasi)
 8. [Komponen Dashboard & Fitur Unggulan](#8-komponen-dashboard--fitur-unggulan)
    - [Live Risk Monitoring & Simulation Monitor](#a-live-risk-monitoring--simulation-monitor)
-   - [Interactive AI Multimodal Voice & Avatar Engine (Vera & Luna)](#b-interactive-ai-multimodal-voice--avatar-engine-vera--luna)
+   - [Interactive AI Multimodal Voice & Avatar Engine (FERA & Luna)](#b-interactive-ai-multimodal-voice--avatar-engine-fera--luna)
    - [Real-Time Live Claim Stream Simulation Engine](#c-real-time-live-claim-stream-simulation-engine)
    - [Enterprise SaaS UI dengan Dark & Light Mode Persistence](#d-enterprise-saas-ui-dengan-dark--light-mode-persistence)
 9. [Positioning, Nilai Utama & Tujuan Project](#9-positioning-nilai-utama--tujuan-project)
@@ -199,7 +199,7 @@ Inilah keunggulan utama INFERA. AI tidak hanya bersifat pasif menunggu pertanyaa
 > *“Terdeteksi peningkatan anomali pada pola utilisasi dalam 30 menit terakhir. Terdapat 14 kasus dengan indikasi doctor shopping dan 3 kasus berisiko kritis yang memerlukan verifikasi berkas SEP.”*
 
 ### 5. AI Virtual Assistant (Avatar Multimodal & Suara)
-INFERA menghadirkan asisten virtual interaktif berupa avatar digital dengan sinkronisasi bibir (*lip-sync*), ekspresi emosi (*happy*, *thinking*, *surprised*, *confused*, *normal*), dan suara neural alami (ElevenLabs profil Vera & Luna). Assistant berfungsi sebagai antarmuka percakapan natural untuk mengakses data intelligence:
+INFERA menghadirkan asisten virtual interaktif berupa avatar digital dengan sinkronisasi bibir (*lip-sync*), ekspresi emosi (*happy*, *thinking*, *surprised*, *confused*, *normal*), dan suara neural alami (ElevenLabs profil FERA & Luna). Assistant berfungsi sebagai antarmuka percakapan natural untuk mengakses data intelligence:
 - *“Mengapa kasus ini memiliki skor risiko tinggi?”*
 - *“Pola apa yang menyebabkan aktivitas ini ditandai sebagai anomali?”*
 - *“Kasus mana yang harus diprioritaskan auditor hari ini?”*
@@ -481,7 +481,7 @@ sequenceDiagram
     Agent->>Reg: Panggil propose_participant_suspension(...)
     Reg-->>Agent: Draft Usulan Rekomendasi (Two-Phase Model)
     Agent-->>Web: SSE Event: onDone (Sintesis Narasi Forensik & Action Card)
-    Web->>Auditor: Render Kartu Rekomendasi + Suara Audio (Vera)
+    Web->>Auditor: Render Kartu Rekomendasi + Suara Audio (FERA)
 ```
 
 ---
@@ -614,7 +614,7 @@ Seluruh proses analisis risiko, deteksi anomali, hingga telaah forensik disajika
 
 ---
 
-### B. Interactive AI Multimodal Voice & Avatar Engine (Vera & Luna)
+### B. Interactive AI Multimodal Voice & Avatar Engine (FERA & Luna)
 
 INFERA menghadirkan asisten avatar visual cerdas yang bertindak sebagai antarmuka interaksi natural antara auditor dengan sistem intelijen risiko. Avatar digerakkan oleh mesin grafis Canvas/WebGL berbasis **PixiJS v8** dan **GSAP** berkinerja tinggi (60 FPS stabil) dengan sinkronisasi artikulasi bibir (*real-time lip-sync*) dan sintesis suara neural alami ElevenLabs.
 
@@ -622,13 +622,13 @@ INFERA menghadirkan asisten avatar visual cerdas yang bertindak sebagai antarmuk
   <table>
     <tr>
       <td width="28%" align="center" valign="middle">
-        <img src="docs/assets/vera-preview.png" alt="Model Utuh Full Badan Vera" width="220" />
+        <img src="docs/assets/vera-preview.png" alt="Model Utuh Full Badan FERA" width="220" />
         <br/>
-        <sub><b>Model Karakter Utuh Vera</b><br/><i>Multi-Layer Rigged Mesh 60 FPS</i></sub>
+        <sub><b>Model Karakter Utuh FERA</b><br/><i>Multi-Layer Rigged Mesh 60 FPS</i></sub>
       </td>
       <td width="72%" valign="middle">
         <p align="center">
-          <img src="docs/assets/vera-expressions-strip.png" alt="Ekspresi Wajah Bersih Vera" width="100%" />
+          <img src="docs/assets/vera-expressions-strip.png" alt="Ekspresi Wajah Bersih FERA" width="100%" />
           <br/>
           <sub><b>Ekspresi Wajah Adaptif:</b> Siaga Mendengarkan (Kiri) &bull; Penjelasan &amp; Lip-Sync (Tengah) &bull; Analisis / Berpikir (Kanan)</sub>
         </p>
@@ -656,8 +656,8 @@ INFERA menghadirkan asisten avatar visual cerdas yang bertindak sebagai antarmuk
    - **Konteks Operasional:** Dipicu secara otomatis saat AI Agent mengeksekusi *tool calls* di latar belakang—seperti mengalkulasi formula matematis ($DSI, V_{\text{travel}}, POR$), mengkroscek riwayat kunjungan SEP, atau melakukan pencarian semantik vektor regulasi di Supabase pgvector.
 
 #### Dual Voice Identity & Profil Vokal (ElevenLabs Neural Voice):
-- **Vera (Default AI Voice):** Karakter vokal ramah, artikulatif, dan profesional (`GgFtkxszsIQcD4MYvQax`), dirancang untuk memandu auditor dalam eksplorasi dashboard sehari-hari.
-- **Luna (Secondary Voice):** Karakter vokal lebih lembut dan tenang (`0csCu4D7iyBsmlVlf9Iu`), dapat dialihkan secara instan melalui menu klik kanan pada widget avatar.
+- **FERA (Default AI Voice):** Karakter vokal ramah, artikulatif, dan profesional (`GgFtkxszsIQcD4MYvQax`), dirancang untuk memandu auditor dalam eksplorasi dashboard sehari-hari.
+- **Luna (Secondary Voice):** Karakter vokal lebih lembut dan tenang (`0csCu4D7iyBsmlVlf9Iu`), dapat dialihkan secara instan melalui menu opsi pada widget avatar.
 - **Voice Auditor & Analyst Mode:** Profil vokal formal dengan intonasi tegas (`onwK4e9ZLuTAKqWW03F9`) untuk pembacaan berita acara pemeriksaan forensik resmi.
 
 ---

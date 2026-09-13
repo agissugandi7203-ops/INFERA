@@ -312,8 +312,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ userEmail, onOpenAuth 
                 {/* RIGHT CLUSTER */}
                 <div className="infera-right">
                   {/* MODEL */}
-                  <div className="infera-model" title="Model AI Aktif: Vera (Nitro 120B)">
-                    <span>Vera 120B</span>
+                  <div className="infera-model" title="Model AI Aktif: FERA (Nitro 120B)">
+                    <span>FERA 120B</span>
                     <svg className="infera-chev" viewBox="0 0 7 4" fill="none" aria-hidden="true">
                       <path d="M1 1L3.5 3L6 1" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
@@ -398,7 +398,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ userEmail, onOpenAuth 
               <div className="saas-footer__group" id="audit">
                 <h4 className="saas-footer__group-title">Fitur Sistem</h4>
                 <ul className="saas-footer__links">
-                  <li><a href="#dashboard" onClick={(e) => { e.preventDefault(); handleAction(); }} className="saas-footer__link">Voice AI Assistant (Vera)</a></li>
+                  <li><a href="#dashboard" onClick={(e) => { e.preventDefault(); handleAction(); }} className="saas-footer__link">Voice AI Assistant (FERA)</a></li>
                   <li><a href="#audit" onClick={(e) => { e.preventDefault(); handleAction(); }} className="saas-footer__link">Laporan Audit Forensik</a></li>
                   <li><a href="#stream" onClick={(e) => { e.preventDefault(); handleAction(); }} className="saas-footer__link">Aliran Transaksi Klaim</a></li>
                   <li><a href="#cases" onClick={(e) => { e.preventDefault(); handleAction(); }} className="saas-footer__link">Studi Kasus Pembuktian</a></li>
