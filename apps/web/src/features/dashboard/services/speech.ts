@@ -1,11 +1,11 @@
-import {
+﻿import {
   VOICE_DEFAULT_ID,
   BASE_VOICE_SETTINGS,
   ElevenLabsVoiceSettings,
 } from './tts-processor';
 
 export function cleanAndDeduplicateTranscript(raw: string): string {
-  let text = raw.replace(/\s+/g, ' ').trim();
+  const text = raw.replace(/\s+/g, ' ').trim();
   if (!text) return '';
 
   const words = text.split(' ');
@@ -29,7 +29,7 @@ export function cleanAndDeduplicateTranscript(raw: string): string {
     }
   }
 
-  // Word-level sequential duplication (e.g. "saya ingin audit audit peserta Budi")
+  // Word-level sequential duplication (e.g. "audit audit peserta")
   const dedupedWords: string[] = [];
   for (let i = 0; i < words.length; i++) {
     const word = words[i];
@@ -39,37 +39,7 @@ export function cleanAndDeduplicateTranscript(raw: string): string {
     dedupedWords.push(word);
   }
 
-  // Check if deduped words themselves form repeating n-grams
-  const m = dedupedWords.length;
-  for (let k = 1; k <= Math.floor(m / 2); k++) {
-    if (m % k === 0) {
-      const pattern = dedupedWords.slice(0, k).join(' ').toLowerCase();
-      let allMatch = true;
-      for (let j = k; j < m; j += k) {
-        const block = dedupedWords.slice(j, j + k).join(' ').toLowerCase();
-        if (block !== pattern) {
-          allMatch = false;
-          break;
-        }
-      }
-      if (allMatch) {
-        return dedupedWords.slice(0, k).join(' ');
-      }
-    }
-  }
-
-  // Also check character-level exact halves
-  const cleanedStr = dedupedWords.join(' ');
-  const halfLen = Math.floor(cleanedStr.length / 2);
-  for (let len = halfLen; len >= 3; len--) {
-    const firstHalf = cleanedStr.slice(0, len).trim();
-    const secondHalf = cleanedStr.slice(len).trim();
-    if (firstHalf.toLowerCase() === secondHalf.toLowerCase()) {
-      return firstHalf;
-    }
-  }
-
-  return cleanedStr;
+  return dedupedWords.join(' ');
 }
 
 export class SpeechService {
@@ -77,13 +47,8 @@ export class SpeechService {
   private static lipSyncInterval: number | null = null;
   private static currentAudio: HTMLAudioElement | null = null;
   private static currentAudioUrl: string | null = null;
-  private static sharedAudio: HTMLAudioElement | null = null;
-  private static audioUnlocked = false;
   private static activeRecognition: any = null;
   private static speakSessionId = 0;
-  private static recognitionSessionId = 0;
-  private static lastSpeakEndTime = 0;
-  private static lastSpokenText = '';
   private static speakingState = false;
 
   public static isSpeechSupported(): boolean {
@@ -103,14 +68,7 @@ export class SpeechService {
 
   public static stopSpeaking(): void {
     this.speakSessionId++;
-    const wasSpeaking =
-      this.speakingState ||
-      this.currentAudio !== null ||
-      (this.synth !== null && this.synth.speaking);
     this.speakingState = false;
-    if (wasSpeaking) {
-      this.lastSpeakEndTime = Date.now();
-    }
 
     if (this.lipSyncInterval) {
       clearInterval(this.lipSyncInterval);
@@ -118,13 +76,8 @@ export class SpeechService {
     }
     if (this.currentAudio) {
       try {
-        this.currentAudio.onplay = null;
-        this.currentAudio.onended = null;
-        this.currentAudio.onerror = null;
         this.currentAudio.pause();
         this.currentAudio.currentTime = 0;
-        this.currentAudio.removeAttribute('src');
-        this.currentAudio.load();
       } catch {
         // ignore
       }
@@ -148,23 +101,9 @@ export class SpeechService {
   }
 
   public static stopListening(): void {
-    this.recognitionSessionId++;
-
     if (this.activeRecognition) {
       try {
-        this.activeRecognition.onstart = null;
-        this.activeRecognition.onresult = null;
-        this.activeRecognition.onerror = null;
-        this.activeRecognition.onend = null;
-        this.activeRecognition.onspeechstart = null;
-        this.activeRecognition.onspeechend = null;
-        this.activeRecognition.onsoundstart = null;
-        this.activeRecognition.onsoundend = null;
-        if (typeof this.activeRecognition.abort === 'function') {
-          this.activeRecognition.abort();
-        } else {
-          this.activeRecognition.stop();
-        }
+        this.activeRecognition.stop();
       } catch {
         // ignore
       }
@@ -197,12 +136,9 @@ export class SpeechService {
 
     if (!cleanText) {
       this.speakingState = false;
-      this.lastSpeakEndTime = Date.now();
       if (onEnd) onEnd();
       return;
     }
-
-    this.lastSpokenText = cleanText.toLowerCase();
 
     // 1. Try Backend ElevenLabs Proxy first
     try {
@@ -216,12 +152,12 @@ export class SpeechService {
       // Jika user telah memicu sesi audio baru selama unduhan berlangsung, buang audio usang ini
       if (this.speakSessionId !== sessionId) return;
 
-      await this.playAudioWithLipSync(audioBlob, sessionId, cleanText, onLipSync, onStart, onEnd);
+      await this.playAudioWithLipSync(audioBlob, onLipSync, onStart, onEnd);
       return;
     } catch (err) {
-      console.warn('[Speech] Backend ElevenLabs TTS gagal/timeout, beralih instan ke Web Speech (low-latency):', err);
+      console.warn('[Speech] Backend ElevenLabs TTS gagal, beralih instan ke Web Speech:', err);
       if (this.speakSessionId !== sessionId) return;
-      this.speakWithWebSpeech(cleanText, sessionId, onLipSync, onStart, onEnd);
+      this.speakWithWebSpeech(cleanText, onLipSync, onStart, onEnd);
     }
   }
 
@@ -269,21 +205,13 @@ export class SpeechService {
 
   private static async playAudioWithLipSync(
     blob: Blob,
-    sessionId: number,
-    cleanText: string,
     onLipSync: (mouthOpen: number) => void,
     onStart?: () => void,
     onEnd?: () => void
   ): Promise<void> {
-    if (this.speakSessionId !== sessionId) return;
-
     const url = URL.createObjectURL(blob);
     this.currentAudioUrl = url;
-
-    // Use primed sharedAudio if available, otherwise new Audio
-    const audio = this.sharedAudio || new Audio();
-    this.sharedAudio = audio;
-    audio.src = url;
+    const audio = new Audio(url);
     this.currentAudio = audio;
 
     let phase = 0;
@@ -297,63 +225,50 @@ export class SpeechService {
     };
 
     audio.onplay = () => {
-      if (SpeechService.speakSessionId !== sessionId) {
-        SpeechService.stopSpeaking();
-        return;
-      }
       this.speakingState = true;
       if (onStart) onStart();
       startFlap();
     };
 
     audio.onended = () => {
-      SpeechService.lastSpeakEndTime = Date.now();
       this.stopSpeaking();
       onLipSync(0);
       if (onEnd) onEnd();
     };
 
     audio.onerror = () => {
-      console.warn('[Speech] Audio playback error on Audio element, falling back to Web Speech');
-      SpeechService.lastSpeakEndTime = Date.now();
       this.stopSpeaking();
       onLipSync(0);
-      if (SpeechService.speakSessionId === sessionId) {
-        this.speakWithWebSpeech(cleanText, sessionId, onLipSync, onStart, onEnd);
-      } else if (onEnd) {
-        onEnd();
-      }
+      if (onEnd) onEnd();
     };
 
     try {
       await audio.play();
     } catch (playErr) {
-      console.warn('[Speech] Audio playback blocked/failed, falling back to Web Speech:', playErr);
-      if (this.speakSessionId !== sessionId) return;
+      console.warn('[Speech] Audio playback blocked or failed:', playErr);
       this.stopSpeaking();
-      this.speakWithWebSpeech(cleanText, sessionId, onLipSync, onStart, onEnd);
+      onLipSync(0);
+      if (onEnd) onEnd();
     }
   }
 
   private static speakWithWebSpeech(
     cleanText: string,
-    sessionId: number,
     onLipSync: (mouthOpen: number) => void,
     onStart?: () => void,
     onEnd?: () => void
   ): void {
-    if (!this.synth || this.speakSessionId !== sessionId) {
+    if (!this.synth) {
       if (onEnd) onEnd();
       return;
     }
 
     const utterance = new SpeechSynthesisUtterance(cleanText);
     utterance.lang = 'id-ID';
-    utterance.rate = 1.08; // slightly faster, energetic
-    utterance.pitch = 1.35; // high, cute anime girl pitch!
+    utterance.rate = 1.08;
+    utterance.pitch = 1.35;
 
     const voices = this.synth.getVoices();
-    // Prioritize natural female voices for an anime assistant persona
     const femaleVoice = voices.find(
       (v) =>
         (v.lang.startsWith('id') || v.lang.startsWith('ID') || v.lang.startsWith('ja')) &&
@@ -380,10 +295,6 @@ export class SpeechService {
     let watchdog: number | null = null;
 
     utterance.onstart = () => {
-      if (SpeechService.speakSessionId !== sessionId) {
-        SpeechService.stopSpeaking();
-        return;
-      }
       this.speakingState = true;
       if (onStart) onStart();
 
@@ -395,9 +306,8 @@ export class SpeechService {
         onLipSync(mouthOpen);
       }, 65);
 
-      // Chrome long-speech unpause watchdog
       watchdog = window.setInterval(() => {
-        if (!SpeechService.speakingState || SpeechService.speakSessionId !== sessionId) {
+        if (!SpeechService.speakingState) {
           if (watchdog) clearInterval(watchdog);
           return;
         }
@@ -415,7 +325,6 @@ export class SpeechService {
 
     utterance.onend = () => {
       if (watchdog) clearInterval(watchdog);
-      SpeechService.lastSpeakEndTime = Date.now();
       this.stopSpeaking();
       onLipSync(0);
       if (onEnd) onEnd();
@@ -423,47 +332,16 @@ export class SpeechService {
 
     utterance.onerror = (err) => {
       if (watchdog) clearInterval(watchdog);
-      SpeechService.lastSpeakEndTime = Date.now();
       console.warn('Speech synthesis error:', err);
       this.stopSpeaking();
       onLipSync(0);
       if (onEnd) onEnd();
     };
 
-    // Minor delay to let the browser audio pipeline settle post-cancel
-    window.setTimeout(() => {
-      if (SpeechService.speakSessionId === sessionId && SpeechService.synth) {
-        try {
-          SpeechService.synth.speak(utterance);
-        } catch (synthErr) {
-          console.warn('[Speech] Web Speech speak error:', synthErr);
-          SpeechService.lastSpeakEndTime = Date.now();
-          SpeechService.stopSpeaking();
-          onLipSync(0);
-          if (onEnd) onEnd();
-        }
-      }
-    }, 50);
+    this.synth.speak(utterance);
   }
 
   public static unlockAudio(): void {
-    if (typeof window === 'undefined') return;
-    if (!this.sharedAudio) {
-      this.sharedAudio = new Audio();
-    }
-    if (!this.audioUnlocked) {
-      // Prime the shared audio with silent wav data inside user gesture
-      this.sharedAudio.src =
-        'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
-      this.sharedAudio
-        .play()
-        .then(() => {
-          this.audioUnlocked = true;
-        })
-        .catch(() => {
-          // Still primed
-        });
-    }
     if (this.synth) {
       try {
         if (this.synth.paused) {
@@ -480,233 +358,123 @@ export class SpeechService {
     onStateChange?: (isListening: boolean) => void,
     onError?: (error: string) => void,
     onSoundDetected?: (isSoundActive: boolean) => void,
-    onInterim?: (liveText: string) => void
+    _onInterim?: (liveText: string) => void
   ): () => void {
-    console.log('[Speech] ▶ startListening() called');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const win = typeof window !== 'undefined' ? (window as any) : {};
     const SpeechRecognition = win.SpeechRecognition || win.webkitSpeechRecognition;
 
     if (!SpeechRecognition) {
-      console.error('[Speech] ✗ SpeechRecognition API not available in this browser');
-      if (onError) {
-        onError('Browser Anda belum mendukung Speech Recognition. Gunakan browser Google Chrome atau Microsoft Edge terbaru.');
-      }
+      if (onError) onError('Browser Anda tidak mendukung Speech Recognition.');
       return () => {};
     }
 
-    console.log('[Speech] ✓ SpeechRecognition API available:', SpeechRecognition.name || 'webkitSpeechRecognition');
-
-    // Stop existing audio and priming
+    // Pastikan tidak ada suara TTS yang sedang berputar sebelum membuka mic
     this.stopSpeaking();
     this.stopListening();
-    this.unlockAudio();
-
-    const currentSession = ++this.recognitionSessionId;
-    console.log('[Speech] Session ID:', currentSession);
-
-    let isExplicitlyStopped = false;
-    let accumulatedFinalText = '';
-    let currentInterimText = '';
-    let silenceTimer: any = null;
-    let inactivityTimer: any = null;
-    let hasDelivered = false;
-
-    const finishAndDeliver = () => {
-      if (hasDelivered) return;
-      if (silenceTimer) {
-        clearTimeout(silenceTimer);
-        silenceTimer = null;
-      }
-      if (inactivityTimer) {
-        clearTimeout(inactivityTimer);
-        inactivityTimer = null;
-      }
-      const full = (accumulatedFinalText + ' ' + currentInterimText).trim();
-      const cleaned = cleanAndDeduplicateTranscript(full);
-
-      console.log('[Speech] 🎯 finishAndDeliver — raw:', full, '→ cleaned:', cleaned);
-
-      if (cleaned) {
-        hasDelivered = true;
-        // Echo check: only discard if EXACT match to last spoken sentence within 600ms
-        const elapsed = Date.now() - SpeechService.lastSpeakEndTime;
-        if (
-          elapsed < 600 &&
-          SpeechService.lastSpokenText &&
-          cleaned.toLowerCase() === SpeechService.lastSpokenText.toLowerCase()
-        ) {
-          console.log('[Speech] 🔇 Ignored acoustic echo of AI voice:', cleaned);
-          return;
-        }
-
-        console.log('[Speech] ✅ DELIVERING transcript to app:', cleaned);
-        onResult(cleaned);
-      }
-    };
-
-    const cleanup = () => {
-      isExplicitlyStopped = true;
-      if (silenceTimer) {
-        clearTimeout(silenceTimer);
-        silenceTimer = null;
-      }
-      if (inactivityTimer) {
-        clearTimeout(inactivityTimer);
-        inactivityTimer = null;
-      }
-      SpeechService.stopListening();
-      if (onStateChange) onStateChange(false);
-      if (onSoundDetected) onSoundDetected(false);
-    };
-
-    // Auto-timeout if user clicks mic but stays completely silent for 7s
-    inactivityTimer = setTimeout(() => {
-      if (!hasDelivered && !accumulatedFinalText && !currentInterimText) {
-        console.log('[Speech] ⏱ Inactivity timeout (7s no speech) — closing mic');
-        cleanup();
-      }
-    }, 7000);
 
     try {
       const recognition = new SpeechRecognition();
-      SpeechService.activeRecognition = recognition;
+      this.activeRecognition = recognition;
       recognition.lang = 'id-ID';
-      recognition.interimResults = true;
+      recognition.interimResults = false;
       recognition.maxAlternatives = 1;
-      // continuous = false ensures browser automatically detects utterance completion and fires onend
       recognition.continuous = false;
 
       recognition.onstart = () => {
-        console.log('[Speech] ✓ Recognition STARTED — listening for speech...');
-        if (SpeechService.recognitionSessionId !== currentSession) return;
         if (onStateChange) onStateChange(true);
-      };
-
-      recognition.onsoundstart = () => {
-        if (SpeechService.recognitionSessionId !== currentSession) return;
-        if (onSoundDetected) onSoundDetected(true);
-      };
-
-      recognition.onsoundend = () => {
-        if (SpeechService.recognitionSessionId !== currentSession) return;
         if (onSoundDetected) onSoundDetected(false);
       };
 
       recognition.onspeechstart = () => {
-        if (SpeechService.recognitionSessionId !== currentSession) return;
-        if (inactivityTimer) {
-          clearTimeout(inactivityTimer);
-          inactivityTimer = null;
-        }
         if (onSoundDetected) onSoundDetected(true);
       };
 
       recognition.onspeechend = () => {
-        console.log('[Speech] 🛑 Browser detected speech end — triggering fast deliver');
-        if (SpeechService.recognitionSessionId !== currentSession) return;
         if (onSoundDetected) onSoundDetected(false);
-        // Fast cutoff: deliver within 350ms of user stopping talking
-        if (silenceTimer) clearTimeout(silenceTimer);
-        silenceTimer = setTimeout(() => {
-          if (!isExplicitlyStopped && SpeechService.recognitionSessionId === currentSession) {
-            finishAndDeliver();
-            cleanup();
-          }
-        }, 350);
       };
 
+      recognition.onsoundstart = () => {
+        if (onSoundDetected) onSoundDetected(true);
+      };
+
+      recognition.onsoundend = () => {
+        if (onSoundDetected) onSoundDetected(false);
+      };
+
+      let hasDeliveredResult = false;
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       recognition.onresult = (event: any) => {
-        if (isExplicitlyStopped || SpeechService.recognitionSessionId !== currentSession) return;
+        if (hasDeliveredResult) return;
 
-        if (inactivityTimer) {
-          clearTimeout(inactivityTimer);
-          inactivityTimer = null;
-        }
-
-        let interim = '';
-        for (let i = event.resultIndex; i < event.results.length; ++i) {
-          const res = event.results[i];
-          const text = res[0]?.transcript || '';
-          if (res.isFinal) {
-            console.log('[Speech] 📝 Final result chunk:', text);
-            accumulatedFinalText = (accumulatedFinalText + ' ' + text).trim();
-          } else {
-            interim += ' ' + text;
+        let finalTranscript = '';
+        if (event.results) {
+          for (let i = event.resultIndex || 0; i < event.results.length; ++i) {
+            const item = event.results[i];
+            if (item && item[0]?.transcript) {
+              finalTranscript += item[0].transcript;
+            }
           }
         }
-        currentInterimText = interim.trim();
 
-        const currentCombined = (accumulatedFinalText + ' ' + currentInterimText).trim();
-        if (currentCombined) {
-          if (onSoundDetected) onSoundDetected(true);
-          if (onInterim) onInterim(currentCombined);
-          console.log('[Speech] 💬 Live text:', currentCombined);
-
-          // Debounce silence: deliver 1.0s after user pauses
-          if (silenceTimer) clearTimeout(silenceTimer);
-          silenceTimer = setTimeout(() => {
-            if (!isExplicitlyStopped && SpeechService.recognitionSessionId === currentSession) {
-              console.log('[Speech] ⏱ Silence debounce fired — delivering result');
-              finishAndDeliver();
-              cleanup();
-            }
-          }, 1000);
+        const trimmed = finalTranscript.trim();
+        if (trimmed) {
+          hasDeliveredResult = true;
+          try {
+            recognition.stop();
+          } catch {
+            // ignore
+          }
+          if (SpeechService.activeRecognition === recognition) {
+            SpeechService.activeRecognition = null;
+          }
+          const cleaned = cleanAndDeduplicateTranscript(trimmed);
+          onResult(cleaned || trimmed);
         }
       };
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       recognition.onerror = (event: any) => {
-        if (SpeechService.recognitionSessionId !== currentSession) return;
-        const errType = event.error;
-        console.warn('[Speech] ⚠ Recognition error:', errType, event.message || '');
-
-        // Non-fatal notifications
-        if (errType === 'no-speech' || errType === 'aborted') {
-          return;
+        console.warn('Speech recognition event error:', event.error);
+        if (SpeechService.activeRecognition === recognition) {
+          SpeechService.activeRecognition = null;
         }
-
-        let friendly = '';
-        if (errType === 'not-allowed' || errType === 'service-not-allowed') {
-          friendly =
-            'Akses mikrofon diblokir oleh browser. Silakan klik ikon gembok di sebelah URL browser dan ubah Mikrofon menjadi "Izinkan" (Allow).';
-        } else if (errType === 'audio-capture') {
-          friendly = 'Perangkat mikrofon tidak terdeteksi. Pastikan mikrofon terpasang dan aktif.';
-        } else if (errType === 'network') {
-          friendly = 'Layanan pengenalan suara browser memerlukan koneksi internet aktif.';
-        } else if (errType === 'language-not-supported') {
-          friendly = 'Bahasa id-ID belum didukung oleh browser Anda.';
-        } else {
-          friendly = `Kesalahan pengenalan suara: ${errType}`;
+        if (event.error !== 'no-speech' && event.error !== 'aborted') {
+          if (onError) onError(event.error);
         }
-
-        if (friendly && onError) {
-          onError(friendly);
-        }
+        if (onStateChange) onStateChange(false);
+        if (onSoundDetected) onSoundDetected(false);
       };
 
       recognition.onend = () => {
-        console.log('[Speech] Recognition onend. isExplicitlyStopped:', isExplicitlyStopped, 'hasDelivered:', hasDelivered);
-        if (SpeechService.recognitionSessionId !== currentSession) return;
-
-        // If user has spoken something, deliver it now!
-        if (accumulatedFinalText.trim() || currentInterimText.trim()) {
-          finishAndDeliver();
+        if (SpeechService.activeRecognition === recognition) {
+          SpeechService.activeRecognition = null;
         }
-
-        cleanup();
+        if (onStateChange) onStateChange(false);
+        if (onSoundDetected) onSoundDetected(false);
       };
 
-      console.log('[Speech] Calling recognition.start()...');
       recognition.start();
-      console.log('[Speech] ✓ recognition.start() called successfully');
-    } catch (err) {
-      console.error('[Speech] ✗ Recognition start FAILED:', err);
-      cleanup();
-    }
 
-    return () => {
-      console.log('[Speech] ■ Manual stop requested');
-      finishAndDeliver();
-      cleanup();
-    };
+      return () => {
+        try {
+          recognition.stop();
+        } catch {
+          // ignore
+        }
+        if (SpeechService.activeRecognition === recognition) {
+          SpeechService.activeRecognition = null;
+        }
+        if (onStateChange) onStateChange(false);
+        if (onSoundDetected) onSoundDetected(false);
+      };
+    } catch (err) {
+      this.activeRecognition = null;
+      console.error('Failed to start speech recognition:', err);
+      if (onError) onError(err instanceof Error ? err.message : 'Gagal mengakses mikrofon.');
+      if (onStateChange) onStateChange(false);
+      return () => {};
+    }
   }
 }
