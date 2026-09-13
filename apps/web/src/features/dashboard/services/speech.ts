@@ -439,25 +439,33 @@ export class SpeechService {
         }
       };
 
+      let isExplicitlyStopped = false;
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       recognition.onerror = (event: any) => {
-        console.warn('Speech recognition event error:', event.error);
+        const err = event.error;
+        if (err === 'no-speech' || err === 'aborted') {
+          // Non-fatal: user hasn't spoken yet or paused briefly
+          return;
+        }
+
+        console.warn('Speech recognition event error:', err);
         if (SpeechService.activeRecognition === recognition) {
           SpeechService.activeRecognition = null;
         }
-        if (event.error !== 'no-speech' && event.error !== 'aborted') {
-          let friendly = '';
-          if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
-            friendly = 'Akses mikrofon diblokir oleh browser. Klik ikon gembok di sebelah URL dan ubah Mikrofon menjadi "Izinkan".';
-          } else if (event.error === 'audio-capture') {
-            friendly = 'Mikrofon tidak terdeteksi di Windows. Pastikan mikrofon aktif di pengaturan audio.';
-          } else if (event.error === 'network') {
-            friendly = 'Layanan Google Speech memerlukan koneksi internet aktif.';
-          } else {
-            friendly = `Kendala mikrofon: ${event.error}`;
-          }
-          if (onError) onError(friendly);
+
+        let friendly = '';
+        if (err === 'not-allowed' || err === 'service-not-allowed') {
+          friendly = 'Akses mikrofon diblokir oleh browser. Klik ikon gembok di sebelah URL dan ubah Mikrofon menjadi "Izinkan".';
+        } else if (err === 'audio-capture') {
+          friendly = 'Mikrofon tidak terdeteksi di Windows. Pastikan mikrofon aktif di pengaturan audio.';
+        } else if (err === 'network') {
+          friendly = 'Layanan Google Speech memerlukan koneksi internet aktif.';
+        } else {
+          friendly = `Kendala mikrofon: ${err}`;
         }
+        if (onError) onError(friendly);
+
         if (onStateChange) onStateChange(false);
         if (onSoundDetected) onSoundDetected(false);
       };
@@ -465,7 +473,19 @@ export class SpeechService {
       recognition.onend = () => {
         if (!hasDeliveredResult && lastHeardText) {
           deliver(lastHeardText);
+          return;
         }
+
+        // If user is still supposed to be speaking and didn't manually stop, keep recognition alive
+        if (!isExplicitlyStopped && !hasDeliveredResult) {
+          try {
+            recognition.start();
+            return;
+          } catch {
+            // failed restart, fall through
+          }
+        }
+
         if (SpeechService.activeRecognition === recognition) {
           SpeechService.activeRecognition = null;
         }
@@ -476,6 +496,10 @@ export class SpeechService {
       recognition.start();
 
       return () => {
+        isExplicitlyStopped = true;
+        if (!hasDeliveredResult && lastHeardText) {
+          deliver(lastHeardText);
+        }
         try {
           recognition.stop();
         } catch {
