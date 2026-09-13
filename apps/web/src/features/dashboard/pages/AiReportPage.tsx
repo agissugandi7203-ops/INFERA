@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useOutletContext, useNavigate } from 'react-router-dom';
+import { useOutletContext, useNavigate, useLocation } from 'react-router-dom';
 import {
-  Sparkles,
   Plus,
   Mic,
   Square,
@@ -13,24 +12,28 @@ import {
   ThumbsUp,
   ThumbsDown,
   Trash2,
-  Download,
   Scale,
-  ShieldCheck,
   FileCheck,
   ExternalLink,
   ChevronDown,
+  ChevronUp,
   FileText,
   X,
   Menu,
-  Settings as SettingsIcon,
   ArrowDown,
+  Brain,
+  Paperclip,
+  Image as ImageIcon,
+  Activity,
+  MapPin,
+  Stethoscope,
+  Pill,
 } from 'lucide-react';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import { ChatMessage, AiShortcut, getStoredSettings } from '../services/openrouter';
+import { ChatMessage, ChatAttachment, AiShortcut, getStoredSettings } from '../services/openrouter';
 import { CharacterEmotion } from '../avatar/AvatarController';
 import { SpeechService } from '../services/speech';
 import {
+  TTSProcessor,
   VOICE_CHAT_DEFAULT_ID,
   VOICE_CHAT_SECONDARY_ID,
 } from '../services/tts-processor';
@@ -40,13 +43,14 @@ import { AIRecommendationCard } from '../components/AIRecommendationCard';
 import { ToolStatusBadge } from '../components/ToolStatusBadge';
 import { ActionConfirmationModal } from '../components/ActionConfirmationModal';
 import { InvestigationActionPanel } from '../components/InvestigationActionPanel';
+import { AiResponseRenderer } from '../components/AiResponseRenderer';
 import type { ActionRecommendation } from '@healthathon/shared';
 
 interface DashboardOutletContextType {
   onTriggerAvatarSpeech?: (text: string, emotion: string) => void;
   messages: ChatMessage[];
   isLoading: boolean;
-  onSendMessage: (text: string) => void;
+  onSendMessage: (text: string, attachments?: ChatAttachment[], enableReasoning?: boolean) => void;
   onClearHistory: () => void;
   onSelectEmotion?: (emo: CharacterEmotion, timedownMs?: number) => void;
   selectedVoiceId?: string; // AI Kanan (Avatar)
@@ -64,164 +68,208 @@ interface DashboardOutletContextType {
   onToggleSettings?: () => void;
 }
 
-interface CodeBlockProps {
-  inline?: boolean;
-  className?: string;
-  children?: React.ReactNode;
+interface ThinkingAccordionProps {
+  reasoning?: string;
+  isStreaming?: boolean;
+  isEnabled?: boolean;
 }
 
-const CodeBlock: React.FC<CodeBlockProps> = ({ inline, className, children, ...props }) => {
-  const [copied, setCopied] = useState(false);
-  const match = /language-(\w+)/.exec(className || '');
-  const language = match ? match[1] : '';
-  const codeString = String(children).replace(/\n$/, '');
+const ThinkingAccordion: React.FC<ThinkingAccordionProps> = ({ reasoning, isStreaming, isEnabled = true }) => {
+  const [isOpen, setIsOpen] = useState(false);
 
-  if (inline) {
-    return (
-      <code
-        className="px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-emerald-700 dark:text-emerald-400 font-mono text-xs font-medium"
-        {...props}
-      >
-        {children}
-      </code>
-    );
-  }
-
-  const handleCopy = () => {
-    navigator.clipboard.writeText(codeString);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
+  if (!isEnabled || !reasoning) return null;
 
   return (
-    <div className="relative my-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-900 text-slate-100 overflow-hidden shadow-xs">
-      <div className="flex items-center justify-between px-3.5 py-1.5 bg-slate-950/80 border-b border-slate-800/80 text-xs font-mono text-slate-400">
-        <span className="uppercase text-[11px] font-semibold tracking-wider text-slate-300">
-          {language || 'code'}
+    <div className="my-2 transition-all">
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-medium transition-all cursor-pointer ${
+          isOpen
+            ? 'bg-slate-100 dark:bg-slate-800/90 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 shadow-2xs'
+            : 'bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 border-slate-200/80 dark:border-slate-700/60 text-slate-600 dark:text-slate-400'
+        }`}
+        title="Klik untuk melihat alur penalaran AI"
+      >
+        <Brain
+          className={`w-3.5 h-3.5 text-slate-700 dark:text-slate-300 shrink-0 ${
+            isStreaming ? 'animate-pulse' : ''
+          }`}
+        />
+        <span className="font-semibold">Penalaran</span>
+        {isStreaming ? (
+          <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium animate-pulse">
+            (Sedang memproses...)
+          </span>
+        ) : (
+          <span className="text-[10px] text-slate-400 dark:text-slate-500 font-mono">
+            ({reasoning.length} karakter)
+          </span>
+        )}
+        <span className="text-[10px] text-slate-400 dark:text-slate-500 ml-0.5">
+          {isOpen ? 'Tutup' : 'Lihat'}
         </span>
-        <button
-          type="button"
-          onClick={handleCopy}
-          className="flex items-center gap-1 text-[11px] hover:text-white transition-colors cursor-pointer"
-          title="Salin Kode"
-        >
-          {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-          <span>{copied ? 'Tersalin' : 'Salin'}</span>
-        </button>
-      </div>
-      <div className="p-3.5 overflow-x-auto text-xs font-mono leading-relaxed">
-        <pre>{children}</pre>
-      </div>
+        {isOpen ? (
+          <ChevronUp className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+        ) : (
+          <ChevronDown className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+        )}
+      </button>
+
+      {isOpen && (
+        <div className="mt-2.5 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/90 dark:bg-slate-900/60 shadow-inner animate-in fade-in duration-150">
+          <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-200/60 dark:border-slate-800 text-[11px] text-slate-500 font-semibold">
+            <span className="flex items-center gap-1.5">
+              <Brain className="w-3.5 h-3.5 text-slate-600 dark:text-slate-400" />
+              Alur Penalaran AI (Internal Thought Process)
+            </span>
+            {isStreaming && (
+              <span className="text-slate-600 dark:text-slate-400 flex items-center gap-1.5 text-[10px]">
+                <span className="w-1.5 h-1.5 rounded-full bg-slate-500 animate-ping" />
+                Live Reasoning
+              </span>
+            )}
+          </div>
+          <div className="text-[13px] sm:text-sm text-slate-700 dark:text-slate-300 font-sans leading-relaxed whitespace-pre-wrap max-h-72 overflow-y-auto custom-scrollbar">
+            {reasoning}
+            {isStreaming && (
+              <span className="inline-block w-1.5 h-3.5 bg-slate-500 animate-pulse ml-1 align-middle rounded-xs" />
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
-class MarkdownErrorBoundary extends React.Component<{ children: React.ReactNode; rawContent: string }, { hasError: boolean }> {
-  state = { hasError: false };
-  static getDerivedStateFromError() {
-    return { hasError: true };
-  }
-  componentDidCatch(error: Error) {
-    console.warn('[MarkdownRenderer] Gagal merender Markdown AST, beralih ke fallback teks polos:', error);
-  }
-  render() {
-    if (this.state.hasError) {
-      return (
-        <div className="text-xs sm:text-sm whitespace-pre-wrap font-sans text-slate-800 dark:text-slate-200 leading-relaxed">
-          {this.props.rawContent}
-        </div>
-      );
-    }
-    return this.props.children;
-  }
+interface PlusAttachmentMenuProps {
+  onOpenCaseSelector: () => void;
+  onUploadImage: () => void;
+  onUploadPdf: () => void;
+  onUploadAll: () => void;
+  onClose: () => void;
+  positionClass?: string;
 }
 
-const MarkdownRenderer: React.FC<{ content: string }> = ({ content }) => {
-  const navigate = useNavigate();
+const PlusAttachmentMenu: React.FC<PlusAttachmentMenuProps> = ({
+  onOpenCaseSelector,
+  onUploadImage,
+  onUploadPdf,
+  onUploadAll,
+  onClose,
+  positionClass = 'bottom-full mb-3 left-0',
+}) => {
   return (
-    <MarkdownErrorBoundary rawContent={content}>
-      <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
-      components={{
-        h1: ({ node, ...props }) => (
-          <h1 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-slate-100 mt-5 mb-2.5 pb-1 border-b border-slate-100 dark:border-slate-800" {...props} />
-        ),
-        h2: ({ node, ...props }) => (
-          <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 mt-4 mb-2" {...props} />
-        ),
-        h3: ({ node, ...props }) => (
-          <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-slate-100 mt-3 mb-1.5" {...props} />
-        ),
-        p: ({ node, ...props }) => (
-          <p className="text-xs sm:text-sm leading-relaxed text-slate-800 dark:text-slate-200 my-1.5" {...props} />
-        ),
-        ul: ({ node, ...props }) => (
-          <ul className="list-disc pl-5 space-y-1 my-2 text-xs sm:text-sm text-slate-800 dark:text-slate-200" {...props} />
-        ),
-        ol: ({ node, ...props }) => (
-          <ol className="list-decimal pl-5 space-y-1 my-2 text-xs sm:text-sm text-slate-800 dark:text-slate-200" {...props} />
-        ),
-        li: ({ node, ...props }) => (
-          <li className="leading-relaxed pl-0.5" {...props} />
-        ),
-        blockquote: ({ node, ...props }) => (
-          <blockquote className="border-l-4 border-emerald-500 pl-3.5 py-1.5 my-2.5 bg-emerald-50/40 dark:bg-emerald-950/20 text-slate-700 dark:text-slate-300 rounded-r-lg text-xs sm:text-sm italic" {...props} />
-        ),
-        table: ({ node, ...props }) => (
-          <div className="my-3 overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xs">
-            <table className="min-w-full text-xs text-left divide-y divide-slate-200 dark:divide-slate-800" {...props} />
-          </div>
-        ),
-        thead: ({ node, ...props }) => (
-          <thead className="bg-slate-100 dark:bg-slate-800/90" {...props} />
-        ),
-        th: ({ node, ...props }) => (
-          <th className="px-3 py-2 text-[11px] font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider whitespace-nowrap" {...props} />
-        ),
-        td: ({ node, ...props }) => (
-          <td className="px-3 py-2 border-t border-slate-100 dark:border-slate-800 text-slate-800 dark:text-slate-200 text-xs" {...props} />
-        ),
-        code: CodeBlock as any,
-        a: ({ node, href, ...props }) => {
-          const safeHref = href && /^(https?:|mailto:|\/|#)/i.test(href.trim()) ? href.trim() : '#';
-          const isInternal = safeHref.startsWith('/') || safeHref.startsWith('#');
-          if (isInternal && safeHref !== '#') {
-            return (
-              <a
-                href={safeHref}
-                onClick={(e) => {
-                  e.preventDefault();
-                  const target = safeHref.startsWith('/dashboard')
-                    ? safeHref
-                    : `/dashboard${safeHref.startsWith('/') ? '' : '/'}${safeHref}`;
-                  navigate(target);
-                }}
-                className="text-emerald-600 dark:text-emerald-400 hover:underline font-semibold cursor-pointer"
-                {...props}
-              />
-            );
-          }
-          return (
-            <a
-              href={safeHref}
-              target="_blank"
-              rel="noopener noreferrer nofollow"
-              className="text-emerald-600 dark:text-emerald-400 hover:underline font-medium inline-flex items-center gap-0.5"
-              {...props}
-            />
-          );
-        },
-        hr: () => <hr className="my-4 border-slate-200 dark:border-slate-800" />,
-      }}
+    <div
+      className={`absolute ${positionClass} z-50 w-64 sm:w-72 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl p-2 space-y-1 animate-in fade-in zoom-in-95 duration-150`}
     >
-      {content}
-    </ReactMarkdown>
-    </MarkdownErrorBoundary>
+      <div className="px-2.5 py-1 text-[10px] font-bold tracking-wider text-slate-400 dark:text-slate-500 uppercase flex items-center justify-between">
+        <span>Tambah Lampiran / Berkas</span>
+        <button
+          type="button"
+          onClick={onClose}
+          className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+        >
+          <X className="w-3 h-3" />
+        </button>
+      </div>
+
+      {/* Option 1: Upload Image */}
+      <button
+        type="button"
+        onClick={() => {
+          onClose();
+          onUploadImage();
+        }}
+        className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-left hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors group cursor-pointer"
+      >
+        <div className="w-7 h-7 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+          <ImageIcon className="w-4 h-4" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="text-xs font-semibold text-slate-800 dark:text-slate-200">
+            Upload Image
+          </div>
+          <div className="text-[10px] text-slate-400 truncate">
+            Resep obat, kwitansi, bukti foto (PNG, JPG)
+          </div>
+        </div>
+      </button>
+
+      {/* Option 2: Upload PDF */}
+      <button
+        type="button"
+        onClick={() => {
+          onClose();
+          onUploadPdf();
+        }}
+        className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-left hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors group cursor-pointer"
+      >
+        <div className="w-7 h-7 rounded-lg bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+          <FileText className="w-4 h-4" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="text-xs font-semibold text-slate-800 dark:text-slate-200">
+            Upload PDF
+          </div>
+          <div className="text-[10px] text-slate-400 truncate">
+            Berkas klaim, SEP, resume medis (OCR)
+          </div>
+        </div>
+      </button>
+
+      {/* Option 3: Pilih Berkas dari Perangkat */}
+      <button
+        type="button"
+        onClick={() => {
+          onClose();
+          onUploadAll();
+        }}
+        className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-left hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors group cursor-pointer"
+      >
+        <div className="w-7 h-7 rounded-lg bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+          <Paperclip className="w-4 h-4" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="text-xs font-semibold text-slate-800 dark:text-slate-200">
+            Pilih Berkas Lainnya
+          </div>
+          <div className="text-[10px] text-slate-400 truncate">
+            Jelajahi semua berkas dari perangkat
+          </div>
+        </div>
+      </button>
+
+      <div className="border-t border-slate-100 dark:border-slate-800/80 my-1" />
+
+      {/* Option 4: Pilih Kasus Klaim Simulasi */}
+      <button
+        type="button"
+        onClick={() => {
+          onClose();
+          onOpenCaseSelector();
+        }}
+        className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-left hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-colors group cursor-pointer"
+      >
+        <div className="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+          <FileCheck className="w-4 h-4" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="text-xs font-semibold text-emerald-800 dark:text-emerald-300">
+            Pilih Berkas Klaim (Simulasi)
+          </div>
+          <div className="text-[10px] text-slate-400 truncate">
+            Budi Santoso, Hendra Wijaya, dsb.
+          </div>
+        </div>
+      </button>
+    </div>
   );
 };
 
 export const AiReportPage: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const outletContext = useOutletContext<DashboardOutletContextType | undefined>();
   const { anomalies, setSelectedClaimForAudit } = useSimulationStream();
 
@@ -240,11 +288,12 @@ export const AiReportPage: React.FC = () => {
 
   const messages = outletContext?.messages ?? localMessages;
   const isLoading = outletContext?.isLoading ?? localIsLoading;
-  const onSendMessage = outletContext?.onSendMessage ?? ((text: string) => {
+  const onSendMessage = outletContext?.onSendMessage ?? ((text: string, atts?: ChatAttachment[], enableReasoning?: boolean) => {
     const userMsg: ChatMessage = {
       id: 'user-' + Date.now(),
       role: 'user',
       content: text,
+      attachments: atts,
       timestamp: new Date().toISOString(),
     };
     setLocalMessages((prev) => [...prev, userMsg]);
@@ -256,6 +305,7 @@ export const AiReportPage: React.FC = () => {
           id: 'asst-' + Date.now(),
           role: 'assistant',
           content: `Analisis Integritas JKN untuk: "${text}".\n\n### Hasil Penelusuran\nBerdasarkan Permenkes No. 16 Tahun 2019, klaim terindikasi mematuhi kaidah INA-CBG.`,
+          isReasoningEnabled: enableReasoning,
           timestamp: new Date().toISOString(),
         },
       ]);
@@ -266,15 +316,69 @@ export const AiReportPage: React.FC = () => {
 
   // Chat UI states
   const [inputText, setInputText] = useState('');
-  const [isDeepThinking, setIsDeepThinking] = useState(true);
+  const [attachments, setAttachments] = useState<ChatAttachment[]>([]);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const pdfInputRef = useRef<HTMLInputElement>(null);
+  const allFileInputRef = useRef<HTMLInputElement>(null);
+  const plusMenuWelcomeRef = useRef<HTMLDivElement>(null);
+  const plusMenuBottomRef = useRef<HTMLDivElement>(null);
+  const [showPlusMenu, setShowPlusMenu] = useState(false);
+  const [isDeepThinking, setIsDeepThinking] = useState(false);
   const [activeSpeechMsgId, setActiveSpeechMsgId] = useState<string | null>(null);
   const [copiedMsgId, setCopiedMsgId] = useState<string | null>(null);
   const [showCaseSelector, setShowCaseSelector] = useState(false);
-  const [showAttachMenu, setShowAttachMenu] = useState(false);
   const [isVoiceOpen, setIsVoiceOpen] = useState(false);
   const [userFeedback, setUserFeedback] = useState<Record<string, 'up' | 'down'>>({});
   const [isDictating, setIsDictating] = useState(false);
+  const isDictatingRef = useRef<boolean>(false);
+  const lastDictateToggleTimeRef = useRef<number>(0);
   const stopDictateRef = useRef<(() => void) | null>(null);
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    Array.from(files).forEach((file) => {
+      if (attachments.length >= 3) {
+        alert('Maksimal 3 lampiran sekaligus (Gambar atau Dokumen PDF).');
+        return;
+      }
+
+      const isImage = file.type.startsWith('image/');
+      const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+
+      if (!isImage && !isPdf) {
+        alert('Hanya berkas Gambar (PNG, JPG, WEBP, GIF) atau Dokumen PDF yang didukung oleh OpenRouter.');
+        return;
+      }
+
+      if (file.size > 10 * 1024 * 1024) {
+        alert('Ukuran berkas maksimal 10 MB per berkas.');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        const newAtt: ChatAttachment = {
+          id: `att-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+          name: file.name,
+          type: isPdf ? 'pdf' : 'image',
+          mimeType: file.type || (isPdf ? 'application/pdf' : 'image/jpeg'),
+          dataUrl: result,
+          size: file.size,
+        };
+        setAttachments((prev) => [...prev, newAtt]);
+      };
+      reader.readAsDataURL(file);
+    });
+
+    if (e.target) e.target.value = '';
+  };
+
+  const removeAttachment = (id: string) => {
+    setAttachments((prev) => prev.filter((a) => a.id !== id));
+  };
 
   const [selectedRecForConfirm, setSelectedRecForConfirm] = useState<ActionRecommendation | null>(null);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
@@ -306,7 +410,7 @@ export const AiReportPage: React.FC = () => {
 
   const handleConfirmAction = (rec: ActionRecommendation, auditorNotes: string) => {
     const target = rec.targetName || rec.targetId;
-    onSendMessage(
+    sendUserPrompt(
       `[KONFIRMASI AUDITOR RESMI] Tindakan "${rec.title}" atas subjek "${target}" telah diverifikasi dan disetujui. Catatan Berita Acara: "${auditorNotes || 'Disetujui sesuai Permenkes No. 16 Tahun 2019.'}"`
     );
   };
@@ -341,44 +445,119 @@ export const AiReportPage: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isVoiceOpen]);
 
-  const handleDownloadBAP = () => {
-    const content = messages
-      .map((m) => `[${m.role.toUpperCase()}] (${m.timestamp})\n${m.content}\n`)
-      .join('\n---\n\n');
-    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `bap-infera-chat-${new Date().toISOString().slice(0, 10)}.txt`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
+  // Close plus attachment menu on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as Node;
+      const insideWelcome = plusMenuWelcomeRef.current && plusMenuWelcomeRef.current.contains(target);
+      const insideBottom = plusMenuBottomRef.current && plusMenuBottomRef.current.contains(target);
+      if (!insideWelcome && !insideBottom) {
+        setShowPlusMenu(false);
+      }
+    };
+    if (showPlusMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showPlusMenu]);
 
   // Intelligent Scroll Handler: detect whether user is actively reading higher up
+  const shouldFocusLatestPromptRef = useRef(false);
+
   const handleScroll = () => {
     const el = scrollContainerRef.current;
     if (!el) return;
-    const isNearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 140;
+    const isNearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 160;
     setIsUserScrolledUp(!isNearBottom);
     if (isNearBottom) {
       setHasNewUnseenResponse(false);
     }
   };
 
-  const scrollToBottom = (smooth = true) => {
+  /**
+   * Smoothly aligns the latest user prompt at the very top of the container.
+   * This pushes previous conversation up out of view, providing a clean, fresh screen
+   * where the user's prompt is at the top and the AI response flows downwards cleanly.
+   */
+  const scrollToLatestPrompt = (smooth = true) => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const latestUserMsg = [...messages].reverse().find((m) => m.role === 'user');
+    if (latestUserMsg) {
+      const el = document.getElementById(`msg-${latestUserMsg.id}`);
+      if (el) {
+        const containerRect = container.getBoundingClientRect();
+        const elRect = el.getBoundingClientRect();
+        const delta = elRect.top - containerRect.top;
+        container.scrollTo({
+          top: Math.max(0, container.scrollTop + delta - 12),
+          behavior: smooth ? 'smooth' : 'auto',
+        });
+        setIsUserScrolledUp(false);
+        setHasNewUnseenResponse(false);
+        return;
+      }
+    }
+
+    // Fallback if user element not found
     messagesEndRef.current?.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto' });
     setIsUserScrolledUp(false);
     setHasNewUnseenResponse(false);
   };
 
-  // Intelligent Auto-scroll on incoming stream chunks
+  // Centralized user prompt dispatcher that guarantees prompt-anchored scroll to top
+  const sendUserPrompt = (text: string, atts?: ChatAttachment[], reasoning?: boolean) => {
+    shouldFocusLatestPromptRef.current = true;
+    setIsUserScrolledUp(false);
+    onSendMessage(text, atts, reasoning ?? isDeepThinking);
+  };
+
+  // Handle auto-dispatched prompt from "Uji AI" navigation (e.g. TransactionsPage)
+  const processedAutoPromptRef = useRef(false);
   useEffect(() => {
-    if (!isUserScrolledUp) {
-      scrollToBottom(false);
-    } else {
+    const state = location.state as { autoPrompt?: string; claim?: any } | undefined;
+    if (state?.autoPrompt && !processedAutoPromptRef.current) {
+      processedAutoPromptRef.current = true;
+      const promptToSend = state.autoPrompt;
+      window.history.replaceState({}, document.title);
+      setTimeout(() => {
+        sendUserPrompt(promptToSend, undefined, false);
+      }, 120);
+    }
+  }, [location.state]);
+
+  // Scroll effect triggered when new messages are added
+  const prevMsgCountRef = useRef(messages.length);
+  useEffect(() => {
+    if (messages.length > prevMsgCountRef.current) {
+      if (shouldFocusLatestPromptRef.current) {
+        // User just sent a prompt: prioritize positioning this prompt at the very top of the window
+        shouldFocusLatestPromptRef.current = false;
+        setIsUserScrolledUp(false);
+        setHasNewUnseenResponse(false);
+        scrollToLatestPrompt(false);
+        requestAnimationFrame(() => scrollToLatestPrompt(true));
+        setTimeout(() => scrollToLatestPrompt(true), 60);
+        setTimeout(() => scrollToLatestPrompt(true), 200);
+      } else if (isUserScrolledUp) {
+        // Pengecualian: jika user sedang membaca riwayat di atas, JANGAN paksa scroll ke bawah!
+        setHasNewUnseenResponse(true);
+      } else {
+        setTimeout(() => {
+          scrollToLatestPrompt(true);
+        }, 50);
+      }
+    }
+    prevMsgCountRef.current = messages.length;
+  }, [messages.length, isUserScrolledUp]);
+
+  // If streaming occurs while user is scrolled up reading earlier text, show unseen pill indicator
+  useEffect(() => {
+    if (isLoading && isUserScrolledUp) {
       setHasNewUnseenResponse(true);
     }
-  }, [messages, isLoading]);
+  }, [isLoading, isUserScrolledUp]);
 
   // Adjust textarea height dynamically
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -391,20 +570,22 @@ export const AiReportPage: React.FC = () => {
 
   const handleSend = () => {
     const trimmed = inputText.trim();
-    if (!trimmed || isLoading) return;
+    if ((!trimmed && attachments.length === 0) || isLoading) return;
 
-    let fullPrompt = trimmed;
-    if (isDeepThinking && !trimmed.toLowerCase().includes('berpikir')) {
-      // Add subtle analytical context if thinking mode enabled
-      fullPrompt = trimmed;
-    }
-
-    onSendMessage(fullPrompt);
+    sendUserPrompt(
+      trimmed,
+      attachments.length > 0 ? attachments : undefined,
+      isDeepThinking
+    );
     setInputText('');
+    setAttachments([]);
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
     }
-    setTimeout(() => scrollToBottom(true), 60);
+  };
+
+  const handleQuickPrompt = (promptText: string) => {
+    sendUserPrompt(promptText, undefined, isDeepThinking);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -421,7 +602,12 @@ export const AiReportPage: React.FC = () => {
   };
 
   const handleToggleDictate = () => {
-    if (isDictating) {
+    const now = Date.now();
+    if (now - lastDictateToggleTimeRef.current < 450) return;
+    lastDictateToggleTimeRef.current = now;
+
+    if (isDictatingRef.current) {
+      isDictatingRef.current = false;
       if (stopDictateRef.current) {
         stopDictateRef.current();
         stopDictateRef.current = null;
@@ -430,27 +616,40 @@ export const AiReportPage: React.FC = () => {
       return;
     }
 
+    SpeechService.unlockAudio();
     SpeechService.stopSpeaking();
+    isDictatingRef.current = true;
     setIsDictating(true);
+
+    const baseInput = inputText.trim();
 
     const stopFn = SpeechService.startListening(
       (transcript) => {
+        isDictatingRef.current = false;
         setIsDictating(false);
         stopDictateRef.current = null;
         if (transcript.trim()) {
-          setInputText((prev) => (prev.trim() ? `${prev.trim()} ${transcript.trim()}` : transcript.trim()));
+          setInputText(baseInput ? `${baseInput} ${transcript.trim()}` : transcript.trim());
           if (textareaRef.current) {
             textareaRef.current.focus();
           }
         }
       },
       (listening) => {
+        isDictatingRef.current = listening;
         setIsDictating(listening);
       },
       (err) => {
         console.warn('[Dictate] Speech recognition error:', err);
+        isDictatingRef.current = false;
         setIsDictating(false);
         stopDictateRef.current = null;
+      },
+      undefined,
+      (liveText) => {
+        if (liveText.trim()) {
+          setInputText(baseInput ? `${baseInput} ${liveText.trim()}` : liveText.trim());
+        }
       }
     );
 
@@ -458,6 +657,7 @@ export const AiReportPage: React.FC = () => {
   };
 
   const handleToggleSpeech = (msg: ChatMessage) => {
+    SpeechService.unlockAudio();
     if (activeSpeechMsgId === msg.id) {
       SpeechService.stopSpeaking();
       setActiveSpeechMsgId(null);
@@ -477,8 +677,11 @@ export const AiReportPage: React.FC = () => {
       storedSettings.chatVoiceId ||
       VOICE_CHAT_DEFAULT_ID;
 
+    // Use TTSProcessor to extract clean spoken summary (up to 450 chars) without raw markdown/tables
+    const spokenText = TTSProcessor.extractSpokenSummary(msg.content, undefined, 450);
+
     SpeechService.speak(
-      msg.content,
+      spokenText,
       () => {},
       () => {},
       () => {
@@ -500,7 +703,7 @@ export const AiReportPage: React.FC = () => {
         : `/dashboard${rawRoute.startsWith('/') ? '' : '/'}${rawRoute}`;
       navigate(target);
     } else if (shortcut.action) {
-      onSendMessage(shortcut.action);
+      sendUserPrompt(shortcut.action);
     }
   };
 
@@ -515,36 +718,47 @@ export const AiReportPage: React.FC = () => {
       setSelectedClaimForAudit(caseItem.raw);
     }
     setShowCaseSelector(false);
-    onSendMessage(
+    sendUserPrompt(
       `Audit berkas klaim ${caseItem.code} atas nama ${caseItem.patient}. Terindikasi: ${caseItem.anomaly} (Skor Risiko: ${caseItem.score}). Berikan analisis kesesuaian klinis, potensi kerugian DJS, dan rujukan hukumnya.`
     );
   };
 
-  // Sample prompt cards matching user reference media_1788920242379.png
+  // Quick Prompt Recommendations (5 cards: 3 on top row, 2 on bottom row)
   const quickPrompts = [
     {
-      title: 'Deteksi Modus Upcoding & Phantoming',
-      icon: <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />,
+      title: 'Upcoding & Phantom Billing',
+      desc: 'Deteksi anomali penagihan fiktif & lonjakan severity klaim INA-CBG.',
+      icon: <Activity className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />,
       prompt:
-        'Jelaskan cara mendeteksi pola upcoding kode diagnosa INA-CBG dan phantom billing pada sistem VEDIKA BPJS Kesehatan.',
+        'Jelaskan cara mendeteksi pola upcoding kode diagnosa INA-CBG dan phantom billing pada sistem INFERA BPJS Kesehatan.',
     },
     {
-      title: 'Audit Kasus Impossible Travel Antar-Faskes',
-      icon: <FileCheck className="w-4 h-4 text-sky-600 dark:text-sky-400" />,
+      title: 'Impossible Travel Antar-Faskes',
+      desc: 'Uji kecepatan perpindahan geografis & identitas pinjaman peserta.',
+      icon: <MapPin className="w-4 h-4 text-sky-600 dark:text-sky-400" />,
       prompt:
         'Tolong lakukan audit dan analisis mendalam terhadap kasus Impossible Travel pasien Budi Santoso (0001847291038). Uji indikator fraud spasial-temporal dan berikan rekomendasi tindakannya.',
     },
     {
-      title: 'Tinjau Regulasi Permenkes No. 16/2019',
+      title: 'Regulasi Permenkes No. 16/2019',
+      desc: 'Kaidah pencegahan fraud, sanksi administratif, & pengembalian DJS.',
       icon: <Scale className="w-4 h-4 text-amber-600 dark:text-amber-400" />,
       prompt:
         'Apa saja sanksi administratif dan langkah verifikasi pencegahan kecurangan JKN berdasarkan Permenkes No. 16 Tahun 2019?',
     },
     {
-      title: 'Audit Dugaan Kasus Doctor Shopping',
-      icon: <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />,
+      title: 'Doctor Shopping (DSI)',
+      desc: 'Deteksi kunjungan poli berulang di banyak FKRTL dalam rentang 7 hari.',
+      icon: <Stethoscope className="w-4 h-4 text-purple-600 dark:text-purple-400" />,
       prompt:
         'Tolong analisis riwayat klaim pasien Hendra Wijaya (0002938471920) terkait indikasi Doctor Shopping dan peresepan obat berulang di faskes berbeda.',
+    },
+    {
+      title: 'Obat PRB & Cooling-off Alkes',
+      desc: 'Pengawasan siklus obat kronis 30 hari & batas waktu klaim kacamata/alkes.',
+      icon: <Pill className="w-4 h-4 text-rose-600 dark:text-rose-400" />,
+      prompt:
+        'Bagaimana aturan siklus 30 hari obat Program Rujuk Balik (PRB) dan batasan masa tunggu (cooling-off) klaim kacamata serta alkes menurut Permenkes 3/2023?',
     },
   ];
 
@@ -595,8 +809,8 @@ export const AiReportPage: React.FC = () => {
               <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 tracking-tight">
                 INFERA AI
               </span>
-              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800/60">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700/60">
+                <span className="w-1.5 h-1.5 rounded-full bg-slate-400 dark:bg-slate-500" />
                 Online
               </span>
             </div>
@@ -684,35 +898,13 @@ export const AiReportPage: React.FC = () => {
           </button>
 
           {hasMessages && (
-            <>
-              <button
-                type="button"
-                onClick={handleDownloadBAP}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-                title="Unduh Berita Acara Percakapan (BAP)"
-              >
-                <Download className="w-3.5 h-3.5" />
-              </button>
-              <button
-                type="button"
-                onClick={onClearHistory}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
-                title="Bersihkan Percakapan"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-              </button>
-            </>
-          )}
-
-          {/* Settings Modal Toggle */}
-          {outletContext?.onToggleSettings && (
             <button
               type="button"
-              onClick={outletContext.onToggleSettings}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-              title="Pengaturan AI & Parameter"
+              onClick={onClearHistory}
+              className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
+              title="Bersihkan Percakapan"
             >
-              <SettingsIcon className="w-3.5 h-3.5" />
+              <Trash2 className="w-3.5 h-3.5" />
             </button>
           )}
         </div>
@@ -756,6 +948,7 @@ export const AiReportPage: React.FC = () => {
         </div>
       )}
 
+
       {/* Main Content Area */}
       <div className="flex-1 flex overflow-hidden relative">
         <div className="flex-1 flex flex-col overflow-hidden relative">
@@ -766,7 +959,7 @@ export const AiReportPage: React.FC = () => {
           >
         {!isChatActive ? (
           /* Empty / Welcome State (Exact match to ChatGPT media_1788920242379.png) */
-          <div className="flex-1 flex flex-col items-center justify-center max-w-2xl mx-auto w-full px-4 text-center my-auto pb-12">
+          <div className="flex-1 flex flex-col items-center justify-center max-w-3xl mx-auto w-full px-4 text-center my-auto pb-12">
             <img
               src="/infera-logo.png"
               alt="INFERA Logo"
@@ -776,16 +969,61 @@ export const AiReportPage: React.FC = () => {
               Saya siap kapan pun Anda siap.
             </h2>
 
+            {/* Active Attachment Chips Preview in Welcome State */}
+            {attachments.length > 0 && (
+              <div className="flex flex-wrap items-center justify-center gap-2 mb-3">
+                {attachments.map((att) => (
+                  <div
+                    key={att.id}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-200 shadow-2xs"
+                  >
+                    {att.type === 'image' ? (
+                      <ImageIcon className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                    ) : (
+                      <FileText className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400 shrink-0" />
+                    )}
+                    <span className="max-w-[180px] truncate font-medium">{att.name}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeAttachment(att.id)}
+                      className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 ml-1 cursor-pointer"
+                      title="Hapus lampiran"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
             {/* Centered Floating Input Capsule */}
-            <div className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-sm hover:shadow-md transition-shadow px-4 py-3 flex items-center gap-3 mb-6">
-              <button
-                type="button"
-                onClick={() => setShowAttachMenu(!showAttachMenu)}
-                className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-300 transition-colors cursor-pointer shrink-0"
-                title="Menu Cepat"
-              >
-                <Plus className="w-4 h-4" />
-              </button>
+            <div className="w-full bg-slate-100/75 dark:bg-slate-900/60 border-0 rounded-3xl shadow-none px-4 py-3 flex items-center gap-3 mb-6 focus-within:bg-slate-100 dark:focus-within:bg-slate-900/90 transition-all relative">
+              {/* Unified Plus Button & Dropdown Menu */}
+              <div className="relative shrink-0" ref={plusMenuWelcomeRef}>
+                <button
+                  type="button"
+                  onClick={() => setShowPlusMenu(!showPlusMenu)}
+                  className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors cursor-pointer shadow-2xs ${
+                    showPlusMenu
+                      ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900'
+                      : 'bg-white dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300'
+                  }`}
+                  title="Tambah lampiran gambar/PDF atau pilih kasus"
+                >
+                  <Plus className={`w-4 h-4 transition-transform duration-150 ${showPlusMenu ? 'rotate-45' : ''}`} />
+                </button>
+
+                {showPlusMenu && (
+                  <PlusAttachmentMenu
+                    onOpenCaseSelector={() => setShowCaseSelector(true)}
+                    onUploadImage={() => imageInputRef.current?.click()}
+                    onUploadPdf={() => pdfInputRef.current?.click()}
+                    onUploadAll={() => allFileInputRef.current?.click()}
+                    onClose={() => setShowPlusMenu(false)}
+                    positionClass="bottom-full mb-3 left-0"
+                  />
+                )}
+              </div>
 
               <input
                 type="text"
@@ -793,21 +1031,22 @@ export const AiReportPage: React.FC = () => {
                 onChange={(e) => setInputText(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSend()}
                 placeholder="Tanyakan apa saja seputar audit integritas JKN..."
-                className="flex-1 bg-transparent border-0 outline-hidden text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                style={{ outline: 'none', border: 'none', boxShadow: 'none' }}
+                className="flex-1 bg-transparent border-0 outline-none focus:outline-none focus:ring-0 shadow-none text-base text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
               />
 
               {/* Berpikir chip */}
               <button
                 type="button"
                 onClick={() => setIsDeepThinking(!isDeepThinking)}
-                className={`hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border transition-colors cursor-pointer shrink-0 ${
+                className={`hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-colors cursor-pointer shrink-0 ${
                   isDeepThinking
-                    ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
-                    : 'bg-slate-50 dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700'
+                    ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 shadow-2xs'
+                    : 'bg-slate-200/60 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200'
                 }`}
               >
-                <span>🧠</span>
-                <span>Berpikir</span>
+                <Brain className="w-3.5 h-3.5" />
+                <span>Penalaran</span>
               </button>
 
               {/* Dictation mic */}
@@ -826,37 +1065,71 @@ export const AiReportPage: React.FC = () => {
               <button
                 type="button"
                 onClick={handleSend}
-                disabled={!inputText.trim() && !isLoading}
-                className={`w-8 h-8 rounded-full flex items-center justify-center text-white transition-all cursor-pointer shrink-0 ${
-                  inputText.trim()
-                    ? 'bg-[#007a3d] hover:bg-[#006834] shadow-xs'
-                    : 'bg-slate-300 dark:bg-slate-700 cursor-not-allowed'
+                disabled={!inputText.trim() && attachments.length === 0 && !isLoading}
+                className={`w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer shrink-0 ${
+                  inputText.trim() || attachments.length > 0
+                    ? 'bg-slate-900 hover:bg-slate-800 text-white dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white shadow-2xs'
+                    : 'bg-slate-300 dark:bg-slate-700 cursor-not-allowed text-slate-400'
                 }`}
               >
                 <ArrowUp className="w-4 h-4" />
               </button>
             </div>
 
-            {/* Quick Action Prompt List with Icons */}
-            <div className="w-full max-w-lg space-y-2 text-left">
-              {quickPrompts.map((qp, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => onSendMessage(qp.prompt)}
-                  className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-900/60 transition-colors text-xs sm:text-sm text-slate-700 dark:text-slate-300 group cursor-pointer border border-transparent hover:border-slate-100 dark:hover:border-slate-800"
-                >
-                  <span className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 group-hover:bg-white dark:group-hover:bg-slate-700 transition-colors shrink-0">
-                    {qp.icon}
-                  </span>
-                  <span className="flex-1 font-medium">{qp.title}</span>
-                </button>
-              ))}
+            {/* Quick Action Prompt Cards (Arranged cleanly as 3 on top, 2 on bottom) */}
+            <div className="w-full max-w-3xl space-y-2.5 text-left">
+              {/* Row 1: 3 cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                {quickPrompts.slice(0, 3).map((qp, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => handleQuickPrompt(qp.prompt)}
+                    className="flex flex-col text-left p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white/70 dark:bg-slate-900/60 hover:bg-slate-50 dark:hover:bg-slate-850 hover:border-slate-300 dark:hover:border-slate-700 shadow-2xs hover:shadow-xs transition-all group cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2.5 mb-1.5">
+                      <span className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 group-hover:bg-white dark:group-hover:bg-slate-700 transition-colors shrink-0 shadow-2xs">
+                        {qp.icon}
+                      </span>
+                      <span className="font-semibold text-sm text-slate-800 dark:text-slate-200 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors line-clamp-1">
+                        {qp.title}
+                      </span>
+                    </div>
+                    <span className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed line-clamp-2">
+                      {qp.desc}
+                    </span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Row 2: 2 cards (centered) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-w-2xl mx-auto">
+                {quickPrompts.slice(3, 5).map((qp, idx) => (
+                  <button
+                    key={idx + 3}
+                    type="button"
+                    onClick={() => handleQuickPrompt(qp.prompt)}
+                    className="flex flex-col text-left p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white/70 dark:bg-slate-900/60 hover:bg-slate-50 dark:hover:bg-slate-850 hover:border-slate-300 dark:hover:border-slate-700 shadow-2xs hover:shadow-xs transition-all group cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2.5 mb-1.5">
+                      <span className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 group-hover:bg-white dark:group-hover:bg-slate-700 transition-colors shrink-0 shadow-2xs">
+                        {qp.icon}
+                      </span>
+                      <span className="font-semibold text-sm text-slate-800 dark:text-slate-200 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors line-clamp-1">
+                        {qp.title}
+                      </span>
+                    </div>
+                    <span className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed line-clamp-2">
+                      {qp.desc}
+                    </span>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         ) : (
           /* Chat Thread Area (Exact match to ChatGPT media_1788920238372.png) */
-          <div className="max-w-3xl mx-auto w-full space-y-6 pb-28 pt-2">
+          <div className="max-w-3xl mx-auto w-full space-y-6 pb-[85vh] pt-2">
             {messages.map((msg) => {
               const isUser = msg.role === 'user';
               const isPlayingAudio = activeSpeechMsgId === msg.id;
@@ -864,16 +1137,53 @@ export const AiReportPage: React.FC = () => {
 
               if (isUser) {
                 return (
-                  <div key={msg.id} className="flex justify-end">
-                    <div className="max-w-[85%] sm:max-w-[75%] bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-3xl px-5 py-3 text-sm leading-relaxed shadow-2xs">
-                      {msg.content}
+                  <div id={`msg-${msg.id}`} key={msg.id} className="flex justify-end pt-4 scroll-mt-4">
+                    <div className="max-w-[85%] sm:max-w-[75%] bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 rounded-3xl px-5 py-3 text-base leading-relaxed shadow-2xs space-y-2">
+                      {msg.attachments && msg.attachments.length > 0 && (
+                        <div className="flex flex-wrap gap-2 pt-1 pb-1">
+                          {msg.attachments.map((att) => (
+                            <div
+                              key={att.id}
+                              className="rounded-xl overflow-hidden border border-slate-200/80 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-2xs"
+                            >
+                              {att.type === 'image' ? (
+                                <div className="space-y-1 p-1">
+                                  <img
+                                    src={att.dataUrl}
+                                    alt={att.name}
+                                    className="max-h-48 rounded-lg object-cover w-auto"
+                                  />
+                                  <div className="text-[10px] text-slate-500 dark:text-slate-400 px-1 truncate max-w-[180px]">
+                                    {att.name}
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="flex items-center gap-2.5 p-2.5 max-w-[240px]">
+                                  <div className="p-2 rounded-lg bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 shrink-0">
+                                    <FileText className="w-4 h-4" />
+                                  </div>
+                                  <div className="min-w-0 flex-1">
+                                    <div className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">
+                                      {att.name}
+                                    </div>
+                                    <div className="text-[10px] font-mono text-slate-400 uppercase">
+                                      PDF Berkas Klaim
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      <div>{msg.content}</div>
                     </div>
                   </div>
                 );
               }
 
               return (
-                <div key={msg.id} className="flex items-start gap-3 sm:gap-4 group">
+                <div id={`msg-${msg.id}`} key={msg.id} className="flex items-start gap-3 sm:gap-4 group pt-2">
                   <img
                     src="/infera-logo.png"
                     alt="INFERA AI"
@@ -886,9 +1196,16 @@ export const AiReportPage: React.FC = () => {
                       <ToolStatusBadge steps={msg.toolSteps} />
                     )}
 
+                    {/* Thinking / Reasoning Accordion */}
+                    <ThinkingAccordion
+                      reasoning={msg.reasoning}
+                      isStreaming={msg.isThinking}
+                      isEnabled={msg.isReasoningEnabled ?? isDeepThinking}
+                    />
+
                     {/* Rendered Markdown Body with GFM & Table support */}
-                    <div className="text-sm leading-relaxed text-slate-900 dark:text-slate-100 font-sans break-words">
-                      <MarkdownRenderer content={msg.content} />
+                    <div className="text-[15px] sm:text-base leading-relaxed text-slate-900 dark:text-slate-100 font-sans break-words">
+                      <AiResponseRenderer content={msg.content} />
                       {msg.isStreaming && (
                         <span className="inline-block w-1.5 h-4 bg-emerald-500 animate-pulse ml-1 align-middle rounded-xs" />
                       )}
@@ -1047,9 +1364,9 @@ export const AiReportPage: React.FC = () => {
                 />
                 <div className="flex items-center gap-2 py-2 px-3 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800">
                   <div className="flex gap-1">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-bounce" style={{ animationDelay: '0ms' }} />
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-bounce" style={{ animationDelay: '150ms' }} />
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-bounce" style={{ animationDelay: '300ms' }} />
+                    <span className="w-2 h-2 rounded-full bg-slate-400 dark:bg-slate-500 animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <span className="w-2 h-2 rounded-full bg-slate-400 dark:bg-slate-500 animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <span className="w-2 h-2 rounded-full bg-slate-400 dark:bg-slate-500 animate-bounce" style={{ animationDelay: '300ms' }} />
                   </div>
                   <span className="text-xs text-slate-500 dark:text-slate-400 font-medium ml-1">
                     INFERA sedang menganalisis regulasi &amp; data klaim...
@@ -1067,11 +1384,11 @@ export const AiReportPage: React.FC = () => {
       {hasNewUnseenResponse && isUserScrolledUp && (
         <button
           type="button"
-          onClick={() => scrollToBottom(true)}
+          onClick={() => scrollToLatestPrompt(true)}
           className="fixed bottom-24 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5 px-4 py-2 rounded-full bg-slate-900/95 dark:bg-white/95 text-white dark:text-slate-900 shadow-2xl hover:scale-105 transition-all text-xs font-semibold cursor-pointer border border-slate-700/50 dark:border-slate-300 animate-in fade-in slide-in-from-bottom-2 duration-150"
         >
           <ArrowDown className="w-3.5 h-3.5 animate-bounce" />
-          <span>Respons Baru di Bawah</span>
+          <span>Lihat Respon Terbaru</span>
         </button>
       )}
 
@@ -1079,16 +1396,60 @@ export const AiReportPage: React.FC = () => {
       {isChatActive && (
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-white via-white dark:from-slate-950 dark:via-slate-950 to-transparent pt-6 pb-4 px-4 pointer-events-none">
           <div className="max-w-3xl mx-auto w-full pointer-events-auto">
-            <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-3xl shadow-lg hover:shadow-xl transition-shadow px-4 py-2.5 flex items-end gap-2.5">
-              {/* Plus button */}
-              <button
-                type="button"
-                onClick={() => setShowCaseSelector(!showCaseSelector)}
-                className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-300 transition-colors cursor-pointer shrink-0 mb-0.5"
-                title="Pilih Berkas Klaim"
-              >
-                <Plus className="w-4 h-4" />
-              </button>
+            {/* Active Attachment Chips Preview */}
+            {attachments.length > 0 && (
+              <div className="flex flex-wrap items-center gap-2 mb-2 px-1">
+                {attachments.map((att) => (
+                  <div
+                    key={att.id}
+                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-750 text-xs text-slate-800 dark:text-slate-200 shadow-2xs animate-in fade-in slide-in-from-bottom-1 duration-150"
+                  >
+                    {att.type === 'image' ? (
+                      <ImageIcon className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                    ) : (
+                      <FileText className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400 shrink-0" />
+                    )}
+                    <span className="max-w-[160px] truncate font-medium">{att.name}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeAttachment(att.id)}
+                      className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 ml-1 cursor-pointer"
+                      title="Hapus lampiran"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="bg-slate-100/80 dark:bg-slate-900/70 border-0 rounded-3xl shadow-none px-4 py-2.5 flex items-end gap-2.5 focus-within:bg-slate-100 dark:focus-within:bg-slate-900/90 transition-all relative">
+              {/* Unified Plus Button & Dropdown Menu */}
+              <div className="relative shrink-0 mb-0.5" ref={plusMenuBottomRef}>
+                <button
+                  type="button"
+                  onClick={() => setShowPlusMenu(!showPlusMenu)}
+                  className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors cursor-pointer shadow-2xs ${
+                    showPlusMenu
+                      ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900'
+                      : 'bg-white dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300'
+                  }`}
+                  title="Tambah lampiran gambar/PDF atau pilih kasus"
+                >
+                  <Plus className={`w-4 h-4 transition-transform duration-150 ${showPlusMenu ? 'rotate-45' : ''}`} />
+                </button>
+
+                {showPlusMenu && (
+                  <PlusAttachmentMenu
+                    onOpenCaseSelector={() => setShowCaseSelector(true)}
+                    onUploadImage={() => imageInputRef.current?.click()}
+                    onUploadPdf={() => pdfInputRef.current?.click()}
+                    onUploadAll={() => allFileInputRef.current?.click()}
+                    onClose={() => setShowPlusMenu(false)}
+                    positionClass="bottom-full mb-3 left-0"
+                  />
+                )}
+              </div>
 
               {/* Textarea */}
               <textarea
@@ -1099,22 +1460,23 @@ export const AiReportPage: React.FC = () => {
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
                 placeholder="Tanyakan apa saja seputar audit integritas JKN..."
-                className="flex-1 bg-transparent border-0 outline-hidden text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 resize-none max-h-40 py-1.5 leading-relaxed"
+                style={{ outline: 'none', border: 'none', boxShadow: 'none' }}
+                className="flex-1 bg-transparent border-0 outline-none focus:outline-none focus:ring-0 shadow-none text-base text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 resize-none max-h-40 py-1.5 leading-relaxed"
               />
 
               {/* Berpikir toggle */}
               <button
                 type="button"
                 onClick={() => setIsDeepThinking(!isDeepThinking)}
-                className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors cursor-pointer shrink-0 mb-0.5 ${
+                className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer shrink-0 mb-0.5 ${
                   isDeepThinking
-                    ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800'
-                    : 'bg-slate-50 dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700'
+                    ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 shadow-2xs'
+                    : 'bg-slate-200/60 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200'
                 }`}
                 title="Mode penalaran mendalam"
               >
-                <span>🧠</span>
-                <span>Berpikir</span>
+                <Brain className="w-3.5 h-3.5" />
+                <span>Penalaran</span>
               </button>
 
               {/* Speech Recognition Mic */}
@@ -1148,11 +1510,11 @@ export const AiReportPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleSend}
-                  disabled={!inputText.trim()}
-                  className={`w-8 h-8 rounded-full flex items-center justify-center text-white transition-all cursor-pointer shrink-0 mb-0.5 ${
-                    inputText.trim()
-                      ? 'bg-[#007a3d] hover:bg-[#006834] shadow-xs'
-                      : 'bg-slate-300 dark:bg-slate-700 cursor-not-allowed'
+                  disabled={!inputText.trim() && attachments.length === 0}
+                  className={`w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer shrink-0 mb-0.5 ${
+                    inputText.trim() || attachments.length > 0
+                      ? 'bg-slate-900 hover:bg-slate-800 text-white dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white shadow-2xs'
+                      : 'bg-slate-300 dark:bg-slate-700 cursor-not-allowed text-slate-400'
                   }`}
                   title="Kirim Pesan"
                 >
@@ -1187,6 +1549,32 @@ export const AiReportPage: React.FC = () => {
           setSelectedRecForConfirm(null);
         }}
         onConfirm={handleConfirmAction}
+      />
+
+      {/* Hidden File Inputs for Multimodal Attachments */}
+      <input
+        ref={imageInputRef}
+        type="file"
+        accept="image/png,image/jpeg,image/webp,image/gif"
+        multiple
+        className="hidden"
+        onChange={handleFileSelect}
+      />
+      <input
+        ref={pdfInputRef}
+        type="file"
+        accept="application/pdf,.pdf"
+        multiple
+        className="hidden"
+        onChange={handleFileSelect}
+      />
+      <input
+        ref={allFileInputRef}
+        type="file"
+        accept="image/png,image/jpeg,image/webp,image/gif,application/pdf,.pdf"
+        multiple
+        className="hidden"
+        onChange={handleFileSelect}
       />
     </div>
   );

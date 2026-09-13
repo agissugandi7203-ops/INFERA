@@ -60,7 +60,32 @@ export const TransactionsPage: React.FC = React.memo(() => {
 
   const handleInspectInAi = (claim: JknClaimRecord) => {
     setSelectedClaimForAudit(claim);
-    navigate('/dashboard/ai-report');
+    const costText = claim.cbgTariff
+      ? `Tarif CBG: Rp ${claim.cbgTariff.toLocaleString('id-ID')}`
+      : `Tarif RS: Rp ${claim.tarifRs.toLocaleString('id-ID')}`;
+    const anomalyText = claim.isAnomaly
+      ? `Indikasi Anomali: ${claim.anomalyTitle} (Skor Risiko: ${claim.fraudRiskScore}/100, Tingkat: ${claim.riskLevel}). ${claim.anomalyDescription}`
+      : `Status: Lolos Verifikasi Wajar (Skor Risiko: ${claim.fraudRiskScore}/100)`;
+    const jnsText = claim.jnsPelayanan === 1 ? 'Rawat Inap (RITL)' : 'Rawat Jalan (RJTL)';
+
+    const promptText = `Lakukan audit investigasi dan uji forensik komprehensif terhadap berkas klaim berikut:
+- No. SEP: ${claim.noSep}
+- Nama Peserta: ${claim.namaPeserta} (No. Kartu: ${claim.noKartu}, NIK: ${claim.nik})
+- Fasilitas Kesehatan: ${claim.namaFaskes} (Kelas ${claim.kelasFaskes}, Kode PPK: ${claim.ppkPelayanan})
+- Jenis Pelayanan: ${jnsText}${claim.poliTujuan ? ` | Poli: ${claim.poliTujuan}` : ''}
+- Diagnosa Utama: ${claim.diagAwal} - ${claim.namaDiagnosaAwal}
+- Kode INA-CBG: ${claim.cbgCode} (Tingkat Keparahan: Severity ${claim.severityLevel})
+- Biaya Klaim: ${costText}
+- Temuan Indikator: ${anomalyText}
+
+Sajikan analisis kepatuhan regulasi JKN, hitung potensi kerugian dana jaminan sosial (DJS), dan rekomendasikan tindakan tegas auditor.`;
+
+    navigate('/dashboard/ai-report', {
+      state: {
+        autoPrompt: promptText,
+        claim,
+      },
+    });
   };
 
   return (

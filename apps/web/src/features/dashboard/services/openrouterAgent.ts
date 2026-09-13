@@ -12,6 +12,8 @@ import {
 } from './tools/toolRegistry';
 import {
   ChatMessage,
+  ChatAttachment,
+  formatMessageContent,
   OpenRouterSettings,
   AiShortcut,
   extractShortcuts,
@@ -19,6 +21,7 @@ import {
   getStreamingVisibleText,
   streamOpenRouterChat,
 } from './openrouter';
+import { FALLBACK_CASES } from '../../../services/participantRiskApi';
 
 export interface AgentStreamCallbacks {
   onMetadata?: (meta: {
@@ -28,6 +31,7 @@ export interface AgentStreamCallbacks {
   onToolStep?: (step: ToolProgressStep) => void;
   onRecommendation?: (rec: ActionRecommendation) => void;
   onDelta?: (delta: string, accumulated: string) => void;
+  onReasoning?: (delta: string, accumulatedReasoning: string) => void;
   onDone?: (
     fullText: string,
     recommendations: ActionRecommendation[],
@@ -36,32 +40,71 @@ export interface AgentStreamCallbacks {
   onError?: (err: Error) => void;
 }
 
-const AGENT_SYSTEM_PROMPT = `Anda adalah INFERA AI, Asisten Investigasi Fraud & Analisis Risiko Cerdas BPJS Kesehatan.
+export function buildAgentSystemPrompt(context?: ToolExecutionContext): string {
+  const currentYear = 2026;
+  const claimsMonitored = context?.claims?.length || 0;
+  const liveAnomalies = context?.anomalies || [];
+  const totalAnomalies = liveAnomalies.length;
 
-Karakter & Identitas:
-- Anda adalah AI Investigator resmi untuk Program JKN (Jaminan Kesehatan Nasional).
-- Karakter Anda: Objektif, analitis, profesional, santun, dan taat hukum.
-- ANDA BUKAN SEKADAR CHATBOT PENJAWAB TEKS. Anda adalah asisten investigasi yang memiliki akses ke tools analitik.
+  let liveCasesSummary = '';
+  if (liveAnomalies.length > 0) {
+    liveCasesSummary = liveAnomalies
+      .slice(0, 4)
+      .map(
+        (a, i) =>
+          `  ${i + 1}. [No. SEP: ${a.noSep}] ${a.namaPeserta} (Kartu: ${a.noKartu}) - ${a.namaFaskes}: ${
+            a.anomalyTitle || 'Anomali Aliran Klaim'
+          } (Skor Risiko: ${a.fraudRiskScore}/100, Potensi Klaim: Rp ${Number(a.cbgTariff || a.tarifRs || 0).toLocaleString(
+            'id-ID'
+          )})`
+      )
+      .join('\n');
+  }
 
-Kebijakan Penggunaan Tools (Function Calling):
-1. JIKA PENGGUNA BERTANYA TENTANG PESERTA, KASUS, DATA KLAIM, ATAU ANOMALI:
-   - WAJIB panggil tool "analyze_participant" atau "get_claim_history" terlebih dahulu.
-   - JANGAN MENGARANG nomor kartu, diagnosa, tarif, atau nama faskes. Gunakan hasil dari tool!
-2. JIKA PERLU VERIFIKASI POLA KECURANGAN TERTENTU:
-   - Panggil tool "detect_fraud_pattern" (Impossible Travel, Doctor Shopping DSI, Resale Obat PRB, atau Diskordansi Biologis).
-   - Panggil tool "calculate_risk_score" untuk melihat breakdown skor risiko resmi.
-3. JIKA PERLU KUTIPAN HUKUM & PASAL:
-   - Panggil tool "search_regulations_rag" untuk mengambil pasal Permenkes No. 16/2019, Permenkes No. 3/2023, UU BPJS No. 24/2011, atau KUHP 263.
-4. TINDAKAN ADMINISTRATIF / REKOMENDASI:
-   - Anda TIDAK BOLEH mengeksekusi sanksi atau suspensi secara sepihak tanpa persetujuan manusia.
-   - Gunakan tool "propose_participant_suspension" jika kasus terbukti kritis (skor >= 85) untuk diserahkan ke persetujuan auditor.
-   - Gunakan tool "propose_warning_letter" jika merekomendasikan penerbitan surat klarifikasi/peringatan.
-   - Gunakan tool "propose_case_review" untuk merekomendasikan audit manual pada halaman visualisasi spesifik.
+  return `IDENTITAS SISTEM (MUTLAK & RESMI):
+- Nama Sistem/Platform: INFERA (Integrated Fraud Early-Warning & Risk Analytics).
+- Anda adalah INFERA AI, asisten intelijen dan investigasi fraud integritas klaim BPJS Kesehatan. Karakter Anda analitis, objektif, tajam, dan taat regulasi JKN.
+- PANTANGAN NAMA SISTEM: DILARANG KERAS menyebut atau mengasumsikan platform ini sebagai "platform VEDIKA", "sistem VEDIKA", atau lainnya. Platform Anda adalah INFERA. (VEDIKA hanyalah prosedur administratif verifikasi digital pra-bayar BPJS di tingkat faskes, BUKAN nama platform investigasi ini). Jangan pernah berkata "di platform VEDIKA BPJS Kesehatan", melainkan katakan "di platform INFERA BPJS Kesehatan" atau "pada sistem pemantauan INFERA".
 
-Format Respon Akhir:
-- Sajikan penjelasan terstruktur dengan format Markdown semantik (Judul #, temuan bukti, analisis matematis jika ada, dasar hukum resmi JKN, dan kesimpulan rekomendasi).
-- SANGAT PENTING: JANGAN PERNAH MEMBUNGKUS RESPON DALAM FORMAT JSON atau format objek {"text":...}. Langsung sajikan teks Markdown naratif investigasi murni!
-- Gunakan bahasa yang objektif dan berimbang: katakan "indikasi", "potensi risiko", atau "anomali terdeteksi" dan jangan membuat vonis pidana otomatis tanpa putusan pengadilan.`;
+MEMORI KONVERSASI MULTI-TURN:
+- Anda WAJIB mengingat dan menyambung konteks dari pesan-pesan sebelumnya dalam riwayat percakapan (nama peserta yang baru dibahas, nomor SEP, temuan kecurangan, pertanyaan sebelumnya).
+- Jika pengguna bertanya secara ringkas atau lanjutan (seperti "Ada ga sekarang kasusnya?", "Bagaimana kelanjutan kasus Budi?", "Apa sanksinya?"), jawablah dengan mengaitkan langsung pada kasus atau topik yang sedang berlangsung tanpa amnesia konteks.
+
+LINGKUNGAN & DATA SISTEM OPERASIONAL:
+- Tahun Sistem Aktif: TAHUN ${currentYear} (Sistem INFERA beroperasi secara real-time pada Tahun 2026).
+- Status Engine Simulasi Live: Terkoneksi (${claimsMonitored} klaim aktif dipantau, ${totalAnomalies} anomali terdeteksi).
+- Kasus Anomali & Klaim Live Terkini (Tahun 2026):
+${
+  liveCasesSummary ||
+  `  1. [No. SEP: 1114R0010926V0001] Budi Santoso (Kartu: 0001847291038) - Impossible Travel / Kartu Dipinjamkan (RS Kariadi Semarang & RS Hasan Sadikin Bandung dalam selang 45 menit, kecepatan 578 km/jam, DJS Rp 14.500.000).
+  2. [No. SEP: 0112P0010926V0010] Hendra Wijaya (Kartu: 0002938471920) - Doctor Shopping / Pelayanan Berulang Tidak Perlu (Kunjungan 3 RS berbeda poli spesialis jantung dalam 7 hari, DSI = 0.85, DJS Rp 18.200.000).
+  3. [No. SEP: 0003R0010926V0003] Nurul Hidayati (Kartu: 0003847291049) - Resale Obat PRB Kronis & Overlap Kuota (Penebusan ganda insulin dan antihipertensi di Apotek Kimia Farma & K-24 dalam tempo 10 hari, rasio kuota 260%, DJS Rp 8.750.000).
+  4. [No. SEP: 0004R0010926V0004] Agus Pratama (Kartu: 0004958201938) - Diskordansi Biologis Mutlak (Peserta Laki-laki tercatat klaim tindakan Seksio Sesarea O82.0, Risk Score 99, DJS Rp 11.800.000).`
+}
+
+FORMAT & STRUKTUR RESPON AUDIT RESMI (TEGAS, TO-THE-POINT, DILARANG BERTELE-TELE):
+- DILARANG menggunakan kata pengantar panjang atau struktur kaku "Section 1", "Section 2", dsb.
+- Sajikan analisis audit secara TEGAS, RINGKAS, dan LUGAS dengan alur langsung:
+  1. Berikut pelanggaran yang terdeteksi pada klaim ini: [uraikan indikasi fraud/anomali, pihak terlibat, dan kerugian DJS secara lugas]
+  2. Berdasarkan [nama regulasi & pasal resmi, misal Permenkes 16/2019, UU 24/2011]: [ketentuan yang dilanggar]
+  3. Tindakan yang direkomendasikan adalah: [tindakan berjenjang: penangguhan klaim, verifikasi biometrik, audit faskes]
+  4. Maka saya sarankan Anda untuk mengambil tindakan: [langkah konkret auditor, misal mengonfirmasi penangguhan klaim pada kartu aksi di atas]
+
+ATURAN WAJIB & ANTI-HALUSINASI:
+1. Grounding Data Tahun 2026:
+   - DILARANG KERAS merujuk atau menyebut data kadaluarsa dari internet seperti "Juli 2024", berita lama media, atau rekaan di luar sistem INFERA.
+   - Jika pengguna bertanya "Ada kasus terbaru?", "Apa kasus terkini?", "Ada ga sekarang kasusnya?", dsb., sajikan kasus-kasus anomali simulasi live Tahun 2026 di atas secara terperinci (No. SEP, nama peserta, modus fraud, faskes, skor risiko, dan nilai potensi kerugian DJS).
+2. Respon Percakapan Santai / Sapaan:
+   - Jika pengguna hanya menyapa ("halo", "hai", "selamat pagi", "apa kabar", dsb), jawablah secara ramah, singkat, dan hangat (1-2 kalimat) yang menyatakan kesiapan Anda membantu pengawasan klaim. JANGAN memanggil tool, JANGAN membuat laporan audit unprompted, dan JANGAN mengeluarkan sitasi hukum yang tidak diminta.
+3. Grounding Fakta Mutlak:
+   - Jika pengguna meminta investigasi atau audit peserta/klaim tertentu, gunakan hasil analisis tool ("analyze_participant", "get_claim_history", "detect_fraud_pattern"). Dilarang mengarang identitas atau angka.
+4. Regulasi Presisi:
+   - Gunakan rujukan pasal resmi (Permenkes 16/2019, Permenkes 3/2023, UU 24/2011, Perpres 82/2018, KUHP 263).
+5. Human-in-the-Loop:
+   - Rekomendasikan tindakan berjenjang ("propose_participant_suspension", "propose_warning_letter", "propose_case_review") tanpa eksekusi sepihak.
+6. Format Markdown Bersih:
+   - Sajikan teks Markdown bersih. JANGAN PERNAH membungkus respon dalam format JSON atau objek {"text": ...}.`;
+}
 
 const AGENT_FALLBACK_MODELS = [
   'openai/gpt-oss-120b:nitro',
@@ -82,6 +125,31 @@ interface PlannedTool {
 }
 
 /**
+ * Robust conversational greeting detector.
+ * Prevents heavy forensic workflows or unprompted case audits when user only says "halo" or chats casually.
+ */
+export function isSimpleGreetingOrChat(text: string): boolean {
+  if (!text) return true;
+  const t = text.toLowerCase().trim().replace(/[.,!?;:'"\\/]/g, '');
+  const greetings = [
+    'halo', 'halo asisten', 'halo vera', 'halo luna', 'halo ai', 'halo infera',
+    'hai', 'hi', 'hello', 'hey', 'hei',
+    'selamat pagi', 'selamat siang', 'selamat sore', 'selamat malam',
+    'pagi', 'siang', 'sore', 'malam',
+    'assalamualaikum', 'assalamu alaikum', 'salam',
+    'tes', 'test', 'testing', 'ping',
+    'apa kabar', 'gimana kabarnya', 'bagaimana kabarmu',
+    'siapa kamu', 'kamu siapa', 'siapa anda', 'anda siapa',
+    'bisa apa', 'apa yang bisa kamu lakukan', 'kamu bisa apa',
+    'terima kasih', 'makasih', 'terimakasih', 'thanks', 'thank you',
+    'ok', 'oke', 'sip', 'siap', 'baik', 'iya', 'ya'
+  ];
+  if (greetings.includes(t)) return true;
+  if (t.length <= 16 && greetings.some((g) => t.startsWith(g))) return true;
+  return false;
+}
+
+/**
  * Intelligent Intent & Entity Detector:
  * Identifies target participant, fraud typologies, and required tools from the query and active context
  */
@@ -90,47 +158,72 @@ function planInvestigationTools(
   context?: ToolExecutionContext
 ): PlannedTool[] {
   const clean = query.toLowerCase().trim();
-  const tools: PlannedTool[] = [];
 
-  // 1. Identify Target Participant / Case
-  let targetQuery = '';
-  let participantName = '';
-  let noKartu = '';
-  let caseCode = '';
-
-  if (clean.includes('budi') || clean.includes('0001847291038') || clean.includes('case-001') || clean.includes('travel')) {
-    targetQuery = 'Budi Santoso';
-    participantName = 'Budi Santoso';
-    noKartu = '0001847291038';
-    caseCode = 'CASE-001';
-  } else if (clean.includes('hendra') || clean.includes('0002938471920') || clean.includes('0001928471920') || clean.includes('case-002') || clean.includes('shopping') || clean.includes('dsi')) {
-    targetQuery = 'Hendra Wijaya';
-    participantName = 'Hendra Wijaya';
-    noKartu = '0002938471920';
-    caseCode = 'CASE-002';
-  } else if (clean.includes('nurul') || clean.includes('0003847192834') || clean.includes('0001738291029') || clean.includes('case-003') || clean.includes('prb') || clean.includes('insulin')) {
-    targetQuery = 'Nurul Hidayati';
-    participantName = 'Nurul Hidayati';
-    noKartu = '0003847192834';
-    caseCode = 'CASE-003';
-  } else if (clean.includes('agus') || clean.includes('0004928172938') || clean.includes('0001639201948') || clean.includes('case-004') || clean.includes('biologi') || clean.includes('sesar') || clean.includes('caesar')) {
-    targetQuery = 'Agus Pratama';
-    participantName = 'Agus Pratama';
-    noKartu = '0004928172938';
-    caseCode = 'CASE-004';
-  } else if (context?.selectedClaim) {
-    targetQuery = context.selectedClaim.namaPeserta || context.selectedClaim.noKartu;
-    participantName = context.selectedClaim.namaPeserta;
-    noKartu = context.selectedClaim.noKartu;
-    caseCode = context.selectedClaim.noSep;
+  // Rule 0: Never force forensic tools on simple greetings or casual chat
+  if (isSimpleGreetingOrChat(query)) {
+    return [];
   }
 
-  // 2. Plan participant analysis & claims history
-  if (targetQuery || clean.includes('peserta') || clean.includes('klaim') || clean.includes('audit')) {
+  const tools: PlannedTool[] = [];
+
+  // 1. Dynamically Detect Target Participant / Claim Entities from Query or Explicit Context Reference
+  let targetQuery = '';
+  let participantName = '';
+  let caseCode = '';
+
+  const isExplicitAuditIntent =
+    clean.includes('audit') ||
+    clean.includes('periksa') ||
+    clean.includes('cek') ||
+    clean.includes('investigasi') ||
+    clean.includes('klaim ini') ||
+    clean.includes('kasus ini') ||
+    clean.includes('peserta ini') ||
+    clean.includes('tinjau');
+
+  // Only bind context.selectedClaim if the user explicitly references an audit or the active claim
+  if (context?.selectedClaim && isExplicitAuditIntent) {
+    targetQuery = context.selectedClaim.namaPeserta || context.selectedClaim.noKartu;
+    participantName = context.selectedClaim.namaPeserta;
+    caseCode = context.selectedClaim.noSep;
+  } else {
+    // Extract actual numeric or alphanumeric identifiers from user query
+    const cardMatch = query.match(/\b\d{13}\b/);
+    const nikMatch = query.match(/\b\d{16}\b/);
+    const sepMatch = query.match(/\b(0001R\w+|SEP-\w+|CASE-\w+|HK-\w+)\b/i);
+
+    if (cardMatch) {
+      targetQuery = cardMatch[0];
+    } else if (nikMatch) {
+      targetQuery = nikMatch[0];
+    } else if (sepMatch) {
+      targetQuery = sepMatch[0];
+      caseCode = sepMatch[0];
+    } else {
+      // Check if user specifically named a participant present in the actual database
+      const allKnown = [
+        ...(context?.anomalies || []),
+        ...(context?.claims || []),
+        ...FALLBACK_CASES,
+      ];
+      for (const item of allKnown) {
+        const pName = ('patientName' in item ? item.patientName : item.namaPeserta) || '';
+        if (pName && pName.length > 3 && clean.includes(pName.toLowerCase())) {
+          targetQuery = pName;
+          participantName = pName;
+          caseCode = ('caseCode' in item ? item.caseCode : item.noSep) || '';
+          break;
+        }
+      }
+    }
+  }
+
+  // 2. Plan Participant & Claim Verification ONLY if an actual target was identified
+  if (targetQuery) {
     tools.push({
       name: 'analyze_participant',
       args: {
-        participant_query: targetQuery || 'Budi Santoso',
+        participant_query: targetQuery,
         include_encounters: true,
       },
     });
@@ -138,95 +231,52 @@ function planInvestigationTools(
     tools.push({
       name: 'get_claim_history',
       args: {
-        participant_id: targetQuery || 'Budi Santoso',
+        participant_id: targetQuery,
       },
     });
-  }
 
-  // 3. Plan Fraud Pattern Detection
-  if (
-    clean.includes('travel') ||
-    clean.includes('kecepatan') ||
-    clean.includes('spasial') ||
-    clean.includes('mobilitas') ||
-    caseCode === 'CASE-001'
-  ) {
-    tools.push({
-      name: 'detect_fraud_pattern',
-      args: {
-        pattern_type: 'impossible_travel',
-        target_id: targetQuery || 'Budi Santoso',
-      },
-    });
-  } else if (
-    clean.includes('shopping') ||
-    clean.includes('dsi') ||
-    clean.includes('kunjungan ganda') ||
-    caseCode === 'CASE-002'
-  ) {
-    tools.push({
-      name: 'detect_fraud_pattern',
-      args: {
-        pattern_type: 'doctor_shopping',
-        target_id: targetQuery || 'Hendra Wijaya',
-      },
-    });
-  } else if (
-    clean.includes('prb') ||
-    clean.includes('obat') ||
-    clean.includes('insulin') ||
-    clean.includes('resale') ||
-    caseCode === 'CASE-003'
-  ) {
-    tools.push({
-      name: 'detect_fraud_pattern',
-      args: {
-        pattern_type: 'prb_resale',
-        target_id: targetQuery || 'Nurul Hidayati',
-      },
-    });
-  } else if (
-    clean.includes('biologi') ||
-    clean.includes('gender') ||
-    clean.includes('sesar') ||
-    clean.includes('caesar') ||
-    clean.includes('diskordansi') ||
-    caseCode === 'CASE-004'
-  ) {
-    tools.push({
-      name: 'detect_fraud_pattern',
-      args: {
-        pattern_type: 'biological_discordance',
-        target_id: targetQuery || 'Agus Pratama',
-      },
-    });
-  } else if (targetQuery || clean.includes('indikator') || clean.includes('pola')) {
-    tools.push({
-      name: 'detect_fraud_pattern',
-      args: {
-        pattern_type: 'all',
-        target_id: targetQuery || 'Budi Santoso',
-      },
-    });
-  }
-
-  // 4. Plan Risk Score Calculation
-  if (
-    targetQuery ||
-    clean.includes('skor') ||
-    clean.includes('risiko') ||
-    clean.includes('risk') ||
-    clean.includes('hitung')
-  ) {
     tools.push({
       name: 'calculate_risk_score',
       args: {
-        target_id: targetQuery || 'Budi Santoso',
+        target_id: targetQuery,
+      },
+    });
+
+    // Detect patterns relevant to this target
+    let patternType: 'impossible_travel' | 'doctor_shopping' | 'prb_resale' | 'biological_discordance' | 'all' = 'all';
+    if (clean.includes('travel') || clean.includes('jarak') || clean.includes('kecepatan')) {
+      patternType = 'impossible_travel';
+    } else if (clean.includes('shopping') || clean.includes('dsi') || clean.includes('kunjungan ganda')) {
+      patternType = 'doctor_shopping';
+    } else if (clean.includes('prb') || clean.includes('obat') || clean.includes('resale') || clean.includes('insulin')) {
+      patternType = 'prb_resale';
+    } else if (clean.includes('biologi') || clean.includes('gender') || clean.includes('sesar') || clean.includes('caesar')) {
+      patternType = 'biological_discordance';
+    }
+
+    tools.push({
+      name: 'detect_fraud_pattern',
+      args: {
+        pattern_type: patternType,
+        target_id: targetQuery,
+      },
+    });
+
+    // Propose review for this target
+    tools.push({
+      name: 'propose_case_review',
+      args: {
+        case_id: caseCode || `AUDIT-${Date.now().toString().slice(-4)}`,
+        patient_name: participantName || targetQuery,
+        reason: `Peninjauan rekam audit dan verifikasi anomali klaim subjek ${participantName || targetQuery}.`,
+        priority: 'HIGH',
+        target_workflow_route: '/dashboard/cases',
       },
     });
   }
 
-  // 5. Plan Regulation Search (RAG)
+  // 3. Plan Regulation Search (RAG) using user's ACTUAL input query
+  // Triggered when user asks about regulations, laws, sanctions, coding, or when doing general queries
   if (
     clean.includes('regulasi') ||
     clean.includes('permenkes') ||
@@ -234,138 +284,50 @@ function planInvestigationTools(
     clean.includes('hukum') ||
     clean.includes('sanksi') ||
     clean.includes('uu') ||
-    targetQuery
+    clean.includes('aturan') ||
+    clean.includes('tarif') ||
+    clean.includes('cbg') ||
+    clean.includes('alkes') ||
+    clean.includes('prb') ||
+    clean.includes('fraud') ||
+    clean.includes('kecurangan')
   ) {
-    const regQuery = clean.includes('permenkes')
-      ? 'Permenkes No. 16 Tahun 2019 pencegahan kecurangan fraud JKN sanksi administrasi'
-      : clean.includes('travel') || caseCode === 'CASE-001'
-      ? 'Peminjaman kartu BPJS pemalsuan identitas klaim fiktif Permenkes 16 2019'
-      : clean.includes('shopping') || caseCode === 'CASE-002'
-      ? 'Doctor shopping duplikasi klaim pelayanan berlebih tanpa indikasi medis'
-      : clean.includes('prb') || caseCode === 'CASE-003'
-      ? 'Penyalahgunaan peresepan obat Program Rujuk Balik PRB arbitrase penjualan kembali'
-      : clean.includes('biologi') || caseCode === 'CASE-004'
-      ? 'Diskordansi biologi pemalsuan identitas KUHP 263 dan sanksi BPJS'
-      : query;
-
     tools.push({
       name: 'search_regulations_rag',
       args: {
-        query: regQuery,
+        query: query.trim(),
         category: 'ALL',
       },
     });
   }
 
-  // 6. Plan Action Recommendations (Two-Phase Model)
-  // Always plan actionable recommendations & workflow routes when a participant or case is audited
-  if (targetQuery || caseCode || context?.selectedClaim) {
-    if (caseCode === 'CASE-001' || clean.includes('travel') || clean.includes('budi')) {
-      tools.push({
-        name: 'propose_participant_suspension',
-        args: {
-          participant_id: noKartu || '0001847291038',
-          participant_name: participantName || 'Budi Santoso',
-          reason:
-            'Terindikasi Impossible Travel: perpindahan fisik faskes berjarak 110 km dalam 45 menit (kecepatan 180 km/jam). Dugaan kuat peminjaman kartu identitas kepesertaan.',
-          severity: 'CRITICAL',
-          legal_basis: 'Permenkes No. 16 Tahun 2019 Pasal 6 & UU No. 24/2011 Pasal 19',
-        },
-      });
+  // 4. Plan Recent Simulation Cases Tool
+  // Triggered when user asks for recent cases, updates, or anomalies in the system
+  const isRecentCasesQuery =
+    clean.includes('kasus terbaru') ||
+    clean.includes('kasus terkini') ||
+    clean.includes('ada kasus') ||
+    clean.includes('ada ga sekarang') ||
+    clean.includes('ada ga kasus') ||
+    clean.includes('ada sekarang kasus') ||
+    (clean.includes('ada') && clean.includes('kasus')) ||
+    clean.includes('daftar kasus') ||
+    clean.includes('kasus apa saja') ||
+    clean.includes('anomali terbaru') ||
+    clean.includes('anomali terkini') ||
+    clean.includes('update kasus') ||
+    clean.includes('temuan terbaru') ||
+    clean.includes('apa kasus') ||
+    clean.includes('kasus hari ini') ||
+    clean.includes('kasus fraud terbaru');
 
-      tools.push({
-        name: 'propose_case_review',
-        args: {
-          case_id: 'CASE-001',
-          patient_name: participantName || 'Budi Santoso',
-          reason: 'Audit forensik peta rute geospasial dan rekonsiliasi log SEP faskes.',
-          priority: 'CRITICAL',
-          target_workflow_route: '/dashboard/identity-risk',
-        },
-      });
-    } else if (caseCode === 'CASE-002' || clean.includes('shopping') || clean.includes('dsi') || clean.includes('hendra')) {
-      tools.push({
-        name: 'propose_warning_letter',
-        args: {
-          recipient_type: 'PESERTA',
-          recipient_id: noKartu || '0002938471920',
-          recipient_name: participantName || 'Hendra Wijaya',
-          letter_type: 'PERINGATAN',
-          violation_details:
-            'Kunjungan berulang di 3 faskes berbeda dalam 5 hari (Indeks DSI = 1.00) dengan keluhan Vertigo sama demi peresepan obat berlebih.',
-          legal_basis: 'Permenkes No. 16 Tahun 2019 Pasal 7',
-        },
-      });
-
-      tools.push({
-        name: 'propose_case_review',
-        args: {
-          case_id: 'CASE-002',
-          patient_name: participantName || 'Hendra Wijaya',
-          reason: 'Tinjau indeks DSI dan grafik frekuensi kunjungan faskes redundan.',
-          priority: 'HIGH',
-          target_workflow_route: '/dashboard/unnecessary-services',
-        },
-      });
-    } else if (caseCode === 'CASE-003' || clean.includes('prb') || clean.includes('obat') || clean.includes('nurul')) {
-      tools.push({
-        name: 'propose_warning_letter',
-        args: {
-          recipient_type: 'PESERTA',
-          recipient_id: noKartu || '0003847192834',
-          recipient_name: participantName || 'Nurul Hidayati',
-          letter_type: 'TAGIHAN',
-          violation_details:
-            'Penebusan obat kronis (Insulin & Amlodipine) 90 hari kuota dalam tempo 22 hari (surplus 190%) terindikasi arbitrase komersial.',
-          legal_basis: 'Permenkes No. 16 Tahun 2019 Pasal 8',
-        },
-      });
-
-      tools.push({
-        name: 'propose_case_review',
-        args: {
-          case_id: 'CASE-003',
-          patient_name: participantName || 'Nurul Hidayati',
-          reason: 'Audit log apotek jejaring dan kuota penebusan obat PRB.',
-          priority: 'CRITICAL',
-          target_workflow_route: '/dashboard/pharmacy-alkes',
-        },
-      });
-    } else if (caseCode === 'CASE-004' || clean.includes('biologi') || clean.includes('sesar') || clean.includes('agus')) {
-      tools.push({
-        name: 'propose_participant_suspension',
-        args: {
-          participant_id: noKartu || '0004928172938',
-          participant_name: participantName || 'Agus Pratama',
-          reason:
-            'Diskordansi Biologis Mutlak: Peserta Laki-Laki terbit SEP Rawat Inap persalinan Seksio Sesarea (O82.0) di RSUD Kota.',
-          severity: 'CRITICAL',
-          legal_basis: 'Permenkes No. 16 Tahun 2019 Pasal 6 & KUHP Pasal 263',
-        },
-      });
-
-      tools.push({
-        name: 'propose_case_review',
-        args: {
-          case_id: 'CASE-004',
-          patient_name: participantName || 'Agus Pratama',
-          reason: 'Verifikasi identitas kepesertaan dan konfirmasi klaim faskes persalinan.',
-          priority: 'CRITICAL',
-          target_workflow_route: '/dashboard/identity-risk',
-        },
-      });
-    } else {
-      tools.push({
-        name: 'propose_case_review',
-        args: {
-          case_id: caseCode || 'CASE-AUDIT',
-          patient_name: participantName || targetQuery || 'Peserta Terindikasi',
-          reason: 'Tinjau bukti anomali klaim dan rekam jejak kepatuhan JKN.',
-          priority: 'HIGH',
-          target_workflow_route: '/dashboard/cases',
-        },
-      });
-    }
+  if (isRecentCasesQuery) {
+    tools.push({
+      name: 'get_recent_simulation_cases',
+      args: {
+        limit: 5,
+      },
+    });
   }
 
   // Deduplicate planned tools by name
@@ -385,76 +347,84 @@ function planInvestigationTools(
  * Synthesizes an expert structured audit report if the backend LLM is unreachable or in sandbox mode
  */
 function synthesizeStructuredReport(
-  _query: string,
+  query: string,
   executedSteps: Array<{ name: string; summary: string; data?: any }>,
   recommendations: ActionRecommendation[]
 ): string {
+  // Conversational fallback if query was casual or no investigative tools were executed
+  if (isSimpleGreetingOrChat(query) || executedSteps.length === 0) {
+    return 'Halo! Saya INFERA AI, asisten investigasi pencegahan fraud dan integritas klaim BPJS Kesehatan. Silakan sebutkan nomor SEP, nama peserta, atau regulasi yang ingin Anda teliti hari ini.';
+  }
+
   const participantStep = executedSteps.find((s) => s.name === 'analyze_participant');
   const fraudStep = executedSteps.find((s) => s.name === 'detect_fraud_pattern');
   const riskStep = executedSteps.find((s) => s.name === 'calculate_risk_score');
   const ragStep = executedSteps.find((s) => s.name === 'search_regulations_rag');
+  const recentCasesStep = executedSteps.find((s) => s.name === 'get_recent_simulation_cases');
+
+  // If user asked about recent simulation cases
+  if (recentCasesStep?.data?.cases) {
+    const cases = recentCasesStep.data.cases;
+    let out = `Berikut daftar kasus anomali klaim terbaru yang terdeteksi pada sistem simulasi live INFERA (Tahun 2026):\n\n`;
+    for (const c of cases) {
+      out += `- **[${c.case_id}] ${c.patient_name}** (${c.faskes})\n`;
+      out += `  * Modus: ${c.typology}\n`;
+      out += `  * Skor Risiko: **${c.risk_score}/100** (\`${c.risk_level}\`) | Dampak Finansial: **${c.financial_impact}**\n`;
+      out += `  * Catatan: ${c.summary}\n\n`;
+    }
+    out += `Berdasarkan **Permenkes No. 16 Tahun 2019**, kasus-kasus di atas memenuhi kriteria prioritas audit forensik.\n\n`;
+    out += `Tindakan yang direkomendasikan adalah melakukan penelusuran rekam log SEP dan konfirmasi langsung ke fasilitas kesehatan terkait.\n\n`;
+    out += `Maka saya sarankan Anda untuk memilih salah satu kasus di atas untuk memulai investigasi mendalam.`;
+    return out;
+  }
 
   const pData = participantStep?.data;
   const fData = fraudStep?.data;
   const rData = riskStep?.data;
   const citations = ragStep?.data?.citations || [];
 
-  let out = `# Laporan Investigasi Integritas Klaim JKN\n\n`;
-  out += `> [!IMPORTANT]\n`;
-  out += `> Hasil verifikasi otomatis ini disusun oleh sistem analitik investigasi **INFERA** berdasarkan validasi silang rekam medis, log SEP, formula analitik kejahatan klaim, dan rujukan regulasi resmi BPJS Kesehatan.\n\n`;
+  const pName = pData?.patient_name || 'Peserta Terperiksa';
+  const sep = pData?.no_sep || pData?.case_code || '';
+  const riskScore = rData?.score || pData?.risk_score || 88;
+  const loss = pData?.potential_loss_idr ? `Rp ${Number(pData.potential_loss_idr).toLocaleString('id-ID')}` : null;
 
-  if (pData) {
-    out += `## 1. Identifikasi Subjek & Profil Kepesertaan\n\n`;
-    out += `| Parameter Verifikasi | Data / Nilai Terkonfirmasi |\n`;
-    out += `| :--- | :--- |\n`;
-    out += `| **Nama Peserta** | **${pData.patient_name || '-'}** |\n`;
-    out += `| **No. Kartu BPJS** | \`${pData.no_kartu || '-'}\` |\n`;
-    out += `| **Nomor SEP / Berkas** | \`${pData.no_sep || pData.case_code || '-'}\` |\n`;
-    out += `| **Kategori Tipologi** | ${pData.category_label || pData.anomaly_title || 'Indikasi Anomali Transaksi'} |\n`;
-    out += `| **Skor Risiko Fraud** | **${rData?.score || pData.risk_score || 90} / 100** (\`${rData?.risk_level || pData.risk_level || 'CRITICAL'}\`) |\n`;
-    if (pData.potential_loss_idr) {
-      out += `| **Potensi Kerugian DJS** | Rp ${Number(pData.potential_loss_idr).toLocaleString('id-ID')} |\n`;
-    }
-    out += `\n`;
-  }
-
+  let out = `Berikut pelanggaran yang terdeteksi pada klaim **${pName}**${sep ? ` (No. SEP: \`${sep}\`)` : ''}:\n`;
   if (fData && fData.signals && fData.signals.length > 0) {
-    out += `## 2. Temuan Bukti Sinyal Anomali (Formula Fraud Teruji)\n\n`;
-    out += `Evaluasi analitik terhadap indikator kecurangan menemukan sinyal kritis sebagai berikut:\n\n`;
     for (const sig of fData.signals) {
-      out += `* **${sig.label}** (\`${sig.severity}\`)\n`;
-      out += `  * **Uraian**: ${sig.description}\n`;
-      if (sig.evidence) {
-        out += `  * **Bukti Matematis**: \`${sig.evidence}\`\n`;
-      }
-      out += `\n`;
-    }
-  }
-
-  if (citations.length > 0) {
-    out += `## 3. Landasan Hukum & Rujukan Regulasi (RAG Grounding)\n\n`;
-    out += `Pencegahan dan penindakan atas temuan ini didasarkan pada ketentuan perundang-undangan JKN yang sah:\n\n`;
-    citations.slice(0, 3).forEach((c: any, i: number) => {
-      out += `**[${i + 1}] ${c.regulation} ${c.article ? `(${c.article})` : ''}**: *${c.title}*\n`;
-      out += `> "${c.content}"\n\n`;
-    });
-  }
-
-  out += `## 4. Rekomendasi Tindakan Auditor\n\n`;
-  if (recommendations.length > 0) {
-    out += `Sistem telah menyiapkan **${recommendations.length} kartu rekomendasi tindakan formal** yang dapat ditinjau dan dikonfirmasi langsung oleh auditor melalui panel di bawah ini:\n\n`;
-    for (const rec of recommendations) {
-      out += `1. **${rec.title}** (${rec.riskLevel})\n`;
-      out += `   - *Uraian*: ${rec.description}\n`;
-      out += `   - *Dasar Hukum*: \`${rec.legalBasis || 'Permenkes No. 16 Tahun 2019'}\`\n`;
-      out += `   - *Status Tindakan*: ${rec.requiresConfirmation ? 'Memerlukan Konfirmasi & Berita Acara Auditor' : 'Pintasan Siap Dieksekusi'}\n\n`;
+      out += `- **${sig.label}** (\`${sig.severity}\`): ${sig.description}${sig.evidence ? ` [Bukti: \`${sig.evidence}\`]` : ''}\n`;
     }
   } else {
-    out += `1. Lakukan audit manual dan klarifikasi langsung dengan fasilitas kesehatan terkait.\n`;
-    out += `2. Terbitkan berita acara pemeriksaan (BAP) jika ditemukan ketidaksesuaian klinis atau indikasi kartu pinjam.\n\n`;
+    out += `- Terindikasi anomali pola ${pData?.category_label || 'klaim berulang'} dengan skor risiko **${riskScore}/100**${loss ? ` dan potensi kerugian DJS sebesar **${loss}**` : ''}.\n`;
+  }
+  out += `\n`;
+
+  out += `Berdasarkan regulasi resmi JKN:\n`;
+  if (citations.length > 0) {
+    for (const cit of citations.slice(0, 2)) {
+      out += `- **${cit.regulation}${cit.article ? ` ${cit.article}` : ''}**: ${cit.title} — *${cit.content.slice(0, 160).trim()}...*\n`;
+    }
+  } else {
+    out += `- **Permenkes No. 16 Tahun 2019**: Mengatur pencegahan dan penindakan kecurangan (fraud) serta kewajiban pengembalian kerugian dana jaminan sosial.\n`;
+  }
+  out += `\n`;
+
+  out += `Tindakan yang direkomendasikan adalah:\n`;
+  if (recommendations.length > 0) {
+    for (const rec of recommendations) {
+      out += `- **${rec.title}**: ${rec.description || rec.reason}\n`;
+    }
+  } else {
+    out += `- Penangguhan pembayaran klaim sementara dan penerbitan surat klarifikasi kepada faskes terkait.\n`;
+  }
+  out += `\n`;
+
+  out += `Maka saya sarankan Anda untuk mengambil tindakan:\n`;
+  if (recommendations.some((r) => r.requiresConfirmation)) {
+    out += `Mengonfirmasi rekomendasi tindakan resmi pada kartu aksi di atas guna membekukan eligibilitas klaim dan memulai audit lapangan sesuai prosedur.`;
+  } else {
+    out += `Membuka modul investigasi forensik untuk memeriksa log geospasial dan rekam jejak rujukan secara terperinci.`;
   }
 
-  out += `*Audit selesai diverifikasi oleh INFERA Multi-Tool Engine.*`;
   return out;
 }
 
@@ -468,7 +438,8 @@ export async function runAgentInvestigationStream(
   settings: OpenRouterSettings,
   context?: ToolExecutionContext,
   callbacks?: AgentStreamCallbacks,
-  signal?: AbortSignal
+  signal?: AbortSignal,
+  attachments?: ChatAttachment[]
 ): Promise<{
   reply: string;
   recommendations: ActionRecommendation[];
@@ -482,6 +453,51 @@ export async function runAgentInvestigationStream(
   const completedSteps: ToolProgressStep[] = [];
   const executedToolSummaries: Array<{ name: string; summary: string; data?: any }> = [];
   let fullAccumulatedText = '';
+
+  // 0. Fast-path for simple conversational greetings or non-investigation chat:
+  // "Let the model decide" — do not plan or execute forensic tools, do not inject fake dossiers, just stream natural polite reply!
+  if (isSimpleGreetingOrChat(userQuery)) {
+    try {
+      const streamResult = await streamOpenRouterChat(
+        userQuery,
+        history,
+        settings,
+        'chat',
+        {
+          onMetadata: callbacks?.onMetadata,
+          onReasoning: callbacks?.onReasoning,
+          onDelta: (delta, acc) => {
+            const visible = getStreamingVisibleText(acc);
+            fullAccumulatedText = visible;
+            callbacks?.onDelta?.(delta, visible);
+          },
+        },
+        signal,
+        undefined,
+        attachments
+      );
+      const cleanReply = cleanRawAiResponse(streamResult);
+      const shortcuts = extractShortcuts(cleanReply);
+      callbacks?.onDone?.(cleanReply, [], shortcuts);
+      return {
+        reply: cleanReply,
+        recommendations: [],
+        shortcuts,
+        toolSteps: [],
+      };
+    } catch {
+      const friendlyFallback =
+        'Halo! Saya INFERA AI, asisten digital investigasi klaim dan deteksi kecurangan BPJS Kesehatan. Ada yang bisa saya bantu terkait telaah berkas atau kepatuhan regulasi hari ini?';
+      callbacks?.onDelta?.(friendlyFallback, friendlyFallback);
+      callbacks?.onDone?.(friendlyFallback, [], []);
+      return {
+        reply: friendlyFallback,
+        recommendations: [],
+        shortcuts: [],
+        toolSteps: [],
+      };
+    }
+  }
 
   // 1. Intelligently plan tools based on query and simulation context
   const plannedTools = planInvestigationTools(userQuery, context);
@@ -552,12 +568,22 @@ export async function runAgentInvestigationStream(
   // 3. Check whether we should run direct OpenRouter client or backend proxy / local agent
   const hasDirectKey = !!apiKey && !settings.useBackendProxy;
 
+  // Extract completed past messages, excluding current query, bounded to last 6 messages (3 conversation turns)
+  const priorHistory = history
+    .filter((m) => m.content && m.content.trim() && (m.role === 'user' || m.role === 'assistant'))
+    .filter((m) => m.content !== userQuery)
+    .slice(-6);
+
   if (hasDirectKey) {
     // Attempt Direct OpenRouter API Function Calling Loop
     try {
+      const hasPdfAttachment =
+        Boolean(attachments?.some((a) => a.type === 'pdf')) ||
+        priorHistory.some((m) => m.attachments?.some((a) => a.type === 'pdf'));
+
       const conversationMessages: Array<{
         role: string;
-        content?: string | null;
+        content?: any;
         tool_call_id?: string;
         tool_calls?: Array<{
           id: string;
@@ -565,12 +591,13 @@ export async function runAgentInvestigationStream(
           function: { name: string; arguments: string };
         }>;
       }> = [
-        { role: 'system', content: AGENT_SYSTEM_PROMPT },
-        ...history.slice(-8).map((m) => ({
+        { role: 'system', content: buildAgentSystemPrompt(context) },
+        ...priorHistory.map((m) => ({
           role: m.role,
-          content: m.content,
+          content: formatMessageContent(m.content, m.attachments),
+          ...(m.annotations ? { annotations: m.annotations } : {}),
         })),
-        { role: 'user', content: userQuery },
+        { role: 'user', content: formatMessageContent(userQuery, attachments) },
       ];
 
       callbacks?.onMetadata?.({ model: targetModel });
@@ -597,8 +624,10 @@ export async function runAgentInvestigationStream(
             tool_choice: 'auto',
             temperature: 0.3,
             max_tokens: 3000,
+            ...(context?.enableReasoning ? { reasoning: { effort: 'medium' } } : {}),
             stream: true,
             provider: { allow_fallbacks: true },
+            ...(hasPdfAttachment ? { plugins: [{ id: 'file-parser', pdf: { engine: 'cloudflare-ai' } }] } : {}),
           }),
           signal,
         });
@@ -612,6 +641,7 @@ export async function runAgentInvestigationStream(
         let buffer = '';
         const toolCallAccumulators: Record<number, RawToolCallAccumulator> = {};
         let iterationText = '';
+        let fullReasoningText = '';
 
         while (true) {
           if (signal?.aborted) {
@@ -638,6 +668,16 @@ export async function runAgentInvestigationStream(
 
                 const delta = choice.delta;
                 if (!delta) continue;
+
+                const deltaReasoning =
+                  delta.reasoning ||
+                  delta.reasoning_content ||
+                  (Array.isArray(delta.reasoning_details) ? delta.reasoning_details[0]?.text : '');
+
+                if (context?.enableReasoning && deltaReasoning) {
+                  fullReasoningText += deltaReasoning;
+                  callbacks?.onReasoning?.(deltaReasoning, fullReasoningText);
+                }
 
                 if (delta.content) {
                   iterationText += delta.content;
@@ -779,15 +819,18 @@ export async function runAgentInvestigationStream(
       const level: InvestigationRiskLevel = score >= 85 ? 'CRITICAL' : score >= 70 ? 'HIGH' : 'MEDIUM';
 
       let route = '/dashboard/cases';
-      const tLower = targetName.toLowerCase();
-      if (tLower.includes('budi') || tLower.includes('travel')) {
+      const fraudData = executedToolSummaries.find((s) => s.name === 'detect_fraud_pattern')?.data as any;
+      const cat = String(fraudData?.category || participantData?.category || '').toUpperCase();
+      const qLower = userQuery.toLowerCase();
+
+      if (cat.includes('IDENTITY') || qLower.includes('travel') || qLower.includes('pinjam') || qLower.includes('biologi') || qLower.includes('identitas')) {
         route = '/dashboard/identity-risk';
-      } else if (tLower.includes('hendra') || tLower.includes('shopping')) {
+      } else if (cat.includes('UNNECESSARY') || qLower.includes('shopping') || qLower.includes('dsi') || qLower.includes('redundan')) {
         route = '/dashboard/unnecessary-services';
-      } else if (tLower.includes('nurul') || tLower.includes('prb')) {
+      } else if (cat.includes('MEDICINE') || cat.includes('ALKES') || qLower.includes('prb') || qLower.includes('obat') || qLower.includes('kacamata') || qLower.includes('cooling')) {
         route = '/dashboard/pharmacy-alkes';
-      } else if (tLower.includes('agus') || tLower.includes('biologi')) {
-        route = '/dashboard/identity-risk';
+      } else if (qLower.includes('regulasi') || qLower.includes('pasal') || qLower.includes('permenkes') || qLower.includes('hukum')) {
+        route = '/dashboard/regulations';
       }
 
       const autoRec: ActionRecommendation = {
@@ -839,11 +882,12 @@ export async function runAgentInvestigationStream(
   try {
     const streamResult = await streamOpenRouterChat(
       augmentedPrompt,
-      history,
+      priorHistory,
       settings,
       'chat',
       {
         onMetadata: callbacks?.onMetadata,
+        onReasoning: context?.enableReasoning ? callbacks?.onReasoning : undefined,
         onDelta: (delta, acc) => {
           const visible = getStreamingVisibleText(acc);
           fullAccumulatedText = visible;
@@ -851,7 +895,9 @@ export async function runAgentInvestigationStream(
         },
       },
       signal,
-      AGENT_SYSTEM_PROMPT
+      buildAgentSystemPrompt(context),
+      attachments,
+      Boolean(context?.enableReasoning)
     );
 
     if (

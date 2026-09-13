@@ -100,6 +100,7 @@ export const FloatingAvatarWidget: React.FC<FloatingAvatarWidgetProps> = ({
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
   const [showVoiceSubmenu, setShowVoiceSubmenu] = useState(false);
   const openedAtRef = useRef<number>(0);
+  const lastTapTimeRef = useRef<number>(0);
 
   const isMouseDownRef = useRef(false);
   const posRef = useRef(position);
@@ -156,6 +157,11 @@ export const FloatingAvatarWidget: React.FC<FloatingAvatarWidgetProps> = ({
       if (wasDragging) {
         try { localStorage.setItem(STORAGE_KEY_POS, JSON.stringify(posRef.current)); } catch { /* ignore */ }
       } else {
+        const now = Date.now();
+        if (now - lastTapTimeRef.current < 450) {
+          return;
+        }
+        lastTapTimeRef.current = now;
         onClickToSpeak();
       }
     };

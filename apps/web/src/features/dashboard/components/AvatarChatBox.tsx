@@ -17,6 +17,7 @@ import { CharacterEmotion } from '../avatar/AvatarController';
 import { SpeechService } from '../services/speech';
 import { AIRecommendationCard } from './AIRecommendationCard';
 import { ToolStatusBadge } from './ToolStatusBadge';
+import { AiResponseRenderer } from './AiResponseRenderer';
 
 interface AvatarChatBoxProps {
   messages: ChatMessage[];
@@ -56,6 +57,8 @@ export const AvatarChatBox: React.FC<AvatarChatBoxProps> = ({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const stopListeningRef = useRef<(() => void) | null>(null);
+  const isRecordingRef = useRef<boolean>(false);
+  const lastToggleTimeRef = useRef<number>(0);
 
   useEffect(() => {
     // Only scroll if there are messages and user isn't actively inspecting older text
@@ -70,7 +73,12 @@ export const AvatarChatBox: React.FC<AvatarChatBoxProps> = ({
   };
 
   const handleVoiceToggle = () => {
-    if (isRecording) {
+    const now = Date.now();
+    if (now - lastToggleTimeRef.current < 450) return;
+    lastToggleTimeRef.current = now;
+
+    if (isRecordingRef.current) {
+      isRecordingRef.current = false;
       if (stopListeningRef.current) {
         stopListeningRef.current();
         stopListeningRef.current = null;
@@ -78,15 +86,22 @@ export const AvatarChatBox: React.FC<AvatarChatBoxProps> = ({
       setIsRecording(false);
       if (onAvatarStateChange) onAvatarStateChange('normal');
     } else {
+      SpeechService.stopSpeaking();
+      isRecordingRef.current = true;
+      setIsRecording(true);
       if (onAvatarStateChange) onAvatarStateChange('listening');
       stopListeningRef.current = SpeechService.startListening(
         (transcript) => {
+          isRecordingRef.current = false;
+          setIsRecording(false);
+          stopListeningRef.current = null;
           if (transcript) {
             setInputText(transcript);
             onSendMessage(transcript);
           }
         },
         (recording) => {
+          isRecordingRef.current = recording;
           setIsRecording(recording);
           if (!recording && onAvatarStateChange) {
             onAvatarStateChange('normal');
@@ -94,7 +109,9 @@ export const AvatarChatBox: React.FC<AvatarChatBoxProps> = ({
         },
         (err) => {
           console.warn(err);
+          isRecordingRef.current = false;
           setIsRecording(false);
+          stopListeningRef.current = null;
           if (onAvatarStateChange) onAvatarStateChange('normal');
         }
       );
@@ -283,8 +300,8 @@ export const AvatarChatBox: React.FC<AvatarChatBoxProps> = ({
                     <ToolStatusBadge steps={msg.toolSteps} />
                   )}
 
-                  <div className="text-xs text-slate-800 leading-relaxed whitespace-pre-wrap font-sans">
-                    {msg.content}
+                  <div className="text-xs text-slate-800 dark:text-slate-200 leading-relaxed font-sans break-words">
+                    <AiResponseRenderer content={msg.content} />
                   </div>
 
                   {/* AI Action Recommendation Cards */}
@@ -373,7 +390,7 @@ export const AvatarChatBox: React.FC<AvatarChatBoxProps> = ({
       <div className="p-3 bg-white border-t border-slate-100 shrink-0">
         <form
           onSubmit={handleSubmit}
-          className="rounded-2xl border border-slate-200 bg-[#f4f4f4] focus-within:border-slate-400 focus-within:bg-white shadow-2xs transition-all p-2 flex flex-col gap-1.5"
+          className="rounded-2xl border-0 bg-slate-100/70 focus-within:bg-slate-100/95 shadow-none transition-all p-2 flex flex-col gap-1.5"
         >
           {/* Multiline input */}
           <textarea

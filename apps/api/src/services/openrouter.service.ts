@@ -16,6 +16,7 @@ export const VOICE_FALLBACK_MODELS = [
 
 export interface StreamChunkResult {
   delta?: string;
+  reasoning?: string;
   model?: string;
   provider?: string;
   finishReason?: string;
@@ -92,6 +93,37 @@ class OpenRouterService {
           ? request.models
           : [model, ...fallbackList.filter((m) => m !== model)];
 
+      const hasPdfFile = request.messages.some(
+        (m) =>
+          Array.isArray(m.content) &&
+          m.content.some((part) => part.type === 'file')
+      );
+      const plugins =
+        request.plugins ||
+        (hasPdfFile ? [{ id: 'file-parser', pdf: { engine: 'cloudflare-ai' } }] : undefined);
+
+      const requestPayload: Record<string, unknown> = {
+        models: modelsToTry,
+        messages: request.messages.map((m) => ({
+          role: m.role,
+          content: m.content,
+          ...(m.annotations ? { annotations: m.annotations } : {}),
+        })),
+        temperature,
+        max_tokens: maxTokens,
+        provider: {
+          allow_fallbacks: true,
+        },
+        // Thinking/reasoning integrated only when requested
+        reasoning: isVoice
+          ? { effort: 'none', exclude: true }
+          : request.reasoning,
+      };
+
+      if (plugins && plugins.length > 0) {
+        requestPayload.plugins = plugins;
+      }
+
       const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -100,18 +132,7 @@ class OpenRouterService {
           'HTTP-Referer': env.CLIENT_URL || 'http://localhost:5173',
           'X-Title': 'INFERA BPJS AI System',
         },
-        body: JSON.stringify({
-          models: modelsToTry,
-          messages: request.messages.map((m) => ({
-            role: m.role,
-            content: m.content,
-          })),
-          temperature,
-          max_tokens: maxTokens,
-          provider: {
-            allow_fallbacks: true,
-          },
-        }),
+        body: JSON.stringify(requestPayload),
       });
 
       if (!response.ok) {
@@ -125,6 +146,12 @@ class OpenRouterService {
         throw AppError.internal('Received empty response from OpenRouter API');
       }
 
+      const rawReasoning =
+        choice.message.reasoning ||
+        (choice.message as any).reasoning_content ||
+        (choice.message as any).reasoning_details?.[0]?.text ||
+        undefined;
+
       return {
         model: json.model || model,
         provider: json.provider,
@@ -132,6 +159,7 @@ class OpenRouterService {
         message: {
           role: 'assistant',
           content: choice.message.content ?? '',
+          reasoning: rawReasoning,
         },
         usage: json.usage
           ? {
@@ -180,11 +208,21 @@ class OpenRouterService {
         ? request.models
         : [model, ...fallbackList.filter((m) => m !== model)];
 
-    const payload = {
+    const hasPdfFile = request.messages.some(
+      (m) =>
+        Array.isArray(m.content) &&
+        m.content.some((part) => part.type === 'file')
+    );
+    const plugins =
+      request.plugins ||
+      (hasPdfFile ? [{ id: 'file-parser', pdf: { engine: 'cloudflare-ai' } }] : undefined);
+
+    const payload: Record<string, unknown> = {
       models: modelsToTry,
       messages: request.messages.map((m) => ({
         role: m.role,
         content: m.content,
+        ...(m.annotations ? { annotations: m.annotations } : {}),
       })),
       temperature,
       max_tokens: maxTokens,
@@ -192,7 +230,15 @@ class OpenRouterService {
       provider: {
         allow_fallbacks: true,
       },
+      // Thinking/reasoning integrated only when requested
+      reasoning: isVoice
+        ? { effort: 'none', exclude: true }
+        : request.reasoning,
     };
+
+    if (plugins && plugins.length > 0) {
+      payload.plugins = plugins;
+    }
 
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
@@ -250,8 +296,17 @@ class OpenRouterService {
               const parsed = JSON.parse(rawJson);
               const choice = parsed.choices?.[0];
 
+              const deltaContent = choice?.delta?.content || undefined;
+              const deltaReasoning =
+                choice?.delta?.reasoning ||
+                (choice?.delta as any)?.reasoning_content ||
+                (choice?.delta as any)?.reasoning_details?.[0]?.text ||
+                (choice?.delta as any)?.reasoning_details?.[0]?.summary ||
+                undefined;
+
               yield {
-                delta: choice?.delta?.content || undefined,
+                delta: deltaContent,
+                reasoning: deltaReasoning,
                 model: parsed.model || undefined,
                 provider: parsed.provider || undefined,
                 finishReason: choice?.finish_reason || undefined,

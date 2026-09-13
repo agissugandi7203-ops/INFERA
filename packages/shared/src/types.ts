@@ -88,14 +88,66 @@ export interface ForgotPasswordRequestDTO {
 import type { RagSearchResult } from './rag.types.js';
 
 /**
- * OpenRouter AI Contracts
+ * OpenRouter AI Contracts (Supports Multimodal Text, Image, and PDF Inputs)
  */
 export type AiRole = 'system' | 'user' | 'assistant';
 export type AiChatMode = 'chat' | 'voice';
 
+export interface AiTextContentPart {
+  type: 'text';
+  text: string;
+}
+
+export interface AiImageUrlContentPart {
+  type: 'image_url';
+  image_url: {
+    url: string; // Direct image URL or base64 data URL (data:image/jpeg;base64,...)
+  };
+}
+
+export interface AiFileContentPart {
+  type: 'file';
+  file: {
+    filename: string;
+    file_data: string; // Direct PDF URL or base64 data URL (data:application/pdf;base64,...)
+  };
+}
+
+export type AiContentPart = AiTextContentPart | AiImageUrlContentPart | AiFileContentPart;
+export type AiMessageContent = string | AiContentPart[];
+
+export interface AiFileAnnotation {
+  type: 'file';
+  file: {
+    hash: string;
+    name?: string;
+    content?: Array<
+      | { type: 'text'; text: string }
+      | { type: 'image_url'; image_url: { url: string } }
+    >;
+  };
+}
+
 export interface AiChatMessage {
   role: AiRole;
-  content: string;
+  content: AiMessageContent;
+  reasoning?: string;
+  annotations?: AiFileAnnotation[];
+}
+
+export interface AiReasoningConfig {
+  effort?: 'max' | 'xhigh' | 'high' | 'medium' | 'low' | 'minimal' | 'none';
+  max_tokens?: number;
+  exclude?: boolean;
+  enabled?: boolean;
+}
+
+export interface AiPluginConfig {
+  id: string;
+  pdf?: {
+    engine?: 'cloudflare-ai' | 'mistral-ocr' | 'native';
+  };
+  [key: string]: unknown;
 }
 
 export interface AiChatRequest {
@@ -106,6 +158,8 @@ export interface AiChatRequest {
   temperature?: number;
   maxTokens?: number;
   stream?: boolean;
+  reasoning?: AiReasoningConfig;
+  plugins?: AiPluginConfig[];
 }
 
 export interface AiChatResponse {
@@ -133,6 +187,10 @@ export interface AiStreamMetadata {
 }
 
 export interface AiStreamDelta {
+  content: string;
+}
+
+export interface AiStreamReasoning {
   content: string;
 }
 

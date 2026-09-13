@@ -63,7 +63,7 @@ class RagService {
   public async search(request: RagSearchRequest): Promise<RagSearchResult[]> {
     const {
       query,
-      matchThreshold = 0.35,
+      matchThreshold = 0.25,
       matchCount = 3,
       filterCategory,
     } = request;
@@ -72,110 +72,92 @@ class RagService {
       return [];
     }
 
-    const supabase = supabaseService.getClient();
-
-    // 1. Try Supabase pgvector RPC first if configured
-    if (supabase && supabaseService.hasCredentials()) {
-      try {
-        const queryEmbedding = await openRouterService.getEmbedding(query);
-        const { data, error } = await supabase.rpc('match_jkn_regulations', {
-          query_embedding: queryEmbedding,
-          match_threshold: matchThreshold,
-          match_count: matchCount,
-          filter_category: filterCategory || null,
-        });
-
-        if (!error && Array.isArray(data) && data.length > 0) {
-          return data.map((row: any) => ({
-            id: row.id,
-            title: row.title,
-            regulation: row.regulation,
-            article: row.article,
-            category: row.category as RegulationCategory,
-            content: row.content,
-            similarity: Number(row.similarity),
-          }));
-        }
-      } catch (err) {
-        // Fall back gracefully to local vector search
-      }
-    }
-
-    // 2. High-speed In-Memory Cosine Similarity Fallback
-    try {
-      const queryEmbedding = await openRouterService.getEmbedding(query);
-      const scored: RagSearchResult[] = [];
-
-      for (const chunk of this.localChunks) {
-        if (filterCategory && chunk.category !== filterCategory) {
-          continue;
-        }
-
-        if (chunk.embedding && chunk.embedding.length > 0) {
-          const sim = cosineSimilarity(queryEmbedding, chunk.embedding);
-          if (sim >= matchThreshold) {
-            scored.push({
-              id: chunk.id,
-              title: chunk.title,
-              regulation: chunk.regulation,
-              article: chunk.article,
-              category: chunk.category,
-              content: chunk.content,
-              similarity: Math.round(sim * 10000) / 10000,
-            });
-          }
-        }
-      }
-
-      scored.sort((a, b) => b.similarity - a.similarity);
-      return scored.slice(0, matchCount);
-    } catch (err) {
-      // 3. Fallback to keyword matching if embedding service fails
-      return this.fallbackKeywordSearch(query, matchCount, filterCategory);
-    }
-  }
-
-  private fallbackKeywordSearch(
-    query: string,
-    matchCount: number,
-    filterCategory?: RegulationCategory
-  ): RagSearchResult[] {
-    const qWords = query
-      .toLowerCase()
-      .slice(0, 300)
+    const cleanQuery = query.toLowerCase().trim().slice(0, 300);
+    let qWords = cleanQuery
       .split(/\s+/)
-      .filter((w) => w.length > 2)
+      .filter((w) => w.length > 1)
       .slice(0, 15);
-    const scored: RagSearchResult[] = [];
+
+    if (qWords.length === 0 && cleanQuery.length > 0) {
+      qWords = [cleanQuery];
+    }
+
+    // 1. Compute Query Embedding (if available)
+    let queryEmbedding: number[] | null = null;
+    try {
+      queryEmbedding = await openRouterService.getEmbedding(query);
+    } catch {
+      // Embedding service offline; proceed with high-fidelity lexical scoring
+    }
+
+    // 2. Perform Hybrid Search over Knowledge Base Chunks
+    const scored: Array<{ chunk: RegulationChunk; hybridScore: number; vecSim: number; lexScore: number }> = [];
 
     for (const chunk of this.localChunks) {
       if (filterCategory && chunk.category !== filterCategory) {
         continue;
       }
 
-      let matches = 0;
-      const haystack = `${chunk.title} ${chunk.content} ${(chunk.keywords || []).join(' ')}`.toLowerCase();
-      for (const word of qWords) {
-        if (haystack.includes(word)) {
-          matches++;
-        }
+      // 2a. Vector Cosine Similarity
+      let vecSim = 0;
+      if (queryEmbedding && chunk.embedding && chunk.embedding.length > 0) {
+        vecSim = Math.max(0, cosineSimilarity(queryEmbedding, chunk.embedding));
       }
 
-      if (matches > 0) {
+      // 2b. Lexical / Exact Phrase Matching Score
+      let lexScore = 0;
+      const titleLower = chunk.title.toLowerCase();
+      const contentLower = chunk.content.toLowerCase();
+      const regLower = chunk.regulation.toLowerCase();
+      const artLower = (chunk.article || '').toLowerCase();
+      const kwLower = (chunk.keywords || []).map((k) => k.toLowerCase());
+
+      // Exact phrase matches receive top weights
+      if (titleLower.includes(cleanQuery)) lexScore += 1.2;
+      if (regLower.includes(cleanQuery)) lexScore += 1.0;
+      if (artLower.includes(cleanQuery)) lexScore += 0.9;
+      if (contentLower.includes(cleanQuery)) lexScore += 0.6;
+
+      // Token matches
+      for (const word of qWords) {
+        if (titleLower.includes(word)) lexScore += 0.35;
+        if (regLower.includes(word)) lexScore += 0.35;
+        if (artLower.includes(word)) lexScore += 0.3;
+        if (kwLower.some((k) => k.includes(word))) lexScore += 0.3;
+        if (contentLower.includes(word)) lexScore += 0.12;
+      }
+
+      // 2c. Combined Hybrid Score
+      // If vector embedding exists, blend 45% vector + 55% lexical. If not, 100% normalized lexical.
+      let hybridScore = 0;
+      if (queryEmbedding) {
+        hybridScore = vecSim * 0.45 + Math.min(1.0, lexScore / 2.0) * 0.55;
+      } else {
+        hybridScore = Math.min(1.0, 0.35 + (lexScore / (qWords.length * 1.5 + 1)) * 0.65);
+      }
+
+      if (hybridScore >= matchThreshold || lexScore > 0.4) {
         scored.push({
-          id: chunk.id,
-          title: chunk.title,
-          regulation: chunk.regulation,
-          article: chunk.article,
-          category: chunk.category,
-          content: chunk.content,
-          similarity: Math.min(0.9, matches / Math.max(qWords.length, 1)),
+          chunk,
+          hybridScore: Math.round(hybridScore * 10000) / 10000,
+          vecSim,
+          lexScore,
         });
       }
     }
 
-    scored.sort((a, b) => b.similarity - a.similarity);
-    return scored.slice(0, matchCount);
+    // Sort descending by hybridScore
+    scored.sort((a, b) => b.hybridScore - a.hybridScore);
+
+    return scored.slice(0, matchCount).map((s) => ({
+      id: s.chunk.id,
+      title: s.chunk.title,
+      regulation: s.chunk.regulation,
+      article: s.chunk.article,
+      category: s.chunk.category as RegulationCategory,
+      content: s.chunk.content,
+      similarity: s.hybridScore,
+    }));
   }
 
   /**

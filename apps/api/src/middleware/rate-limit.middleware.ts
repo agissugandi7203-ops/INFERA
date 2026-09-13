@@ -1,10 +1,11 @@
 import rateLimit from 'express-rate-limit';
 import { sendError } from '../utils/response.js';
 
-// General rate limiter: 120 requests per 15 minutes
+// General rate limiter: 1000 requests per 15 minutes (with localhost bypass for testing)
 export const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 120,
+  max: 1000,
+  skip: (req) => req.ip === '127.0.0.1' || req.ip === '::1' || req.ip === '::ffff:127.0.0.1',
   standardHeaders: true,
   legacyHeaders: false,
   handler: (_req, res) => {

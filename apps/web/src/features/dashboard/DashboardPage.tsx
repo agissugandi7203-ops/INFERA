@@ -53,6 +53,9 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
   const controllerRef = useRef<AvatarController | null>(null);
   const emotionTimedownRef = useRef<NodeJS.Timeout | null>(null);
   const stopListeningRef = useRef<(() => void) | null>(null);
+  const isListeningRef = useRef<boolean>(false);
+  const lastToggleClickTimeRef = useRef<number>(0);
+  const lastProcessedVoiceTextRef = useRef<{ text: string; timestamp: number }>({ text: '', timestamp: 0 });
 
   const handleSelectVoice = (voiceId: string) => {
     const validVoiceId = voiceId === VOICE_SECONDARY_ID ? VOICE_SECONDARY_ID : VOICE_DEFAULT_ID;
@@ -169,7 +172,12 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
 
   // Voice Interaction: Click to Speak
   const handleToggleClickToSpeak = () => {
-    if (isListening) {
+    const now = Date.now();
+    if (now - lastToggleClickTimeRef.current < 450) return;
+    lastToggleClickTimeRef.current = now;
+
+    if (isListeningRef.current) {
+      isListeningRef.current = false;
       if (stopListeningRef.current) {
         stopListeningRef.current();
         stopListeningRef.current = null;
@@ -181,10 +189,13 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
 
     // Stop any existing speech playback before listening
     SpeechService.stopSpeaking();
+    isListeningRef.current = true;
+    setIsListening(true);
     handleSelectEmotion('listening', 0);
 
     const stopFn = SpeechService.startListening(
       (transcript) => {
+        isListeningRef.current = false;
         setIsListening(false);
         setIsSoundDetected(false);
         stopListeningRef.current = null;
@@ -193,6 +204,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
         }
       },
       (listening) => {
+        isListeningRef.current = listening;
         setIsListening(listening);
         if (!listening) {
           setIsSoundDetected(false);
@@ -201,6 +213,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
       },
       (err) => {
         console.warn('Speech recognition error:', err);
+        isListeningRef.current = false;
         setIsListening(false);
         setIsSoundDetected(false);
         stopListeningRef.current = null;
@@ -216,7 +229,18 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
 
   const handleSendMessage = async (text: string) => {
     const trimmed = text.trim().slice(0, 1500);
+    const now = Date.now();
+
+    if (
+      trimmed.toLowerCase() === lastProcessedVoiceTextRef.current.text.toLowerCase() &&
+      now - lastProcessedVoiceTextRef.current.timestamp < 3500
+    ) {
+      console.warn('[Voice] Ignored duplicate voice input within 3.5s:', trimmed);
+      return;
+    }
+
     if (!trimmed || isLoading) return;
+    lastProcessedVoiceTextRef.current = { text: trimmed, timestamp: now };
 
     const userMsg: ChatMessage = {
       id: 'msg-' + Date.now() + '-u',

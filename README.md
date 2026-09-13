@@ -18,7 +18,9 @@
 <br/>
 
 [![BPJS Kesehatan](https://img.shields.io/badge/BPJS_Kesehatan-HealthAthon_2026-009B4C?style=for-the-badge&logo=shield&logoColor=white)](https://bpjs-kesehatan.go.id/)
-[![Team](https://img.shields.io/badge/Team-MAMAH%2C%20AKU%20IKUT%20HEALTHKATHON-E11D48?style=for-the-badge&logo=target&logoColor=white)](https://github.com/agissugandi7203-ops/Healthkathon)
+[![Live Demo](https://img.shields.io/badge/Live_App-infera--api.vercel.app-00C7B7?style=for-the-badge&logo=vercel&logoColor=white)](https://infera-api.vercel.app)
+[![GitHub](https://img.shields.io/badge/GitHub-agissugandi7203--ops/INFERA-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/agissugandi7203-ops/INFERA)
+[![Team](https://img.shields.io/badge/Team-MAMAH%2C%20AKU%20IKUT%20HEALTHKATHON-E11D48?style=for-the-badge&logo=target&logoColor=white)](https://github.com/agissugandi7203-ops/INFERA)
 [![Category](https://img.shields.io/badge/Track-Efisiensi_Risiko_Peserta-0A7B83?style=for-the-badge)](https://bpjs-kesehatan.go.id/)
 
 <br/>
@@ -63,6 +65,15 @@
 <p align="center" style="max-width: 850px; margin: auto;">
 <i>INFERA merupakan solusi berbasis Artificial Intelligence (AI) yang dirancang sebagai asisten virtual untuk membantu proses identifikasi dan analisis potensi risiko dalam penyelenggaraan Program Jaminan Kesehatan Nasional (JKN). INFERA berfokus pada pemanfaatan data aktivitas dan log sistem untuk mengidentifikasi pola, ketidaksesuaian, serta indikator yang memerlukan perhatian lebih lanjut. Pada tahap pengembangan dan simulasi, sistem menggunakan data dummy sebagai pengganti data operasional asli sehingga proses pengujian dapat dilakukan tanpa menggunakan data peserta yang bersifat sensitif.</i>
 </p>
+
+<br/>
+
+### 🌐 Akses Cepat & Tautan Demo Sistem
+
+| 🚀 Live Web Application (Vercel) | 📦 Source Code Repository (GitHub) |
+| :---: | :---: |
+| <a href="https://infera-api.vercel.app"><img src="docs/assets/qr-infera-live-app.png" alt="QR Code INFERA Live App" width="170" /></a><br/>**[infera-api.vercel.app](https://infera-api.vercel.app)** | <a href="https://github.com/agissugandi7203-ops/INFERA"><img src="docs/assets/qr-infera-github.png" alt="QR Code INFERA GitHub" width="170" /></a><br/>**[github.com/agissugandi7203-ops/INFERA](https://github.com/agissugandi7203-ops/INFERA)** |
+| *Pindai QR code untuk demo di smartphone/tablet* | *Pindai QR code untuk meninjau source code* |
 
 </div>
 
@@ -881,8 +892,8 @@ Pastikan komputer Anda telah terpasang **Node.js (versi >= 20.0.0)** dan **npm**
 
 ### Langkah 1: Kloning Repository
 ```bash
-git clone https://github.com/agissugandi7203-ops/Healthkathon.git
-cd Healthkathon
+git clone https://github.com/agissugandi7203-ops/INFERA.git
+cd INFERA
 ```
 
 ### Langkah 2: Instalasi Seluruh Dependensi Monorepo
@@ -1004,7 +1015,7 @@ Backend `apps/api` telah dilengkapi dengan `railway.json` berbasis Nixpacks:
 3. Masukkan variabel lingkungan pada tab **Variables**:
    - `PORT` = `4000`
    - `NODE_ENV` = `production`
-   - `CLIENT_URL` = `https://your-infera-app.vercel.app`
+   - `CLIENT_URL` = `https://infera-api.vercel.app`
    - `SUPABASE_URL` = `https://your-supabase.supabase.co`
    - `SUPABASE_SERVICE_ROLE_KEY` = `your-supabase-service-role-key`
    - `OPENROUTER_API_KEY` = `sk-or-v1-your-key`

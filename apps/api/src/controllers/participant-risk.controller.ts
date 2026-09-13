@@ -46,6 +46,42 @@ export class ParticipantRiskController {
   }
 
   /**
+   * GET /api/v1/participant-risk/search?query=...
+   * Dynamic search across participants and claims in Supabase
+   */
+  public async search(
+    req: Request,
+    res: Response<ApiResponse<any[]>>,
+    next: NextFunction
+  ) {
+    try {
+      const query = String(req.query.query || '').trim();
+      if (!query) {
+        return res.status(200).json({
+          success: true,
+          data: [],
+          meta: { timestamp: new Date().toISOString(), version: 'v1', totalMatches: 0 },
+        });
+      }
+
+      const results = await participantRiskService.searchParticipants(query);
+
+      return res.status(200).json({
+        success: true,
+        data: results,
+        meta: {
+          timestamp: new Date().toISOString(),
+          version: 'v1',
+          query,
+          totalMatches: results.length,
+        },
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  /**
    * GET /api/v1/participant-risk/metrics
    * Aggregate metrics & KPIs for participant risk track
    */

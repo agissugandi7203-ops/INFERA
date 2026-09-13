@@ -17,20 +17,74 @@ export interface AiShortcut {
   description?: string;
 }
 
+export interface ChatAttachment {
+  id: string;
+  name: string;
+  type: 'image' | 'pdf';
+  mimeType: string;
+  dataUrl: string; // Base64 data URL (data:image/...;base64,... or data:application/pdf;base64,...)
+  size?: number;
+}
+
 export interface ChatMessage {
   id: string;
   role: 'user' | 'assistant';
   content: string;
+  reasoning?: string;
+  isThinking?: boolean;
   emotion?: CharacterEmotion;
   shortcuts?: AiShortcut[];
   citations?: RagSearchResult[];
   recommendations?: ActionRecommendation[];
   toolSteps?: ToolProgressStep[];
+  attachments?: ChatAttachment[];
+  annotations?: any[];
   timestamp: string;
   isStreaming?: boolean;
+  isReasoningEnabled?: boolean;
 }
 
-export { runAgentInvestigationStream } from './openrouterAgent';
+/**
+ * Transforms plain text and attachments into OpenRouter multimodal content array
+ * Following official OpenRouter Image & PDF specifications
+ */
+export function formatMessageContent(
+  text: string,
+  attachments?: ChatAttachment[]
+): string | Array<Record<string, unknown>> {
+  if (!attachments || attachments.length === 0) {
+    return text;
+  }
+  const parts: Array<Record<string, unknown>> = [];
+  if (text && text.trim()) {
+    parts.push({
+      type: 'text',
+      text: text.trim(),
+    });
+  }
+  for (const att of attachments) {
+    if (att.type === 'image') {
+      parts.push({
+        type: 'image_url',
+        image_url: {
+          url: att.dataUrl,
+        },
+      });
+    } else if (att.type === 'pdf') {
+      parts.push({
+        type: 'file',
+        file: {
+          filename: att.name,
+          file_data: att.dataUrl,
+        },
+      });
+    }
+  }
+  return parts.length > 0 ? parts : text;
+}
+
+import { runAgentInvestigationStream, isSimpleGreetingOrChat } from './openrouterAgent';
+export { runAgentInvestigationStream, isSimpleGreetingOrChat };
 
 export interface OpenRouterSettings {
   apiKey: string;
@@ -54,16 +108,16 @@ export interface VoicePreset {
 export const AVATAR_VOICE_PRESETS: VoicePreset[] = [
   {
     id: VOICE_DEFAULT_ID,
-    name: 'Vera',
-    character: 'Vera (AI Kanan — Avatar Hangat & Ramah)',
-    description: 'Karakter suara utama asisten virtual 2D. Interaktif, bersahabat, dan santun.',
+    name: 'INFERA (Vera)',
+    character: 'INFERA Voice (Suara Resmi — Hangat & Jelas)',
+    description: 'Karakter suara utama asisten cerdas INFERA BPJS Kesehatan.',
     tier: 'free',
   },
   {
     id: VOICE_SECONDARY_ID,
     name: 'Luna',
-    character: 'Luna (AI Kanan — Avatar Ceria & Manis)',
-    description: 'Karakter suara alternatif asisten virtual 2D. Ceria, ekspresif, dan lembut.',
+    character: 'Luna (Avatar Ceria & Manis)',
+    description: 'Karakter suara alternatif asisten virtual. Ceria, ekspresif, dan lembut.',
     tier: 'free',
   },
 ];
@@ -72,8 +126,8 @@ export const AVATAR_VOICE_PRESETS: VoicePreset[] = [
 export const CHAT_SYSTEM_VOICE_PRESETS: VoicePreset[] = [
   {
     id: VOICE_CHAT_DEFAULT_ID,
-    name: 'Narator Auditor INFERA',
-    character: 'INFERA Audio (Inti AI Chat — Suara Formal & Wibawa)',
+    name: 'INFERA Audio',
+    character: 'INFERA Voice (Inti AI Chat — Suara Resmi & Wibawa)',
     description: 'Suara resmi narator laporan audit investigasi integritas klaim BPJS Kesehatan.',
     tier: 'free',
   },
@@ -262,39 +316,32 @@ export function getStreamingVisibleText(raw: string): string {
   return raw;
 }
 
-export const CHAT_STREAM_SYSTEM_PROMPT = `Anda adalah INFERA AI, Asisten Investigasi Fraud & Analisis Risiko Cerdas BPJS Kesehatan.
+export const VOICE_STREAM_SYSTEM_PROMPT = `Identitas: Anda adalah Vera / Luna, asisten digital suara BPJS Kesehatan untuk INFERA. Karakter Anda ramah, cerdas, cekatan, dan berwibawa.
+Prinsip Respon Suara:
+1. Respon Percakapan Santai / Sapaan: Jika pengguna hanya menyapa ("halo", "hai", "selamat pagi", "apa kabar"), balaslah secara ramah, santun, dan singkat (1-2 kalimat). JANGAN membaca regulasi atau melaporkan audit jika pengguna tidak memintanya.
+2. Berbasis Data & Fakta Nyata: Jika pengguna menanyakan kasus atau regulasi, jelaskan temuan anomali, status risiko, angka klaim, atau pasal regulasi JKN secara akurat dari data yang tersedia. Jangan hanya basa-basi atau pemanis semata.
+3. Bahasa Lisan Padat (2-3 Kalimat): Sampaikan intisari secara alami, lugas, dan nyaman didengar via TTS. Respon harus dinamis sesuai konteks pertanyaan, BUKAN template klise.
+4. Tanpa Format Tertulis: Jangan gunakan bullet points, tabel, simbol markdown (#, *), atau kode.`;
 
-Peran & Tanggung Jawab:
-1. Memberikan analisis hukum regulasi JKN (Permenkes No. 16/2019 tentang Pencegahan Kecurangan, UU PDP No. 27/2022, UU No. 24/2011 BPJS).
-2. Membantu auditor memverifikasi 4 tipologi anomali klaim:
-   - Modus 1 & 2: Identitas & Impossible Travel (kartu pinjaman & diskordansi biologi)
-   - Modus 3: Doctor Shopping (indeks DSI tinggi pada rawat jalan/FKTP berulang)
-   - Modus 4: Resale Obat PRB & Klaim Alat Kesehatan (kacamata 2 thn, alat bantu dengar 5 thn)
-3. Jawaban WAJIB disajikan secara profesional langsung dalam format Markdown semantik terstruktur (Judul #, ##, temuan fakta, bukti data, rujukan pasal hukum JKN, dan rekomendasi auditor).
-4. ATURAN FORMAT SANGAT KETAT:
-   - JANGAN PERNAH membungkus jawaban dalam format JSON atau format objek apapun!
-   - JANGAN gunakan sintaks '{"text": ...}'.
-   - Langsung sajikan teks Markdown naratif investigasi yang elegan dan mudah dibaca oleh auditor.`;
+export const CHAT_STREAM_SYSTEM_PROMPT = `Identitas: Anda adalah INFERA AI, asisten digital investigasi fraud & integritas klaim BPJS Kesehatan. Karakter Anda analitis, objektif, tajam, dan solutif.
+Prinsip Respon Analitis:
+1. Respon Percakapan Santai / Sapaan: Jika pengguna hanya menyapa ("halo", "hai", "selamat pagi", dsb) atau bertanya santai, balaslah dengan ramah, hangat, dan ringkas (1-2 kalimat) menjelaskan kesiapan Anda membantu pengawasan dan investigasi klaim BPJS Kesehatan TANPA memaksakan laporan audit kasus atau mengutip pasal hukum yang tidak relevan.
+2. Dinamis & Non-Template: Bila pengguna mengajukan telaah kasus atau regulasi, sesuaikan struktur dan gaya penjelasan dengan substansi pertanyaan auditor secara organik tanpa format boilerplate.
+3. Landasan Data & Regulasi: Rujuk data klaim dan regulasi resmi JKN (Permenkes 16/2019, Permenkes 3/2023, UU 24/2011, KUHP 263) secara presisi dari konteks yang tersedia.
+4. Format Markdown Semantik: Langsung sajikan teks Markdown naratif investigasi yang elegan dan terstruktur (Judul #, analisis bukti, rujukan hukum, rekomendasi). JANGAN PERNAH membungkus respons dalam format JSON atau format objek {"text": ...}.`;
 
-const SYSTEM_PROMPT = `Anda adalah INFERA AI, Asisten Investigasi Fraud & Analisis Risiko Cerdas BPJS Kesehatan.
-
-Peran & Tanggung Jawab:
-1. Memberikan analisis hukum regulasi JKN (Permenkes No. 16/2019 tentang Pencegahan Kecurangan, UU PDP No. 27/2022, UU No. 24/2011 BPJS).
-2. Membantu auditor memverifikasi 4 tipologi anomali klaim:
-   - Modus 1 & 2: Identitas & Impossible Travel (kartu pinjaman & diskordansi biologi)
-   - Modus 3: Doctor Shopping (indeks DSI tinggi pada rawat jalan/FKTP berulang)
-   - Modus 4: Resale Obat PRB & Klaim Alat Kesehatan (kacamata 2 thn, alat bantu dengar 5 thn)
-3. Jawaban WAJIB terstruktur rapi menggunakan format Markdown profesional (judul, poin-poin penjelasan, kutipan pasal hukum, dan ringkasan rekomendasi tindakan).
-4. Jika merekomendasikan investigasi atau penanganan kasus, sertakan array "shortcuts" agar pengguna dapat langsung membuka modul terkait.
+const SYSTEM_PROMPT = `Identitas: Anda adalah INFERA AI, asisten digital investigasi fraud & integritas klaim BPJS Kesehatan. Karakter Anda analitis, objektif, tajam, dan solutif.
+Prinsip Respon Analitis:
+1. Dinamis & Non-Template: Berikan penalaran faktual mendalam sesuai kasus atau regulasi JKN yang ditanyakan tanpa template kaku.
+2. Landasan Data & Regulasi: Berlandaskan bukti nyata data klaim dan regulasi resmi JKN (Permenkes 16/2019, UU 24/2011, Permenkes 3/2023).
+3. Navigasi Cerdas: Sertakan array "shortcuts" yang relevan untuk membantu auditor langsung mengakses modul terkait.
 
 Format Output WAJIB JSON:
 {
-  "text": "Jawaban lengkap dan terstruktur dalam format Markdown.",
+  "text": "Jawaban lengkap analitis dalam format Markdown.",
   "emotion": "normal" | "happy" | "sad" | "angry" | "surprised" | "confused" | "thinking",
   "shortcuts": [
-    { "label": "Buka Modus Impossible Travel", "path": "/dashboard/identity-risk", "description": "Investigasi geospasial" },
-    { "label": "Tinjau Kasus Benchmark", "path": "/dashboard/cases", "description": "4 Studi kasus pembuktian" },
-    { "label": "Buka Regulasi Permenkes 16/2019", "path": "/dashboard/regulations", "description": "Dasar hukum JKN" }
+    { "label": "Label Modul", "path": "/dashboard/...", "description": "Keterangan singkat" }
   ]
 }`;
 
@@ -307,7 +354,9 @@ export interface StreamChatCallbacks {
     requestId?: string;
   }) => void;
   onDelta?: (deltaText: string, fullAccumulatedText: string) => void;
-  onDone?: (fullText: string, shortcuts: AiShortcut[]) => void;
+  onReasoning?: (deltaText: string, fullReasoningText: string) => void;
+  onAnnotations?: (annotations: any[]) => void;
+  onDone?: (fullText: string, shortcuts: AiShortcut[], fullReasoning?: string) => void;
   onError?: (error: Error) => void;
 }
 
@@ -322,11 +371,23 @@ export async function streamOpenRouterChat(
   mode: 'chat' | 'voice' = 'chat',
   callbacks?: StreamChatCallbacks,
   signal?: AbortSignal,
-  systemPromptOverride?: string
+  systemPromptOverride?: string,
+  attachments?: ChatAttachment[],
+  enableReasoning = false
 ): Promise<string> {
   const backendUrl = import.meta.env.VITE_API_URL || '/api/v1';
   let accumulated = '';
+  let accumulatedReasoning = '';
   let citations: RagSearchResult[] = [];
+
+  const priorHistory = history
+    .filter((m) => m.content && m.content.trim() && (m.role === 'user' || m.role === 'assistant'))
+    .filter((m) => m.content !== userText)
+    .slice(-6);
+
+  const hasPdfAttachment =
+    Boolean(attachments?.some((a) => a.type === 'pdf')) ||
+    priorHistory.some((m) => m.attachments?.some((a) => a.type === 'pdf'));
 
   // 1. Try Backend SSE Stream first
   try {
@@ -337,11 +398,20 @@ export async function streamOpenRouterChat(
       },
       body: JSON.stringify({
         messages: [
-          ...history.slice(-8).map((m) => ({ role: m.role, content: m.content })),
-          { role: 'user', content: userText },
+          ...priorHistory.map((m) => ({
+            role: m.role,
+            content: formatMessageContent(m.content, m.attachments),
+            ...(m.annotations ? { annotations: m.annotations } : {}),
+          })),
+          {
+            role: 'user',
+            content: formatMessageContent(userText, attachments),
+          },
         ],
         mode,
+        enableReasoning,
         model: settings.model || (mode === 'voice' ? 'google/gemini-2.0-flash-001' : 'openai/gpt-oss-120b:nitro'),
+        ...(hasPdfAttachment ? { plugins: [{ id: 'file-parser', pdf: { engine: 'cloudflare-ai' } }] } : {}),
       }),
       signal,
     });
@@ -381,6 +451,11 @@ export async function streamOpenRouterChat(
               if (currentEvent === 'metadata') {
                 if (data.citations) citations = data.citations;
                 callbacks?.onMetadata?.(data);
+              } else if (currentEvent === 'reasoning') {
+                if (data.content) {
+                  accumulatedReasoning += data.content;
+                  callbacks?.onReasoning?.(data.content, accumulatedReasoning);
+                }
               } else if (currentEvent === 'delta') {
                 if (data.content) {
                   accumulated += data.content;
@@ -390,7 +465,7 @@ export async function streamOpenRouterChat(
               } else if (currentEvent === 'done') {
                 const cleanFinal = cleanRawAiResponse(accumulated);
                 const shortcuts = extractShortcuts(cleanFinal);
-                callbacks?.onDone?.(cleanFinal, shortcuts);
+                callbacks?.onDone?.(cleanFinal, shortcuts, accumulatedReasoning || undefined);
                 return cleanFinal;
               } else if (currentEvent === 'error') {
                 throw new Error(data.message || 'Stream error from server');
@@ -405,7 +480,7 @@ export async function streamOpenRouterChat(
       if (accumulated.trim()) {
         const cleanFinal = cleanRawAiResponse(accumulated);
         const shortcuts = extractShortcuts(cleanFinal);
-        callbacks?.onDone?.(cleanFinal, shortcuts);
+        callbacks?.onDone?.(cleanFinal, shortcuts, accumulatedReasoning || undefined);
         return cleanFinal;
       }
     }
@@ -414,11 +489,11 @@ export async function streamOpenRouterChat(
     console.warn('[Stream Client] Backend stream unavailable, attempting direct OpenRouter fallback:', err);
   }
 
-  // 2. Fallback to Direct OpenRouter Client SSE
-  const apiKey = settings.apiKey.trim();
+  // 2. Fallback to Direct OpenRouter Client SSE (only if user provided custom override key)
+  const apiKey = (settings.apiKey || '').trim();
   if (!apiKey) {
     const errorMsg =
-      'Layanan AI backend tidak dapat dihubungi dan OpenRouter API Key belum dikonfigurasi. Silakan periksa koneksi backend atau masukkan API Key di Pengaturan.';
+      'Layanan AI backend sedang memproses antrean investigasi atau mengalami gangguan koneksi sementara. Silakan coba kembali sesaat lagi.';
     callbacks?.onError?.(new Error(errorMsg));
     return errorMsg;
   }
@@ -447,7 +522,7 @@ export async function streamOpenRouterChat(
     const systemPrompt =
       systemPromptOverride ||
       (mode === 'voice'
-        ? 'Anda adalah asisten suara INFERA BPJS Kesehatan. Jawab maksimal 2-3 kalimat santun tanpa markdown.' + ragContextBlock
+        ? VOICE_STREAM_SYSTEM_PROMPT + ragContextBlock
         : CHAT_STREAM_SYSTEM_PROMPT + ragContextBlock);
 
     const targetModel = settings.model || (mode === 'voice' ? 'google/gemini-2.0-flash-001' : 'openai/gpt-oss-120b:nitro');
@@ -468,13 +543,25 @@ export async function streamOpenRouterChat(
         models: [targetModel, ...fallbackModels.filter((m) => m !== targetModel)],
         messages: [
           { role: 'system', content: systemPrompt },
-          ...history.slice(-8).map((m) => ({ role: m.role, content: m.content })),
-          { role: 'user', content: userText },
+          ...priorHistory.map((m) => ({
+            role: m.role,
+            content: formatMessageContent(m.content, m.attachments),
+            ...(m.annotations ? { annotations: m.annotations } : {}),
+          })),
+          {
+            role: 'user',
+            content: formatMessageContent(userText, attachments),
+          },
         ],
         temperature: mode === 'voice' ? 0.7 : 0.4,
         max_tokens: mode === 'voice' ? 220 : 2500,
         stream: true,
         provider: { allow_fallbacks: true },
+        // Reasoning integrated ONLY when explicitly enabled by user
+        ...(enableReasoning && mode === 'chat'
+          ? { reasoning: { effort: 'medium' } }
+          : {}),
+        ...(hasPdfAttachment ? { plugins: [{ id: 'file-parser', pdf: { engine: 'cloudflare-ai' } }] } : {}),
       }),
       signal,
     });
@@ -507,7 +594,18 @@ export async function streamOpenRouterChat(
         if (trimmed.startsWith('data: ')) {
           try {
             const parsed = JSON.parse(trimmed.slice(6));
-            const delta = parsed.choices?.[0]?.delta?.content;
+            const choice = parsed.choices?.[0];
+
+            const deltaReasoning =
+              choice?.delta?.reasoning ||
+              choice?.delta?.reasoning_content ||
+              choice?.delta?.reasoning_details?.[0]?.text;
+            if (deltaReasoning) {
+              accumulatedReasoning += deltaReasoning;
+              callbacks?.onReasoning?.(deltaReasoning, accumulatedReasoning);
+            }
+
+            const delta = choice?.delta?.content;
             if (delta) {
               accumulated += delta;
               const visible = getStreamingVisibleText(accumulated);
@@ -522,7 +620,7 @@ export async function streamOpenRouterChat(
 
     const cleanFinal = cleanRawAiResponse(accumulated);
     const shortcuts = extractShortcuts(cleanFinal);
-    callbacks?.onDone?.(cleanFinal, shortcuts);
+    callbacks?.onDone?.(cleanFinal, shortcuts, accumulatedReasoning || undefined);
     return cleanFinal;
   } catch (directErr) {
     const errorObj = directErr instanceof Error ? directErr : new Error('Gagal memproses streaming AI.');
@@ -544,15 +642,20 @@ export async function sendOpenRouterChat(
   metadata?: VoiceExpressionMetadata;
 }> {
   // 1. Injeksi Otak RAG: Cari regulasi JKN relevan secara semantik dari basis pengetahuan resmi
+  // Khusus sapaan/percakapan santai ("halo"), jangan lakukan RAG agar tidak memaksa rujukan hukum berlebih
+  const isGreeting = isSimpleGreetingOrChat(userText);
   let ragResults: RagSearchResult[] = [];
-  try {
-    ragResults = await webRagService.search({ query: userText, matchCount: 3 });
-  } catch (ragErr) {
-    console.warn('[RAG Brain] Gagal mengambil regulasi:', ragErr);
+
+  if (!isGreeting) {
+    try {
+      ragResults = await webRagService.search({ query: userText, matchCount: 3 });
+    } catch (ragErr) {
+      console.warn('[RAG Brain] Gagal mengambil regulasi:', ragErr);
+    }
   }
 
   const ragContextBlock =
-    ragResults.length > 0
+    ragResults.length > 0 && !isGreeting
       ? `\n=== BASIS RUJUKAN HUKUM RESMI & REGULASI JKN (RAG OTAK AI TERSUNTIK) ===\n` +
         ragResults
           .map(
@@ -560,7 +663,7 @@ export async function sendOpenRouterChat(
               `[DOKUMEN ${i + 1}]: ${r.regulation} ${r.article ? `(${r.article})` : ''} — ${r.title}\nKATEGORI: ${r.category}\nRINGKASAN REGULASI RESMI:\n"${r.content}"`
           )
           .join('\n\n') +
-        `\n\nINSTRUKSI PENALARAN HUKUM (LEGAL REASONING):\n1. Anda WAJIB mendasarkan analisis Anda pada pasal dan ketentuan regulasi resmi di atas.\n2. Kutip secara eksplisit nomor pasal, nama peraturan (misal Permenkes 16/2019, UU BPJS, dsb), batas waktu pengembalian (14 hari kerja), atau parameter kepatuhan.\n3. Berikan rekomendasi audit (VEDIKA/DEFRADA) serta sanksi administratif yang sesuai.`
+        `\n\nINSTRUKSI PENALARAN HUKUM (LEGAL REASONING):\n1. Anda WAJIB mendasarkan analisis Anda pada pasal dan ketentuan regulasi resmi di atas.\n2. Kutip secara eksplisit nomor pasal, nama peraturan (misal Permenkes 16/2019, UU BPJS, dsb), batas waktu pengembalian (14 hari kerja), atau parameter kepatuhan.\n3. Berikan rekomendasi audit investigasi sistem INFERA serta sanksi administratif yang sesuai.`
       : '';
 
   const dynamicSystemPrompt = `${SYSTEM_PROMPT}${ragContextBlock}`;
@@ -596,10 +699,11 @@ export async function sendOpenRouterChat(
     }
   }
 
-  // Direct OpenRouter Client
-  const apiKey = settings.apiKey.trim();
+  // Direct OpenRouter Client (fallback only if custom key provided)
+  const apiKey = (settings.apiKey || '').trim();
   if (!apiKey) {
-    const defaultMsg = 'Halo! Saya asisten avatar AI Anda. Silakan masukkan OpenRouter API Key Anda pada panel pengaturan agar saya dapat berpikir menggunakan model AI langsung!';
+    const defaultMsg =
+      'Halo! Saya asisten avatar AI BPJS Kesehatan. Sistem backend AI saat ini sedang memproses data. Silakan coba ajukan pertanyaan Anda kembali.';
     return {
       reply: defaultMsg,
       emotion: 'happy',
@@ -835,7 +939,7 @@ export function extractShortcuts(text: string, existingShortcuts?: AiShortcut[])
       description: 'Permenkes 16/2019 & UU PDP',
     });
   }
-  if (lower.includes('kasus') || lower.includes('benchmark') || lower.includes('pembuktian') || lower.includes('budi santoso')) {
+  if (lower.includes('kasus') || lower.includes('benchmark') || lower.includes('pembuktian') || lower.includes('studi kasus')) {
     shortcuts.push({
       label: '4 Kasus Benchmark Terbukti',
       path: '/dashboard/cases',

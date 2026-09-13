@@ -21,6 +21,9 @@ router.post(
 router.get('/metrics', (req, res, next) =>
   participantRiskController.getMetrics(req, res, next)
 );
+router.get('/search', (req, res, next) =>
+  participantRiskController.search(req, res, next)
+);
 router.get('/case-studies', (req, res, next) =>
   participantRiskController.getCaseStudies(req, res, next)
 );

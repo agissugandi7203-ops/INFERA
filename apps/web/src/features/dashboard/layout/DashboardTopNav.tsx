@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Settings as SettingsIcon, Menu, Volume2, ChevronDown, Check } from 'lucide-react';
+import { Menu, Volume2, ChevronDown, Check } from 'lucide-react';
 import { VOICE_DEFAULT_ID, VOICE_SECONDARY_ID } from '../services/tts-processor';
 
 interface DashboardTopNavProps {
-  onToggleSettings: () => void;
+  onToggleSettings?: () => void;
   selectedVoiceId?: string;
   onSelectVoice?: (voiceId: string) => void;
   onToggleMobileSidebar?: () => void;
@@ -23,7 +23,6 @@ const ROUTE_TITLES: Record<string, { title: string; category: string }> = {
 };
 
 export const DashboardTopNav: React.FC<DashboardTopNavProps> = ({
-  onToggleSettings,
   selectedVoiceId = VOICE_DEFAULT_ID,
   onSelectVoice,
   onToggleMobileSidebar,
@@ -140,15 +139,6 @@ export const DashboardTopNav: React.FC<DashboardTopNavProps> = ({
             </div>
           )}
         </div>
-
-        {/* Settings Button */}
-        <button
-          onClick={onToggleSettings}
-          className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-          title="Pengaturan Model & Suara"
-        >
-          <SettingsIcon className="w-4 h-4" />
-        </button>
       </div>
     </header>
   );

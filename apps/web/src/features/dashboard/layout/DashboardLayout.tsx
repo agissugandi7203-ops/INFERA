@@ -7,6 +7,7 @@ import { AvatarDebugControls } from '../components/AvatarDebugControls';
 import { AvatarController, CharacterEmotion } from '../avatar/AvatarController';
 import {
   ChatMessage,
+  ChatAttachment,
   OpenRouterSettings,
   DEFAULT_SETTINGS,
   getStoredSettings,
@@ -95,6 +96,9 @@ const DashboardLayoutContent: React.FC<
   const stopListeningRef = useRef<(() => void) | null>(null);
   const isVoiceProcessingRef = useRef<boolean>(false);
   const activeStreamAbortRef = useRef<AbortController | null>(null);
+  const isListeningRef = useRef<boolean>(false);
+  const lastToggleClickTimeRef = useRef<number>(0);
+  const lastProcessedVoiceTextRef = useRef<{ text: string; timestamp: number }>({ text: '', timestamp: 0 });
 
   const handleSelectEmotion = (emo: CharacterEmotion, timedownMs = 5000) => {
     if (emotionTimedownRef.current) {
@@ -226,7 +230,19 @@ const DashboardLayoutContent: React.FC<
   // 1. Dedicated AI Voice Assistant Handler (Conversational, Short, ElevenLabs TTS)
   const handleVoiceAssistant = async (text: string) => {
     const trimmed = text.trim().slice(0, 1500);
+    const now = Date.now();
+
+    // Guard against duplicate voice input within 3.5s (e.g. mobile microphone echo or dual recognition triggers)
+    if (
+      trimmed.toLowerCase() === lastProcessedVoiceTextRef.current.text.toLowerCase() &&
+      now - lastProcessedVoiceTextRef.current.timestamp < 3500
+    ) {
+      console.warn('[Voice] Ignored duplicate voice input within 3.5s:', trimmed);
+      return;
+    }
+
     if (!trimmed || isLoading || isVoiceProcessingRef.current) return;
+    lastProcessedVoiceTextRef.current = { text: trimmed, timestamp: now };
     isVoiceProcessingRef.current = true;
 
     const userMsg: ChatMessage = {
@@ -313,9 +329,9 @@ const DashboardLayoutContent: React.FC<
   };
 
   // 2. Dedicated AI Chat Handler (Text-Only, Multi-Paragraph, Real SSE Streaming, NO TTS)
-  const handleStreamChat = async (text: string) => {
+  const handleStreamChat = async (text: string, attachments?: ChatAttachment[], enableReasoning = false) => {
     const trimmed = text.trim().slice(0, 3000);
-    if (!trimmed || isLoading) return;
+    if ((!trimmed && (!attachments || attachments.length === 0)) || isLoading) return;
 
     const userMsgId = 'msg-' + Date.now() + '-u';
     const assistantMsgId = 'msg-' + Date.now() + '-a';
@@ -324,6 +340,7 @@ const DashboardLayoutContent: React.FC<
       id: userMsgId,
       role: 'user',
       content: trimmed,
+      attachments,
       timestamp: new Date().toISOString(),
     };
 
@@ -332,6 +349,7 @@ const DashboardLayoutContent: React.FC<
       role: 'assistant',
       content: '',
       isStreaming: true,
+      isReasoningEnabled: enableReasoning,
       timestamp: new Date().toISOString(),
     };
 
@@ -347,6 +365,36 @@ const DashboardLayoutContent: React.FC<
     const abortCtrl = new AbortController();
     activeStreamAbortRef.current = abortCtrl;
 
+    // Throttled stream updates to prevent browser lag from updating React state on every single token
+    let pendingText: string | null = null;
+    let pendingReasoning: string | null = null;
+    let throttleTimeout: ReturnType<typeof setTimeout> | null = null;
+
+    const flushStreamUpdates = () => {
+      if (pendingText === null && pendingReasoning === null) return;
+      const textToApply = pendingText;
+      const reasoningToApply = pendingReasoning;
+      setMessages((prev) =>
+        prev.map((m) => {
+          if (m.id !== assistantMsgId) return m;
+          return {
+            ...m,
+            ...(textToApply !== null ? { content: textToApply, isStreaming: true, isThinking: false } : {}),
+            ...(reasoningToApply !== null ? { reasoning: reasoningToApply, isThinking: true } : {}),
+          };
+        })
+      );
+    };
+
+    const scheduleStreamUpdate = () => {
+      if (!throttleTimeout) {
+        throttleTimeout = setTimeout(() => {
+          throttleTimeout = null;
+          flushStreamUpdates();
+        }, 60); // Smooth 60ms batch interval (~16 FPS)
+      }
+    };
+
     try {
       await runAgentInvestigationStream(
         trimmed,
@@ -357,6 +405,7 @@ const DashboardLayoutContent: React.FC<
           anomalies,
           selectedClaim: selectedClaimForAudit,
           userRole: 'auditor',
+          enableReasoning,
         },
         {
           onMetadata: (meta) => {
@@ -392,16 +441,22 @@ const DashboardLayoutContent: React.FC<
               })
             );
           },
+          onReasoning: (_delta, fullReasoning) => {
+            if (!enableReasoning) return;
+            pendingReasoning = fullReasoning;
+            scheduleStreamUpdate();
+          },
           onDelta: (_delta, fullText) => {
-            setMessages((prev) =>
-              prev.map((m) =>
-                m.id === assistantMsgId
-                  ? { ...m, content: fullText, isStreaming: true }
-                  : m
-              )
-            );
+            pendingText = fullText;
+            scheduleStreamUpdate();
           },
           onDone: (fullText, recs, shortcuts) => {
+            if (throttleTimeout) {
+              clearTimeout(throttleTimeout);
+              throttleTimeout = null;
+            }
+            pendingText = null;
+            pendingReasoning = null;
             setMessages((prev) =>
               prev.map((m) =>
                 m.id === assistantMsgId
@@ -411,6 +466,7 @@ const DashboardLayoutContent: React.FC<
                       recommendations: recs,
                       shortcuts,
                       isStreaming: false,
+                      isThinking: false,
                     }
                   : m
               )
@@ -419,6 +475,12 @@ const DashboardLayoutContent: React.FC<
             setIsLoading(false);
           },
           onError: (err) => {
+            if (throttleTimeout) {
+              clearTimeout(throttleTimeout);
+              throttleTimeout = null;
+            }
+            pendingText = null;
+            pendingReasoning = null;
             console.error('Agent Stream Error:', err);
             handleSelectEmotion('confused', 4000);
             setIsLoading(false);
@@ -437,7 +499,8 @@ const DashboardLayoutContent: React.FC<
             );
           },
         },
-        abortCtrl.signal
+        abortCtrl.signal,
+        attachments
       );
     } catch (err) {
       console.error('Agent Investigation Error:', err);
@@ -476,7 +539,16 @@ const DashboardLayoutContent: React.FC<
   }, [handleSelectEmotion]);
 
   const handleToggleClickToSpeak = () => {
-    if (isListening) {
+    const now = Date.now();
+    // Guard: Debounce fast consecutive taps / simulated click bounce on mobile (450ms)
+    if (now - lastToggleClickTimeRef.current < 450) {
+      return;
+    }
+    lastToggleClickTimeRef.current = now;
+
+    // Use synchronous ref to prevent race condition when state hasn't updated yet
+    if (isListeningRef.current) {
+      isListeningRef.current = false;
       if (stopListeningRef.current) {
         stopListeningRef.current();
         stopListeningRef.current = null;
@@ -486,11 +558,15 @@ const DashboardLayoutContent: React.FC<
       return;
     }
 
+    SpeechService.unlockAudio();
     SpeechService.stopSpeaking();
+    isListeningRef.current = true;
+    setIsListening(true);
     handleSelectEmotion('listening', 0);
 
     const stopFn = SpeechService.startListening(
       (transcript) => {
+        isListeningRef.current = false;
         setIsListening(false);
         setIsSoundDetected(false);
         stopListeningRef.current = null;
@@ -499,6 +575,7 @@ const DashboardLayoutContent: React.FC<
         }
       },
       (listening) => {
+        isListeningRef.current = listening;
         setIsListening(listening);
         if (!listening) {
           setIsSoundDetected(false);
@@ -507,6 +584,7 @@ const DashboardLayoutContent: React.FC<
       },
       (err) => {
         console.warn('Speech recognition error:', err);
+        isListeningRef.current = false;
         setIsListening(false);
         setIsSoundDetected(false);
         stopListeningRef.current = null;
@@ -521,6 +599,7 @@ const DashboardLayoutContent: React.FC<
   };
 
   const handleTriggerSpeechFromPage = React.useCallback((text: string, emotion: string) => {
+    SpeechService.unlockAudio();
     handleSelectEmotion(emotion as CharacterEmotion, 6000);
     const el11Key = settings.elevenLabsApiKey || DEFAULT_SETTINGS.elevenLabsApiKey;
     const el11Voice = settings.avatarVoiceId || settings.elevenLabsVoiceId || VOICE_DEFAULT_ID;

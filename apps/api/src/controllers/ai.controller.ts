@@ -5,26 +5,57 @@ import { ragService } from '../services/rag.service.js';
 import type { AiChatInput } from '../validators/ai.validator.js';
 import type { RagSearchResult } from '@healthathon/shared';
 
+export function isSimpleGreetingOrChat(text: string): boolean {
+  if (!text) return true;
+  const t = text.toLowerCase().trim().replace(/[.,!?;:'"]/g, '');
+  const greetings = [
+    'halo', 'halo asisten', 'halo vera', 'halo luna', 'halo ai', 'halo infera',
+    'hai', 'hi', 'hello', 'hey', 'hei',
+    'selamat pagi', 'selamat siang', 'selamat sore', 'selamat malam',
+    'pagi', 'siang', 'sore', 'malam',
+    'assalamualaikum', 'assalamu alaikum', 'salam',
+    'tes', 'test', 'testing', 'ping',
+    'apa kabar', 'gimana kabarnya',
+    'siapa kamu', 'kamu siapa', 'siapa anda', 'anda siapa',
+    'bisa apa', 'apa yang bisa kamu lakukan', 'kamu bisa apa',
+    'terima kasih', 'makasih', 'terimakasih', 'thanks', 'thank you',
+    'ok', 'oke', 'sip', 'siap', 'baik', 'iya', 'ya'
+  ];
+  if (greetings.includes(t)) return true;
+  if (t.length <= 16 && greetings.some((g) => t.startsWith(g))) return true;
+  return false;
+}
+
 function buildSystemPrompt(mode: 'chat' | 'voice', ragContextBlock: string): string {
   if (mode === 'voice') {
     return (
-      'Anda adalah Vera / Luna, asisten suara virtual perempuan yang cerdas, hangat, dan santun untuk INFERA BPJS Kesehatan.\n' +
-      'KEBIJAKAN RESPON SUARA (SANGAT KETAT):\n' +
-      '1. Respon Anda WAJIB SINGKAT, PADAT, dan LISAN (maksimal 2 hingga 3 kalimat saja).\n' +
-      '2. Gunakan gaya bahasa percakapan yang santun, bersahabat, dan jelas saat dibacakan.\n' +
-      '3. JANGAN gunakan format Markdown kompleks, JANGAN buat tabel, JANGAN buat bullet points panjang, dan JANGAN tulis kode.\n' +
-      '4. Respon akan langsung dikonversi menjadi suara (TTS), sehingga harus sangat enak didengar secara verbal.' +
+      'Identitas: Anda adalah Vera / Luna, asisten digital suara BPJS Kesehatan untuk sistem INFERA. Karakter Anda ramah, cerdas, cekatan, dan berwibawa.\n' +
+      'Prinsip Respon Suara:\n' +
+      '1. Deteksi Konteks Percakapan: Jika pengguna hanya menyapa (misal "halo", "selamat pagi", "apa kabar") atau menyapa santai, balaslah dengan ramah, hangat, dan ringkas (1-2 kalimat). JANGAN mengeluarkan rujukan regulasi, angka klaim, atau laporan panjang yang tidak diminta.\n' +
+      '2. Berbasis Data & Fakta Nyata: Bila pengguna menanyakan kasus, aturan, atau temuan fraud tertentu, jelaskan temuan, status risiko, atau ketentuan regulasi JKN secara akurat dan to the point.\n' +
+      '3. Bahasa Lisan Padat (2-3 Kalimat): Sampaikan intisari secara alami dan langsung pada intinya agar nyaman didengar via TTS. Respon harus dinamis sesuai konteks pertanyaan, BUKAN template klise.\n' +
+      '4. Tanpa Format Tertulis: Jangan gunakan bullet points, tabel, judul Markdown (#), atau blok kode.' +
       ragContextBlock
     );
   }
 
   return (
-    'Anda adalah INFERA AI (Integrated Fraud Early-Warning & Risk Analytics), Asisten Investigasi Fraud & Analisis Risiko Cerdas BPJS Kesehatan.\n' +
-    'KEBIJAKAN RESPON TEKS ANALITIS:\n' +
-    '1. Berikan analisis mendalam, terstruktur, objektif, dan solutif bagi auditor & verifikator klaim BPJS Kesehatan.\n' +
-    '2. Gunakan sintaks Markdown semantik lengkap: Judul (#, ##, ###), bullet points teratur, kutipan blokir (>), tabel Markdown rapi (dengan border & header jelas) jika membandingkan data klaim atau biaya, dan blok kode dengan nama bahasa jika menyajikan rumus perhitungan atau query SQL.\n' +
-    '3. Rujuk regulasi resmi JKN (Permenkes No. 16/2019 tentang Pencegahan Kecurangan, Permenkes No. 3/2023 tentang INA-CBG, UU No. 24/2011 tentang BPJS, dsb) secara presisi.\n' +
-    '4. Jika bukti regulasi RAG tidak mencukupi, sampaikan secara transparan tanpa mengarang nomor pasal atau regulasi fiktif.' +
+    'IDENTITAS SISTEM (MUTLAK & RESMI):\n' +
+    '- Nama Sistem/Platform: INFERA (Integrated Fraud Early-Warning & Risk Analytics).\n' +
+    '- Anda adalah INFERA AI, asisten intelijen dan investigasi fraud integritas klaim BPJS Kesehatan.\n' +
+    '- PANTANGAN NAMA SISTEM: DILARANG KERAS menyebut atau mengasumsikan platform ini sebagai "platform VEDIKA", "sistem VEDIKA", atau lainnya. Platform Anda bernama INFERA. (VEDIKA hanyalah prosedur verifikasi digital pra-bayar BPJS di tingkat faskes, BUKAN nama platform investigasi ini). Jangan pernah mengatakan "di platform VEDIKA BPJS Kesehatan", tetapi katakan "di platform INFERA BPJS Kesehatan".\n' +
+    'MEMORI KONVERSASI MULTI-TURN:\n' +
+    '- Anda WAJIB memperhatikan dan mengingat konteks percakapan pada giliran-giliran sebelumnya (nama peserta yang baru dibahas, nomor SEP, temuan kecurangan).\n' +
+    '- Bila pengguna bertanya pertanyaan lanjutan (seperti "Ada ga sekarang kasusnya?", "Bagaimana kelanjutan kasus Budi?"), kaitkan secara organik dengan entitas yang sedang dibahas.\n' +
+    'KONTEKS SISTEM OPERASIONAL TAHUN 2026:\n' +
+    '- Tahun Sistem Aktif: TAHUN 2026 (Sistem INFERA beroperasi secara live pada Tahun 2026).\n' +
+    '- Kasus Simulasi Live 2026: Budi Santoso (Impossible Travel Semarang-Bandung, No SEP 1114R0010926V0001), Hendra Wijaya (Doctor Shopping 3 RS poli jantung, No SEP 0112P0010926V0010), Nurul Hidayati (Resale Obat PRB 260% kuota, No SEP 0003R0010926V0003), Agus Pratama (Diskordansi Biologis Seksio Sesarea Laki-laki, No SEP 0004R0010926V0004).\n' +
+    '- PANTANGAN DATA USANG: DILARANG mengutip atau menyebut data usang "Juli 2024" dari internet. Bila pengguna bertanya "Ada kasus terbaru?", "Ada ga sekarang kasusnya?", selalu rujuk kasus-kasus aktif Tahun 2026 di atas.\n' +
+    'Prinsip Respon Analitis:\n' +
+    '1. Deteksi Konteks Percakapan: Jika pengguna hanya menyapa (misal "halo", "selamat pagi", "apa kabar") atau mengajukan pertanyaan umum/santai, balaslah dengan ramah, hangat, dan ringkas (1-2 kalimat) TANPA mengeluarkan laporan audit, tabel klaim, atau pasal regulasi yang tidak diminta. Jangan memaksakan analisis jika pengguna tidak meminta investigasi kasus tertentu.\n' +
+    '2. Dinamis & Non-Template: Bila pengguna meminta investigasi atau analisa, sesuaikan struktur dan alur respon dengan inti pertanyaan auditor. Berikan penalaran faktual secara organik, hindari format template atau boilerplate berulang.\n' +
+    '3. Landasan Data & Regulasi: Rujuk bukti data klaim serta regulasi resmi JKN (Permenkes 16/2019, Permenkes 3/2023, UU 24/2011, KUHP 263) secara presisi dari konteks yang tersedia.\n' +
+    '4. Format Markdown Semantik: Gunakan heading, tabel perbandingan, atau poin temuan hanya jika mendukung efektivitas audit forensik.' +
     ragContextBlock
   );
 }
@@ -91,12 +122,18 @@ export const chatStream = async (req: Request, res: Response): Promise<void> => 
   try {
     // 1. Runtime RAG Retrieval (Bounded input length)
     const lastUserMsg = [...input.messages].reverse().find((m) => m.role === 'user');
+    const userText = typeof lastUserMsg?.content === 'string'
+      ? lastUserMsg.content
+      : Array.isArray(lastUserMsg?.content)
+        ? (lastUserMsg.content.find((c: any) => c.type === 'text') as any)?.text || ''
+        : '';
+    const isGreeting = lastUserMsg ? isSimpleGreetingOrChat(userText) : true;
     let ragResults: RagSearchResult[] = [];
 
-    if (lastUserMsg && lastUserMsg.content.trim()) {
+    if (!isGreeting && userText.trim()) {
       try {
         ragResults = await ragService.search({
-          query: lastUserMsg.content.slice(0, 500),
+          query: userText.trim().slice(0, 500),
           matchCount: 3,
         });
       } catch (ragErr) {
@@ -125,16 +162,22 @@ export const chatStream = async (req: Request, res: Response): Promise<void> => 
       ...filteredMessages,
     ];
 
+    const enableReasoning = Boolean((input as any).enableReasoning);
     const aiRequest = {
       ...input,
       mode,
       messages: assembledMessages,
+      ...(enableReasoning ? { reasoning: { effort: 'medium' as const } } : {}),
     };
 
     // 4. Stream chunks from OpenRouter
     let streamEnded = false;
     for await (const chunk of openRouterService.streamChat(aiRequest, abortController.signal)) {
       if (abortController.signal.aborted) break;
+
+      if (enableReasoning && chunk.reasoning) {
+        sendEvent('reasoning', { content: chunk.reasoning });
+      }
 
       if (chunk.delta) {
         sendEvent('delta', { content: chunk.delta });
@@ -180,12 +223,18 @@ export const chatCompletion = async (req: Request, res: Response, next: NextFunc
 
     // 1. Runtime RAG Retrieval
     const lastUserMsg = [...input.messages].reverse().find((m) => m.role === 'user');
+    const userText = typeof lastUserMsg?.content === 'string'
+      ? lastUserMsg.content
+      : Array.isArray(lastUserMsg?.content)
+        ? (lastUserMsg.content.find((c: any) => c.type === 'text') as any)?.text || ''
+        : '';
+    const isGreeting = lastUserMsg ? isSimpleGreetingOrChat(userText) : true;
     let ragResults: RagSearchResult[] = [];
 
-    if (lastUserMsg && lastUserMsg.content.trim()) {
+    if (!isGreeting && userText.trim()) {
       try {
         ragResults = await ragService.search({
-          query: lastUserMsg.content,
+          query: userText.trim().slice(0, 500),
           matchCount: 3,
         });
       } catch (ragErr) {

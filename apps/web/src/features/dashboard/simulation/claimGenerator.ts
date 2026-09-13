@@ -161,9 +161,9 @@ export function generateNormalClaim(): JknClaimRecord {
     fraudRiskScore: randomInt(4, 16),
     riskLevel: 'LOW',
     fraudTypology: 'NORMAL',
-    anomalyTitle: 'Klaim Wajar & Terverifikasi (Lolos VEDIKA)',
+    anomalyTitle: 'Klaim Wajar & Terverifikasi (Lolos Verifikasi INFERA)',
     anomalyDescription: 'Seluruh rekam medis elektronik, kepatuhan tarif INA-CBG, dan indikasi klinis terverifikasi absah sesuai regulasi JKN.',
-    recommendedAction: 'Klaim terverifikasi wajar oleh VEDIKA (Memenuhi Syarat Pembayaran DJS)'
+    recommendedAction: 'Klaim terverifikasi wajar oleh INFERA (Memenuhi Syarat Pembayaran DJS)'
   };
 }
 

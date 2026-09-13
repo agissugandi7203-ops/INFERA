@@ -1,7 +1,7 @@
 import type { RegulationChunk, RagSearchResult, RagSearchRequest } from '@healthathon/shared';
 import { JKN_REGULATIONS_CHUNKS } from '../data/regulationsData';
 
-const API_BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) || 'http://localhost:4000/api/v1';
+const API_BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) || '/api/v1';
 
 export class WebRagService {
   public getAllRegulations(): RegulationChunk[] {
@@ -10,12 +10,13 @@ export class WebRagService {
 
   public async search(request: RagSearchRequest): Promise<RagSearchResult[]> {
     const { query, matchCount = 3, filterCategory } = request;
-    if (!query || query.trim() === '') return [];
+    const cleanQuery = query ? query.trim() : '';
+    if (!cleanQuery) return [];
 
-    // 1. Try Backend RAG Endpoint
+    // 1. Try Backend RAG Endpoint (Supabase pgvector / semantic search)
     try {
-      const url = new URL(`${API_BASE_URL}/rag/search`);
-      url.searchParams.set('query', query);
+      const url = new URL(`${API_BASE_URL}/rag/search`, window.location.origin);
+      url.searchParams.set('query', cleanQuery);
       if (matchCount) url.searchParams.set('limit', String(matchCount));
       if (filterCategory) url.searchParams.set('category', filterCategory);
 
@@ -29,12 +30,12 @@ export class WebRagService {
           return json.data;
         }
       }
-    } catch (err) {
-      // Backend unavailable or network failure; fall back to local search
+    } catch {
+      // Backend unavailable or network failure; fall back to local database search
     }
 
-    // 2. Client-side In-Memory Fallback
-    return this.clientFallbackSearch(query, matchCount, filterCategory);
+    // 2. Local Database Weighted Search over actual JKN regulations
+    return this.clientFallbackSearch(cleanQuery, matchCount, filterCategory);
   }
 
   private clientFallbackSearch(
@@ -42,7 +43,11 @@ export class WebRagService {
     limit: number,
     filterCategory?: string
   ): RagSearchResult[] {
-    const qTokens = query.toLowerCase().split(/\s+/).filter((t) => t.length > 2);
+    const cleanQuery = query.toLowerCase().trim();
+    let qTokens = cleanQuery.split(/\s+/).filter((t) => t.length > 1);
+    if (qTokens.length === 0 && cleanQuery.length > 0) {
+      qTokens = [cleanQuery];
+    }
     const scored: RagSearchResult[] = [];
 
     for (const chunk of JKN_REGULATIONS_CHUNKS) {
@@ -51,15 +56,29 @@ export class WebRagService {
       }
 
       let score = 0;
-      const haystack = `${chunk.title} ${chunk.content} ${(chunk.keywords || []).join(' ')}`.toLowerCase();
+      const titleLower = chunk.title.toLowerCase();
+      const contentLower = chunk.content.toLowerCase();
+      const regLower = chunk.regulation.toLowerCase();
+      const artLower = (chunk.article || '').toLowerCase();
+      const kwLower = (chunk.keywords || []).map((k) => k.toLowerCase());
+
+      // Exact phrase match receives highest weight
+      if (titleLower.includes(cleanQuery)) score += 12;
+      if (regLower.includes(cleanQuery)) score += 10;
+      if (artLower.includes(cleanQuery)) score += 9;
+      if (kwLower.some((k) => k.includes(cleanQuery))) score += 8;
+      if (contentLower.includes(cleanQuery)) score += 5;
 
       for (const token of qTokens) {
-        if (haystack.includes(token)) {
-          score += 1;
-        }
+        if (titleLower.includes(token)) score += 4;
+        if (artLower.includes(token)) score += 4;
+        if (kwLower.some((k) => k.includes(token))) score += 3;
+        if (regLower.includes(token)) score += 2;
+        if (contentLower.includes(token)) score += 1;
       }
 
       if (score > 0) {
+        const similarity = Math.min(0.98, 0.4 + (score / (qTokens.length * 10 + 5)) * 0.58);
         scored.push({
           id: chunk.id,
           title: chunk.title,
@@ -67,7 +86,7 @@ export class WebRagService {
           article: chunk.article,
           category: chunk.category,
           content: chunk.content,
-          similarity: Math.min(0.95, score / Math.max(qTokens.length, 1)),
+          similarity: Math.round(similarity * 100) / 100,
         });
       }
     }

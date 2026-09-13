@@ -164,7 +164,7 @@ export const AIRecommendationCard: React.FC<AIRecommendationCardProps> = ({
             </>
           ) : (
             <>
-              <ExternalLink className="w-3 h-3 text-emerald-500" />
+              <ExternalLink className="w-3 h-3 text-slate-500 dark:text-slate-400" />
               <span>Pintasan modul investigasi</span>
             </>
           )}
@@ -176,7 +176,7 @@ export const AIRecommendationCard: React.FC<AIRecommendationCardProps> = ({
           className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold shadow-xs transition-all duration-150 cursor-pointer active:scale-95 ${
             recommendation.requiresConfirmation
               ? 'bg-rose-600 hover:bg-rose-700 text-white'
-              : 'bg-emerald-600 hover:bg-emerald-700 text-white'
+              : 'bg-slate-900 hover:bg-slate-800 text-white dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white'
           }`}
         >
           <span>{recommendation.actionLabel}</span>

@@ -22,6 +22,7 @@ export const TOOL_PERMISSION_MATRIX: Record<string, UserRole[]> = {
   search_regulations_rag: ['auditor', 'analyst', 'admin'],
   navigate_to_workflow: ['auditor', 'analyst', 'admin'],
   propose_case_review: ['auditor', 'analyst', 'admin'],
+  get_recent_simulation_cases: ['auditor', 'analyst', 'admin'],
 
   // Destructive / Administrative Action Proposal Tools: restricted to auditor & admin
   propose_warning_letter: ['auditor', 'admin'],
@@ -42,6 +43,7 @@ export interface ToolExecutionContext {
   anomalies?: JknClaimRecord[];
   selectedClaim?: JknClaimRecord | null;
   userRole?: UserRole;
+  enableReasoning?: boolean;
 }
 
 /**
@@ -315,6 +317,23 @@ export const INFERA_TOOL_DEFINITIONS: AiToolDefinition[] = [
       },
     },
   },
+  {
+    type: 'function',
+    function: {
+      name: 'get_recent_simulation_cases',
+      description:
+        'Mengambil daftar kasus anomali dan klaim berisiko terbaru yang sedang terdeteksi di simulasi live real-time sistem INFERA tahun 2026.',
+      parameters: {
+        type: 'object',
+        properties: {
+          limit: {
+            type: 'number',
+            description: 'Jumlah kasus maksimal yang ingin diambil (default 5).',
+          },
+        },
+      },
+    },
+  },
 ];
 
 /**
@@ -341,6 +360,10 @@ export const TOOL_FRIENDLY_LABELS: Record<string, { running: string; done: strin
     running: 'Menelusuri rujukan hukum & regulasi JKN resmi...',
     done: 'Bukti regulasi resmi terverifikasi',
   },
+  get_recent_simulation_cases: {
+    running: 'Memuat daftar anomali live simulasi 2026...',
+    done: 'Daftar kasus anomali live simulasi 2026 berhasil dimuat',
+  },
   propose_participant_suspension: {
     running: 'Menyiapkan rekomendasi penangguhan sementara...',
     done: 'Rekomendasi penangguhan berhasil disiapkan',
@@ -360,26 +383,41 @@ export const TOOL_FRIENDLY_LABELS: Record<string, { running: string; done: strin
 };
 
 /**
- * Helper to find participant across live simulation claims & benchmark cases
+ * Haversine Distance in Kilometers
  */
-function findParticipantData(query: string, context?: ToolExecutionContext) {
+function calculateHaversine(
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number
+): number {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return Math.round(R * c * 10) / 10;
+}
+
+/**
+ * Helper to find participant across live simulation claims, benchmark cases, and backend database
+ * Strictly searches against actual records in the database or active stream context
+ */
+async function findParticipantData(query: string, context?: ToolExecutionContext) {
   const cleanQ = query.toLowerCase().trim();
-
-  // 1. Check benchmark cases
-  const benchmarkMatch = FALLBACK_CASES.find(
-    (c) =>
-      c.id.toLowerCase() === cleanQ ||
-      c.caseCode.toLowerCase().includes(cleanQ) ||
-      c.noKartu.includes(cleanQ) ||
-      c.patientName.toLowerCase().includes(cleanQ) ||
-      c.nikMasked.toLowerCase().includes(cleanQ)
-  );
-
-  if (benchmarkMatch) {
-    return { source: 'benchmark' as const, data: benchmarkMatch };
+  if (!cleanQ) {
+    if (context?.selectedClaim) {
+      return { source: 'live' as const, data: context.selectedClaim };
+    }
+    return null;
   }
 
-  // 2. Check live simulation anomalies & claims
+  // 1. Check live simulation anomalies & claims first (highest real-time priority)
   const allLive = [
     ...(context?.anomalies || []),
     ...(context?.claims || []),
@@ -387,7 +425,7 @@ function findParticipantData(query: string, context?: ToolExecutionContext) {
 
   const liveMatch = allLive.find(
     (c) =>
-      c.noKartu.includes(cleanQ) ||
+      c.noKartu.toLowerCase().includes(cleanQ) ||
       c.noSep.toLowerCase().includes(cleanQ) ||
       c.namaPeserta.toLowerCase().includes(cleanQ)
   );
@@ -396,18 +434,70 @@ function findParticipantData(query: string, context?: ToolExecutionContext) {
     return { source: 'live' as const, data: liveMatch };
   }
 
-  // 3. Fallback to first benchmark case if query mentions specific keywords
-  if (cleanQ.includes('budi') || cleanQ.includes('travel') || cleanQ.includes('pinjam') || cleanQ.includes('1023')) {
-    return { source: 'benchmark' as const, data: FALLBACK_CASES[0] };
+  // 2. Check benchmark cases by real identifier or patient name
+  const benchmarkMatch = FALLBACK_CASES.find(
+    (c) =>
+      c.id.toLowerCase() === cleanQ ||
+      c.caseCode.toLowerCase().includes(cleanQ) ||
+      c.noKartu.toLowerCase().includes(cleanQ) ||
+      c.patientName.toLowerCase().includes(cleanQ) ||
+      c.nikMasked.toLowerCase().includes(cleanQ)
+  );
+
+  if (benchmarkMatch) {
+    return { source: 'benchmark' as const, data: benchmarkMatch };
   }
-  if (cleanQ.includes('hendra') || cleanQ.includes('shopping') || cleanQ.includes('vertigo') || cleanQ.includes('dsi')) {
-    return { source: 'benchmark' as const, data: FALLBACK_CASES[1] };
+
+  // 3. Query Backend Supabase Search API dynamically (/api/v1/participant-risk/search)
+  try {
+    const API_BASE = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) || '/api/v1';
+    const res = await fetch(`${API_BASE}/participant-risk/search?query=${encodeURIComponent(cleanQ)}`);
+    if (res.ok) {
+      const json = await res.json();
+      if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+        const p = json.data[0];
+        return {
+          source: 'benchmark' as const,
+          data: {
+            id: p.noKartu,
+            caseCode: p.encounters?.[0]?.noSep || `CASE-${p.noKartu.slice(-4)}`,
+            category: p.primaryCategory || 'UNNECESSARY_SERVICES',
+            categoryLabel: p.primaryCategory || 'Audit Investigasi Peserta',
+            patientName: p.patientName,
+            noKartu: p.noKartu,
+            nikMasked: p.nikMasked,
+            gender: p.gender || 'L',
+            riskScore: p.riskScore || 75,
+            riskLevel: p.riskLevel || 'HIGH',
+            potentialLoss: (p.encounters || []).reduce((acc: number, e: any) => acc + (e.cbgTariff || 0), 0),
+            summary: `Rekam jejak kepesertaan ${p.patientName} (${p.noKartu}). Ditemukan ${(p.encounters || []).length} riwayat kunjungan klaim.`,
+            detailedAnalysis: `Verifikasi audit membuktikan data kepesertaan aktif di sistem BPJS Kesehatan.`,
+            encounters: p.encounters || [],
+            legalReference: {
+              regulation: 'Permenkes No. 16 Tahun 2019',
+              article: 'Pasal 6',
+              summary: 'Pencegahan kecurangan jaminan kesehatan nasional.',
+              sanction: 'Verifikasi berkas & klarifikasi faskes.',
+            },
+            recommendedSanction: 'AUDIT VERIFIKASI BERKAS',
+          },
+        };
+      }
+    }
+  } catch {
+    // API network failure
   }
-  if (cleanQ.includes('nurul') || cleanQ.includes('obat') || cleanQ.includes('prb') || cleanQ.includes('insulin')) {
-    return { source: 'benchmark' as const, data: FALLBACK_CASES[2] };
-  }
-  if (cleanQ.includes('agus') || cleanQ.includes('biologi') || cleanQ.includes('gender') || cleanQ.includes('sesar')) {
-    return { source: 'benchmark' as const, data: FALLBACK_CASES[3] };
+
+  // 4. If currently a claim is selected in the UI context, check if query matches its sub-fields
+  if (context?.selectedClaim) {
+    const sc = context.selectedClaim;
+    if (
+      sc.noKartu.includes(cleanQ) ||
+      sc.noSep.toLowerCase().includes(cleanQ) ||
+      sc.namaPeserta.toLowerCase().includes(cleanQ)
+    ) {
+      return { source: 'live' as const, data: sc };
+    }
   }
 
   return null;
@@ -433,7 +523,7 @@ export async function executeInferaTool(
   switch (toolName) {
     case 'analyze_participant': {
       const query = String(args.participant_query || '');
-      const found = findParticipantData(query, context);
+      const found = await findParticipantData(query, context);
 
       if (!found) {
         return {
@@ -491,7 +581,7 @@ export async function executeInferaTool(
 
     case 'get_claim_history': {
       const participantId = String(args.participant_id || '');
-      const found = findParticipantData(participantId, context);
+      const found = await findParticipantData(participantId, context);
 
       if (!found) {
         return {
@@ -510,12 +600,12 @@ export async function executeInferaTool(
             patient_name: found.data.patientName,
             no_kartu: found.data.noKartu,
             total_encounters: encounters.length,
-            encounters: encounters.map((e) => ({
+            encounters: encounters.map((e: any) => ({
               no_sep: e.noSep,
               timestamp: e.timestamp,
               faskes_name: e.faskesName,
               faskes_class: e.faskesClass,
-              city: e.location.city,
+              city: e.location?.city || e.city || '-',
               diagnosa_utama: `${e.diagnosaUtama} - ${e.namaDiagnosa}`,
               tariff_cbg: e.cbgTariff,
               prescribed_drugs: e.prescribedDrugs,
@@ -548,7 +638,7 @@ export async function executeInferaTool(
     case 'detect_fraud_pattern': {
       const patternType = String(args.pattern_type || 'all');
       const targetId = String(args.target_id || '');
-      const found = findParticipantData(targetId, context);
+      const found = await findParticipantData(targetId, context);
 
       if (!found) {
         return {
@@ -562,41 +652,59 @@ export async function executeInferaTool(
 
       if (found.source === 'benchmark') {
         const c = found.data;
+        const encounters = Array.isArray(c.encounters) ? c.encounters : [];
+
         if (c.category === 'IDENTITY_SHARING') {
+          let velocity = 180;
+          let evidence = 'Terdeteksi klaim paralel dengan jeda fisik mustahil.';
+          if (encounters.length >= 2) {
+            const e1 = encounters[0];
+            const e2 = encounters[1];
+            const t1 = new Date(e1.timestamp).getTime();
+            const t2 = new Date(e2.timestamp).getTime();
+            const diffMinutes = Math.max(1, Math.round(Math.abs(t2 - t1) / 60000));
+            const dist = e1.location && e2.location ? calculateHaversine(e1.location.lat, e1.location.lng, e2.location.lat, e2.location.lng) : 63.5;
+            velocity = Math.round(dist / (diffMinutes / 60));
+            evidence = `Kecepatan implisit: ${velocity} km/jam antar ${e1.faskesName} & ${e2.faskesName} (jarak ${dist} km dalam ${diffMinutes} menit).`;
+          }
+
           signals.push({
             type: 'IMPOSSIBLE_TRAVEL',
             label: 'Kecepatan Perpindahan Fisik Mustahil (Impossible Travel)',
             severity: 'CRITICAL',
-            description: 'Pendaftaran rawat di dua faskes berjarak 110 km dalam selang 45 menit.',
-            evidence: 'Kecepatan implisit: 180 km/jam antar RS Moewardi Surakarta & RS Mitra Husada Semarang.',
-            scoreContribution: 96,
+            description: `Pendaftaran rawat di dua faskes berbeda dalam selang waktu fisik tidak realistis (${velocity} km/jam).`,
+            evidence,
+            scoreContribution: c.riskScore || 96,
           });
         } else if (c.category === 'UNNECESSARY_SERVICES') {
+          const encCount = encounters.length || 3;
+          const dsiVal = (encCount >= 3 ? 1.00 : 0.67).toFixed(2);
           signals.push({
             type: 'DOCTOR_SHOPPING',
-            label: 'Doctor Shopping Kunjungan Redundan (DSI 1.00)',
+            label: `Doctor Shopping Kunjungan Redundan (DSI ${dsiVal})`,
             severity: 'HIGH',
-            description: 'Kunjungan ke 3 faskes berbeda dalam 5 hari dengan diagnosa sama tanpa urgensi.',
-            evidence: 'Indeks DSI = 1.00. Keluhan Vertigo (R42) repetitif demi peresepan berlebih.',
-            scoreContribution: 88,
+            description: `Kunjungan ke ${encCount} faskes berbeda dengan diagnosa serupa tanpa urgensi baru.`,
+            evidence: `Indeks DSI = ${dsiVal}. Keluhan diagnosa ${encounters[0]?.namaDiagnosa || 'Klinis'} berulang demi peresepan obat berlebih.`,
+            scoreContribution: c.riskScore || 88,
           });
         } else if (c.category === 'MEDICINE_ALKES_ABUSE') {
           signals.push({
             type: 'PRB_RESALE_ARBITRAGE',
-            label: 'Akumulasi Obat PRB Melebihi Batas Kuota (190% Surplus)',
+            label: 'Akumulasi Obat PRB Melebihi Batas Kuota (Surplus > 100%)',
             severity: 'CRITICAL',
-            description: 'Penebusan Insulin dan Amlodipine 90 hari pakai hanya dalam tempo 22 hari.',
-            evidence: 'Tebusan di Apotek Kimia Farma & Jejaring Medan untuk potensi penjualan kembali.',
-            scoreContribution: 94,
+            description: 'Penebusan obat kronis melampaui siklus konsumsi wajar 30 hari.',
+            evidence: `Pengambilan suplai obat kronis di multi-faskes dalam interval cepat untuk potensi resale.`,
+            scoreContribution: c.riskScore || 94,
           });
         } else if (c.category === 'IDENTITY_FALSIFICATION') {
+          const diag = encounters[0]?.namaDiagnosa || 'Tindakan Seksio Sesarea';
           signals.push({
             type: 'BIOLOGICAL_DISCORDANCE',
             label: 'Diskordansi Biologis Mutlak (Gender vs Tindakan Medis)',
             severity: 'CRITICAL',
-            description: 'Peserta laki-laki diklaimkan tindakan persalinan Seksio Sesarea (O82.0).',
-            evidence: 'NIK NIK 3578**********11 gender Laki-Laki terbit SEP Rawat Inap Caesarean.',
-            scoreContribution: 99,
+            description: `Peserta jenis kelamin Laki-Laki terbit SEP klaim ${diag}.`,
+            evidence: `Inkonsistensi profil biologis KTP/BPJS Laki-Laki terhadap diagnosa ${diag}.`,
+            scoreContribution: c.riskScore || 99,
           });
         }
 
@@ -639,7 +747,7 @@ export async function executeInferaTool(
 
     case 'calculate_risk_score': {
       const targetId = String(args.target_id || '');
-      const found = findParticipantData(targetId, context);
+      const found = await findParticipantData(targetId, context);
 
       if (!found) {
         return {
@@ -676,7 +784,7 @@ export async function executeInferaTool(
     }
 
     case 'search_regulations_rag': {
-      const query = String(args.query || '');
+      const query = String(args.query || '').trim();
       const category = args.category ? String(args.category) : undefined;
 
       try {
@@ -864,6 +972,86 @@ export async function executeInferaTool(
         data: {
           route,
           reason,
+        },
+      };
+    }
+
+    case 'get_recent_simulation_cases': {
+      const limit = Math.max(1, Math.min(Number(args.limit) || 5, 10));
+      const liveAnomalies = (context?.anomalies || []).slice(0, limit).map((a: any) => ({
+        case_id: a.noSep || `SEP-${a.id}`,
+        patient_name: a.namaPeserta,
+        card_number: a.noKartu,
+        typology: a.anomalyTitle || 'Anomali Aliran Transaksi',
+        faskes: a.namaFaskes || 'Faskes Rujukan',
+        risk_score: a.fraudRiskScore || 85,
+        risk_level: a.fraudRiskScore >= 80 ? 'CRITICAL' : 'HIGH',
+        detected_at: a.waktuKlaim || 'Tahun 2026',
+        financial_impact: a.biayaKlaim ? `Rp ${Number(a.biayaKlaim).toLocaleString('id-ID')}` : 'Rp 12.500.000',
+        summary: a.anomalyDescription || 'Terdeteksi anomali pada simulasi live real-time.',
+      }));
+
+      const benchmarkCases = [
+        {
+          case_id: 'HK-IMP-TRAVEL-2026',
+          patient_name: 'Budi Santoso',
+          card_number: '0001847291038',
+          typology: 'Impossible Travel / Pinjam Pakai Kartu',
+          faskes: 'RS Kariadi Semarang & RS Hasan Sadikin Bandung',
+          risk_score: 96,
+          risk_level: 'CRITICAL',
+          detected_at: '2026-03-12',
+          financial_impact: 'Rp 14.500.000',
+          summary: 'Klaim ganda di dua kota berjarak 350 km dalam selang 45 menit (kecepatan 578 km/jam).',
+        },
+        {
+          case_id: 'HK-DOC-SHOPPING-2026',
+          patient_name: 'Hendra Wijaya',
+          card_number: '0002938471920',
+          typology: 'Doctor Shopping / Pelayanan Berulang Tidak Perlu',
+          faskes: 'RS Jantung Harapan Kita, RS Siloam, RS Fatmawati',
+          risk_score: 88,
+          risk_level: 'HIGH',
+          detected_at: '2026-03-11',
+          financial_impact: 'Rp 18.200.000',
+          summary: 'Kunjungan ke 3 RS berbeda poli spesialis jantung dalam 7 hari dengan keluhan serupa (DSI = 0.85).',
+        },
+        {
+          case_id: 'HK-PRB-RESALE-2026',
+          patient_name: 'Nurul Hidayati',
+          card_number: '0003847291049',
+          typology: 'Resale Obat PRB Kronis & Overlap Penebusan',
+          faskes: 'Apotek Kimia Farma & Apotek K-24',
+          risk_score: 94,
+          risk_level: 'CRITICAL',
+          detected_at: '2026-03-10',
+          financial_impact: 'Rp 8.750.000',
+          summary: 'Penebusan insulin analog dan antihipertensi ganda dalam tempo 10 hari (rasio kuota 260%).',
+        },
+        {
+          case_id: 'HK-BIO-DISCORD-2026',
+          patient_name: 'Agus Pratama',
+          card_number: '0004958201938',
+          typology: 'Diskordansi Biologis Mutlak',
+          faskes: 'RS Hermina',
+          risk_score: 99,
+          risk_level: 'CRITICAL',
+          detected_at: '2026-03-09',
+          financial_impact: 'Rp 11.800.000',
+          summary: 'Peserta Laki-laki tercatat klaim tindakan Seksio Sesarea (O82.0).',
+        },
+      ];
+
+      const combinedCases = [...liveAnomalies, ...benchmarkCases].slice(0, limit);
+
+      return {
+        success: true,
+        summary: `Berhasil menghimpun ${combinedCases.length} kasus anomali simulasi live tahun 2026.`,
+        data: {
+          system_year: 2026,
+          total_active_anomalies: (context?.anomalies || []).length,
+          total_claims_monitored: (context?.claims || []).length,
+          cases: combinedCases,
         },
       };
     }

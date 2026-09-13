@@ -37,7 +37,7 @@ export const FALLBACK_METRICS: ParticipantRiskMetrics = {
     { city: 'Kota Bandung', count: 210 },
     { city: 'Jakarta Selatan', count: 195 },
   ],
-  timeframe: '30 Hari Terakhir (Live VEDIKA Audit)',
+  timeframe: '30 Hari Terakhir (Live INFERA Audit)',
 };
 
 export const FALLBACK_CASES: ParticipantAuditCase[] = [
@@ -229,7 +229,7 @@ export const FALLBACK_CASES: ParticipantAuditCase[] = [
     summary:
       'Nomor kartu peserta berjenis kelamin Laki-Laki digunakan untuk klaim rawat inap persalinan Seksio Sesarea (O82.0) di RS Swasta Surabaya.',
     detailedAnalysis:
-      'Sistem VEDIKA mendeteksi kegagalan biometrik dan diskordansi biologis mutlak: master data peserta NIK 3578**********11 atas nama Agus Pratama (Gender Laki-Laki, Umur 42 tahun) terbit SEP rawat inap Seksio Sesarea. Fakta membuktikan kartu digunakan oleh orang lain.',
+      'Sistem INFERA mendeteksi kegagalan biometrik dan diskordansi biologis mutlak: master data peserta NIK 3578**********11 atas nama Agus Pratama (Gender Laki-Laki, Umur 42 tahun) terbit SEP rawat inap Seksio Sesarea. Fakta membuktikan kartu digunakan oleh orang lain.',
     encounters: [
       {
         id: 'ENC-08',

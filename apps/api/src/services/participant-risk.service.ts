@@ -8,6 +8,7 @@ import type {
   ParticipantAuditCase,
   RiskLevel,
 } from '@healthathon/shared';
+import { supabaseService } from './supabase.service.js';
 
 /**
  * Haversine Distance in Kilometers
@@ -318,8 +319,119 @@ class ParticipantRiskService {
         { city: 'Kota Bandung', count: 210 },
         { city: 'Jakarta Selatan', count: 195 },
       ],
-      timeframe: '30 Hari Terakhir (Live VEDIKA Audit)',
+      timeframe: '30 Hari Terakhir (Live INFERA Audit)',
     };
+  }
+
+  /**
+   * Search participants and claims dynamically from Supabase database or fallback cases
+   */
+  public async searchParticipants(query: string): Promise<any[]> {
+    const cleanQ = query.trim();
+    if (!cleanQ) return [];
+
+    const admin = supabaseService.getAdminClient();
+    if (admin) {
+      try {
+        // 1. Query Supabase peserta_profiles with joined encounters
+        const { data: profileMatches, error: pErr } = await admin
+          .from('peserta_profiles')
+          .select('*, encounters:peserta_encounters(*)')
+          .or(`full_name.ilike.%${cleanQ}%,no_kartu.ilike.%${cleanQ}%,nik_masked.ilike.%${cleanQ}%`)
+          .limit(10);
+
+        if (!pErr && Array.isArray(profileMatches) && profileMatches.length > 0) {
+          return profileMatches.map((p) => ({
+            id: p.no_kartu,
+            noKartu: p.no_kartu,
+            patientName: p.full_name,
+            nikMasked: p.nik_masked,
+            gender: p.gender,
+            dateOfBirth: p.date_of_birth,
+            faskesTingkat1: p.faskes_tingkat_1,
+            membershipSegment: p.membership_segment,
+            statusIuran: p.status_iuran,
+            riskScore: p.overall_risk_score,
+            riskLevel: p.risk_level,
+            primaryCategory: p.primary_risk_category,
+            flaggedForAudit: p.flagged_for_audit,
+            encounters: (p.encounters || []).map((e: any) => ({
+              id: e.id,
+              noSep: e.no_sep,
+              timestamp: e.encounter_timestamp,
+              ppkCode: e.ppk_code,
+              faskesName: e.faskes_name,
+              faskesClass: e.faskes_class,
+              city: e.city,
+              province: e.province,
+              diagnosaUtama: e.diagnosa_utama,
+              namaDiagnosa: e.nama_diagnosa,
+              cbgCode: e.cbg_code,
+              cbgTariff: Number(e.cbg_tariff),
+            })),
+          }));
+        }
+
+        // 2. Query by encounter attributes (e.g. SEP number or diagnosis)
+        const { data: encounterMatches, error: eErr } = await admin
+          .from('peserta_encounters')
+          .select('*, profile:peserta_profiles(*)')
+          .or(`no_sep.ilike.%${cleanQ}%,diagnosa_utama.ilike.%${cleanQ}%,nama_diagnosa.ilike.%${cleanQ}%,faskes_name.ilike.%${cleanQ}%`)
+          .limit(10);
+
+        if (!eErr && Array.isArray(encounterMatches) && encounterMatches.length > 0) {
+          return encounterMatches.map((e: any) => {
+            const p = e.profile || {};
+            return {
+              id: p.no_kartu || e.no_kartu,
+              noKartu: p.no_kartu || e.no_kartu,
+              patientName: p.full_name || 'Peserta JKN',
+              nikMasked: p.nik_masked || '-',
+              riskScore: p.overall_risk_score || 75,
+              riskLevel: p.risk_level || 'HIGH',
+              primaryCategory: p.primary_risk_category || 'UNNECESSARY_SERVICES',
+              encounters: [
+                {
+                  id: e.id,
+                  noSep: e.no_sep,
+                  timestamp: e.encounter_timestamp,
+                  ppkCode: e.ppk_code,
+                  faskesName: e.faskes_name,
+                  diagnosaUtama: e.diagnosa_utama,
+                  namaDiagnosa: e.nama_diagnosa,
+                  cbgTariff: Number(e.cbg_tariff),
+                },
+              ],
+            };
+          });
+        }
+      } catch (err) {
+        console.warn('[ParticipantRiskService] Supabase search error, using local fallback:', err);
+      }
+    }
+
+    // Local fallback matching against benchmark cases
+    const lower = cleanQ.toLowerCase();
+    const cases = this.getCaseStudies();
+    return cases
+      .filter(
+        (c) =>
+          c.noKartu.includes(lower) ||
+          c.patientName.toLowerCase().includes(lower) ||
+          c.nikMasked.toLowerCase().includes(lower) ||
+          c.caseCode.toLowerCase().includes(lower) ||
+          c.encounters.some((e) => e.noSep.toLowerCase().includes(lower) || e.namaDiagnosa.toLowerCase().includes(lower))
+      )
+      .map((c) => ({
+        id: c.noKartu,
+        noKartu: c.noKartu,
+        patientName: c.patientName,
+        nikMasked: c.nikMasked,
+        riskScore: c.riskScore,
+        riskLevel: c.riskLevel,
+        primaryCategory: c.category,
+        encounters: c.encounters,
+      }));
   }
 
   /**
@@ -515,7 +627,7 @@ class ParticipantRiskService {
         summary:
           'Nomor kartu peserta berjenis kelamin Laki-Laki digunakan untuk klaim rawat inap persalinan Seksio Sesarea (O82.0) di RS Swasta Surabaya.',
         detailedAnalysis:
-          'Sistem VEDIKA mendeteksi kegagalan biometrik dan diskordansi biologis mutlak: master data peserta NIK 3578**********11 atas nama Agus Pratama (Gender Laki-Laki, Umur 42 tahun) terbit SEP rawat inap Seksio Sesarea. Fakta membuktikan kartu digunakan oleh istri siri peserta yang belum didaftarkan resmi ke dinas kependudukan.',
+          'Sistem INFERA mendeteksi kegagalan biometrik dan diskordansi biologis mutlak: master data peserta NIK 3578**********11 atas nama Agus Pratama (Gender Laki-Laki, Umur 42 tahun) terbit SEP rawat inap Seksio Sesarea. Fakta membuktikan kartu digunakan oleh istri siri peserta yang belum didaftarkan resmi ke dinas kependudukan.',
         encounters: [
           {
             id: 'ENC-08',

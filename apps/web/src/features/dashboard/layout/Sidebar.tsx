@@ -54,21 +54,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
       label: 'Chat AI',
       icon: Sparkles,
       badge: `${anomalies.length > 0 ? anomalies.length : 'Live'}`,
-      badgeColor: 'bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold',
+      badgeColor: 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/80 font-semibold',
     },
     {
       to: '/dashboard/transactions',
       label: 'Aliran Transaksi',
       icon: Activity,
       badge: `${claims.length}`,
-      badgeColor: 'bg-slate-100 text-slate-700 border border-slate-200 font-medium',
+      badgeColor: 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 font-medium',
     },
     {
       to: '/dashboard/cases',
       label: 'Studi Kasus',
       icon: FolderKanban,
       badge: '4',
-      badgeColor: 'bg-slate-100 text-slate-700 border border-slate-200 font-medium',
+      badgeColor: 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 font-medium',
     },
   ];
 
@@ -78,21 +78,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
       label: 'Identitas & Travel',
       icon: MapPin,
       badge: 'M1-2',
-      badgeColor: 'bg-slate-100 text-slate-600 border border-slate-200',
+      badgeColor: 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700',
     },
     {
       to: '/dashboard/unnecessary-services',
       label: 'Doctor Shopping',
       icon: Stethoscope,
       badge: 'M3',
-      badgeColor: 'bg-slate-100 text-slate-600 border border-slate-200',
+      badgeColor: 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700',
     },
     {
       to: '/dashboard/pharmacy-alkes',
       label: 'Resep & Alkes',
       icon: Pill,
       badge: 'M4',
-      badgeColor: 'bg-slate-100 text-slate-600 border border-slate-200',
+      badgeColor: 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700',
     },
   ];
 
@@ -153,7 +153,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <button
             type="button"
             onClick={onToggleCollapse}
-            className="w-6 h-6 rounded-md border border-slate-200 bg-white text-slate-400 hover:text-slate-800 hover:bg-slate-50 transition-colors flex items-center justify-center shrink-0"
+            className="w-6 h-6 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-400 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors flex items-center justify-center shrink-0"
             title="Perkecil sidebar"
           >
             <ChevronLeft className="w-3.5 h-3.5" />
@@ -163,18 +163,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Stream Status Widget (Quiet, No Blinking) */}
       {!isCollapsed && (
-        <div className="mx-3 mt-3 p-2 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+        <div className="mx-3 mt-3 p-2 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 flex items-center justify-between">
           <div className="flex items-center gap-2 min-w-0">
             <span
               className={`w-2 h-2 rounded-full shrink-0 ${
-                isPaused ? 'bg-slate-300' : 'bg-[#007a3d]'
+                isPaused ? 'bg-slate-300 dark:bg-slate-600' : 'bg-[#007a3d]'
               }`}
             />
             <div className="flex flex-col min-w-0">
-              <span className="text-[11px] font-semibold text-slate-800 truncate">
+              <span className="text-[11px] font-semibold text-slate-800 dark:text-slate-200 truncate">
                 {isPaused ? 'Stream Terjeda' : 'Stream Aktif'}
               </span>
-              <span className="text-[10px] font-mono text-slate-500 truncate">
+              <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400 truncate">
                 {claims.length} klaim ({intervalSec}s)
               </span>
             </div>
@@ -184,8 +184,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
             onClick={togglePause}
             className={`p-1 rounded-md border text-xs transition-colors flex items-center justify-center shrink-0 ${
               isPaused
-                ? 'bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100'
-                : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-100'
+                ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/80 hover:bg-emerald-100 dark:hover:bg-emerald-900/60'
+                : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700'
             }`}
             title={isPaused ? 'Lanjutkan' : 'Jeda'}
           >
@@ -199,7 +199,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Section 1: Utama */}
         <div>
           {!isCollapsed && (
-            <p className="px-2.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">
+            <p className="px-2.5 text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">
               Navigasi
             </p>
           )}
@@ -213,8 +213,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 className={({ isActive }) =>
                   `flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-xs transition-colors group ${
                     isActive
-                      ? 'bg-slate-900 text-white font-semibold'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 font-medium'
+                      ? 'bg-slate-900 dark:bg-emerald-600/90 text-white font-semibold shadow-xs'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100/80 dark:hover:bg-slate-800/70 font-medium'
                   }`
                 }
               >
@@ -222,7 +222,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   <>
                     <item.icon
                       className={`w-4 h-4 shrink-0 transition-colors ${
-                        isActive ? 'text-white' : 'text-slate-400 group-hover:text-slate-700'
+                        isActive ? 'text-white' : 'text-slate-400 dark:text-slate-500 group-hover:text-slate-700 dark:group-hover:text-slate-200'
                       }`}
                     />
                     {!isCollapsed && <span className="truncate">{item.label}</span>}
@@ -230,7 +230,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       <span
                         className={`ml-auto text-[10px] font-mono px-1.5 py-0.2 rounded-md ${
                           isActive
-                            ? 'bg-slate-800 text-slate-200 font-bold'
+                            ? 'bg-slate-800 dark:bg-emerald-700 text-slate-200 dark:text-white font-bold'
                             : item.badgeColor
                         }`}
                       >
@@ -247,7 +247,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Section 2: Modus Risiko */}
         <div>
           {!isCollapsed && (
-            <p className="px-2.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">
+            <p className="px-2.5 text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">
               Modus Risiko
             </p>
           )}
@@ -260,8 +260,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 className={({ isActive }) =>
                   `flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-xs transition-colors group ${
                     isActive
-                      ? 'bg-slate-900 text-white font-semibold'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 font-medium'
+                      ? 'bg-slate-900 dark:bg-emerald-600/90 text-white font-semibold shadow-xs'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100/80 dark:hover:bg-slate-800/70 font-medium'
                   }`
                 }
               >
@@ -269,7 +269,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   <>
                     <item.icon
                       className={`w-4 h-4 shrink-0 transition-colors ${
-                        isActive ? 'text-white' : 'text-slate-400 group-hover:text-slate-700'
+                        isActive ? 'text-white' : 'text-slate-400 dark:text-slate-500 group-hover:text-slate-700 dark:group-hover:text-slate-200'
                       }`}
                     />
                     {!isCollapsed && <span className="truncate">{item.label}</span>}
@@ -277,7 +277,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       <span
                         className={`ml-auto text-[10px] font-mono px-1.5 py-0.2 rounded-md ${
                           isActive
-                            ? 'bg-slate-800 text-slate-200 font-bold'
+                            ? 'bg-slate-800 dark:bg-emerald-700 text-slate-200 dark:text-white font-bold'
                             : item.badgeColor
                         }`}
                       >
@@ -294,7 +294,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Section 3: Regulasi */}
         <div>
           {!isCollapsed && (
-            <p className="px-2.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">
+            <p className="px-2.5 text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">
               Referensi
             </p>
           )}
@@ -307,8 +307,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 className={({ isActive }) =>
                   `flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-xs transition-colors group ${
                     isActive
-                      ? 'bg-slate-900 text-white font-semibold'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 font-medium'
+                      ? 'bg-slate-900 dark:bg-emerald-600/90 text-white font-semibold shadow-xs'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100/80 dark:hover:bg-slate-800/70 font-medium'
                   }`
                 }
               >
@@ -316,7 +316,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   <>
                     <item.icon
                       className={`w-4 h-4 shrink-0 transition-colors ${
-                        isActive ? 'text-white' : 'text-slate-400 group-hover:text-slate-700'
+                        isActive ? 'text-white' : 'text-slate-400 dark:text-slate-500 group-hover:text-slate-700 dark:group-hover:text-slate-200'
                       }`}
                     />
                     {!isCollapsed && <span className="truncate">{item.label}</span>}
@@ -330,7 +330,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Section 4: Aksi & Master Data */}
         <div>
           {!isCollapsed && (
-            <p className="px-2.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">
+            <p className="px-2.5 text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">
               Tindakan
             </p>
           )}
@@ -343,8 +343,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 className={({ isActive }) =>
                   `flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-xs transition-colors group ${
                     isActive
-                      ? 'bg-slate-900 text-white font-semibold'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 font-medium'
+                      ? 'bg-slate-900 dark:bg-emerald-600/90 text-white font-semibold shadow-xs'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100/80 dark:hover:bg-slate-800/70 font-medium'
                   }`
                 }
               >
@@ -352,7 +352,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   <>
                     <item.icon
                       className={`w-4 h-4 shrink-0 transition-colors ${
-                        isActive ? 'text-white' : 'text-slate-400 group-hover:text-slate-700'
+                        isActive ? 'text-white' : 'text-slate-400 dark:text-slate-500 group-hover:text-slate-700 dark:group-hover:text-slate-200'
                       }`}
                     />
                     {!isCollapsed && <span className="truncate">{item.label}</span>}
