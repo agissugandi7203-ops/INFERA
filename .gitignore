@@ -49,4 +49,6 @@ Thumbs.db
 # Temporary Files
 tmp/
 temp/
+scratch/
+
 scripts/*.png
