@@ -74,9 +74,7 @@ async function init() {
   const pupilLInitY = controller.pupilLInitY;
   const pupilRInitX = controller.pupilRInitX;
   const pupilRInitY = controller.pupilRInitY;
-  const browLInitX = controller.browLInitX;
   const browLInitY = controller.browLInitY;
-  const browRInitX = controller.browRInitX;
   const browRInitY = controller.browRInitY;
 
   // Harmonically tuned frequencies to guarantee 100% mathematical seamless looping at T = 30s
