@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Button,
   ButtonIcon,
@@ -15,11 +15,9 @@ import {
   TestimonialItem,
   WorkflowSteps,
   AlertCard,
-  BeforeAfter,
   PricingItem,
   FaqsCta,
   ClientLogo,
-  IntegrationIcon,
   FeatureBoxTitle,
 } from './framer-ui/components';
 import {
@@ -53,343 +51,292 @@ export const HeroSection: React.FC<SectionActionProps> = ({
   onPrimaryAction,
   onScrollToSection,
 }) => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ['start start', 'end start'],
-  });
-
-  // Scroll-linked transforms matching the 3 Hero screenshots (181634 -> 181701 -> 181707)
-  const bgOpacity = useTransform(scrollYProgress, [0, 0.55, 0.85], [1, 0.75, 0]);
-  const cloudLeftX = useTransform(scrollYProgress, [0, 0.7], [0, -240]);
-  const cloudRightX = useTransform(scrollYProgress, [0, 0.7], [0, 240]);
-  const cloudBottomY = useTransform(scrollYProgress, [0, 0.7], [0, 160]);
-  const hillsY = useTransform(scrollYProgress, [0, 0.55], [0, 320]);
-  const hillsScale = useTransform(scrollYProgress, [0, 0.55], [1, 1.12]);
-
-  const titleOpacity = useTransform(scrollYProgress, [0, 0.35], [1, 0]);
-  const titleY = useTransform(scrollYProgress, [0, 0.35], [0, -90]);
-
-  const dashboardScale = useTransform(scrollYProgress, [0, 0.55], [0.66, 1]);
-  const dashboardY = useTransform(scrollYProgress, [0, 0.55], [30, -210]);
-
   return (
     <section
-      ref={containerRef}
       style={{
         position: 'relative',
         width: '100%',
-        minHeight: '185vh',
+        minHeight: '100vh',
         backgroundColor: '#ffffff',
+        overflow: 'hidden',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        paddingTop: 145,
+        paddingBottom: 40,
       }}
     >
+      {/* Sky & Wildflower Meadow Background Layer */}
       <div
         style={{
-          position: 'sticky',
-          top: 0,
+          position: 'absolute',
+          inset: 0,
+          pointerEvents: 'none',
+          zIndex: 0,
+        }}
+      >
+        <img
+          src={FRAMER_IMAGES.heroBgMeadow}
+          alt=""
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            objectPosition: 'center top',
+          }}
+        />
+        {/* Top White Gradient Fade */}
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 140,
+            background: 'linear-gradient(180deg, #ffffff 0%, rgba(255,255,255,0) 100%)',
+          }}
+        />
+      </div>
+
+      {/* Clouds - Visible and Floating Naturally */}
+      <img
+        src={FRAMER_IMAGES.heroCloudLeft}
+        alt=""
+        style={{
+          position: 'absolute',
+          top: 90,
+          left: '-6%',
+          width: 'clamp(280px, 38vw, 560px)',
+          pointerEvents: 'none',
+          zIndex: 1,
+        }}
+      />
+      <img
+        src={FRAMER_IMAGES.heroCloudRight}
+        alt=""
+        style={{
+          position: 'absolute',
+          top: 80,
+          right: '-6%',
+          width: 'clamp(280px, 38vw, 560px)',
+          pointerEvents: 'none',
+          zIndex: 1,
+        }}
+      />
+      <img
+        src={FRAMER_IMAGES.heroCloudBottom}
+        alt=""
+        style={{
+          position: 'absolute',
+          bottom: 120,
+          left: '28%',
+          width: 'clamp(300px, 42vw, 620px)',
+          pointerEvents: 'none',
+          zIndex: 1,
+        }}
+      />
+
+      {/* Hero Text, CTAs, and 3 ListItem Feature Pills */}
+      <div
+        style={{
+          position: 'relative',
+          zIndex: 4,
+          maxWidth: 1260,
           width: '100%',
-          minHeight: '100vh',
-          overflow: 'hidden',
+          padding: '0 30px',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          paddingTop: 145,
-          paddingBottom: 60,
+          textAlign: 'center',
         }}
       >
-        {/* Sky & Wildflower Meadow Background Layer */}
-        <motion.div
+        {/* H1 Display Title with Inline 3D AI Icon */}
+        <h1
           style={{
-            position: 'absolute',
-            inset: 0,
-            opacity: bgOpacity,
-            pointerEvents: 'none',
-            zIndex: 0,
+            fontFamily: HEADING_FONT,
+            fontSize: 'clamp(40px, 5.4vw, 76px)',
+            fontWeight: 600,
+            lineHeight: 1.05,
+            letterSpacing: '-0.02em',
+            color: '#1d1d1d',
+            margin: 0,
+            maxWidth: 980,
+          }}
+        >
+          <span
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: '0 14px',
+            }}
+          >
+            <span>Inteligensi</span>
+            <motion.img
+              src={FRAMER_IMAGES.heroTitleAiIcon}
+              alt="AI Badge"
+              initial={{ scale: 0.85, rotate: 4 }}
+              animate={{ scale: 1, rotate: 10 }}
+              transition={{ type: 'spring', stiffness: 220, damping: 16 }}
+              style={{
+                width: 'clamp(48px, 5.2vw, 74px)',
+                height: 'clamp(48px, 5.2vw, 74px)',
+                objectFit: 'contain',
+                display: 'inline-block',
+                verticalAlign: 'middle',
+                filter: 'drop-shadow(0 12px 18px rgba(37, 99, 235, 0.25))',
+              }}
+            />
+            <span>Risiko Klaim</span>
+          </span>
+          <br />
+          <span>untuk Proteksi JKN Modern</span>
+        </h1>
+
+        {/* Subtitle */}
+        <p
+          style={{
+            fontFamily: BODY_FONT,
+            fontSize: 'clamp(16px, 1.3vw, 18px)',
+            fontWeight: 500,
+            lineHeight: 1.4,
+            color: '#4d585f',
+            maxWidth: 610,
+            marginTop: 22,
+            marginBottom: 32,
+          }}
+        >
+          Lacak, analisis, dan optimalkan pengawasan klaim JKN dengan wawasan berbasis AI
+          real-time serta otomatisasi cerdas Permenkes No. 16 Tahun 2019.
+        </p>
+
+        {/* 2 CTA Buttons */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexWrap: 'wrap',
+            gap: 14,
+            marginBottom: 38,
+          }}
+        >
+          <ButtonIcon
+            variant="Default"
+            title={userEmail ? 'Buka Dashboard' : 'Mulai Sekarang'}
+            onClick={onPrimaryAction}
+          />
+          <Button
+            variant="Default"
+            title="Jelajahi Fitur"
+            onClick={() => onScrollToSection('#features')}
+          />
+        </div>
+
+        {/* 3 ListItem Feature Pills with Vertical Dividers */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexWrap: 'wrap',
+            gap: 24,
+          }}
+        >
+          <ListItem
+            variant="Fit"
+            icon={FRAMER_IMAGES.iconStarYellow}
+            title="Wawasan Klaim Berbasis AI"
+            color="rgb(29, 29, 29)"
+          />
+          <div style={{ width: 1, height: 20, backgroundColor: '#dde5ed' }} />
+          <ListItem
+            variant="Fit"
+            icon={FRAMER_IMAGES.iconShieldGreen}
+            title="Keamanan Setara Bank & UU PDP"
+            color="rgb(29, 29, 29)"
+          />
+          <div style={{ width: 1, height: 20, backgroundColor: '#dde5ed' }} />
+          <ListItem
+            variant="Fit"
+            icon={FRAMER_IMAGES.iconBoltRed}
+            title="Pelacakan Klaim Real-Time"
+            color="rgb(29, 29, 29)"
+          />
+        </div>
+      </div>
+
+      {/* Dashboard Mockup Card (zIndex: 2, placed behind the foreground grass hills) */}
+      <motion.div
+        initial={{ opacity: 0, y: 35 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1] }}
+        style={{
+          position: 'relative',
+          zIndex: 2,
+          width: '100%',
+          maxWidth: 1160,
+          padding: '0 24px',
+          marginTop: 32,
+          marginBottom: -50,
+        }}
+      >
+        <div
+          onClick={onPrimaryAction}
+          style={{
+            cursor: 'pointer',
+            padding: 10,
+            borderRadius: 28,
+            backgroundColor: 'rgba(255, 255, 255, 0.92)',
+            border: '1px solid #dde5ed',
+            boxShadow: '0 32px 80px rgba(15, 23, 42, 0.16)',
+            overflow: 'hidden',
           }}
         >
           <img
-            src={FRAMER_IMAGES.heroBgMeadow}
-            alt=""
-            style={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-              objectPosition: 'center top',
-            }}
-          />
-          {/* Top & Bottom White Gradient Fades */}
-          <div
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              height: 150,
-              background: 'linear-gradient(180deg, #ffffff 0%, rgba(255,255,255,0) 100%)',
-            }}
-          />
-          <div
-            style={{
-              position: 'absolute',
-              bottom: 0,
-              left: 0,
-              right: 0,
-              height: 220,
-              background: 'linear-gradient(0deg, #ffffff 0%, rgba(255,255,255,0) 100%)',
-            }}
-          />
-        </motion.div>
-
-        {/* Parallax Clouds */}
-        <motion.img
-          src={FRAMER_IMAGES.heroCloudLeft}
-          alt=""
-          style={{
-            position: 'absolute',
-            top: 90,
-            left: '-6%',
-            width: 'clamp(280px, 38vw, 560px)',
-            x: cloudLeftX,
-            opacity: bgOpacity,
-            pointerEvents: 'none',
-            zIndex: 1,
-          }}
-        />
-        <motion.img
-          src={FRAMER_IMAGES.heroCloudRight}
-          alt=""
-          style={{
-            position: 'absolute',
-            top: 80,
-            right: '-6%',
-            width: 'clamp(280px, 38vw, 560px)',
-            x: cloudRightX,
-            opacity: bgOpacity,
-            pointerEvents: 'none',
-            zIndex: 1,
-          }}
-        />
-        <motion.img
-          src={FRAMER_IMAGES.heroCloudBottom}
-          alt=""
-          style={{
-            position: 'absolute',
-            bottom: 140,
-            left: '28%',
-            width: 'clamp(300px, 42vw, 620px)',
-            y: cloudBottomY,
-            opacity: bgOpacity,
-            pointerEvents: 'none',
-            zIndex: 1,
-          }}
-        />
-
-        {/* Foreground V-Shaped Grass Hills */}
-        <motion.div
-          style={{
-            position: 'absolute',
-            left: '-2%',
-            right: '-2%',
-            bottom: -40,
-            y: hillsY,
-            scale: hillsScale,
-            opacity: bgOpacity,
-            pointerEvents: 'none',
-            zIndex: 2,
-          }}
-        >
-          <img
-            src={FRAMER_IMAGES.heroGrassHills}
-            alt=""
+            src={FRAMER_IMAGES.heroDashboard}
+            alt="INFERA Analytics Dashboard"
             style={{
               width: '100%',
               height: 'auto',
               display: 'block',
+              borderRadius: 20,
             }}
           />
-          <div
-            style={{
-              position: 'absolute',
-              left: 0,
-              right: 0,
-              bottom: 0,
-              height: 140,
-              background: 'linear-gradient(0deg, #ffffff 15%, rgba(255,255,255,0) 100%)',
-            }}
-          />
-        </motion.div>
+        </div>
+      </motion.div>
 
-        {/* Hero Text, CTAs, and 3 ListItem Feature Pills */}
-        <motion.div
+      {/* Foreground V-Shaped Grass Hills (zIndex: 3 - in front of dashboard, lowered slightly) */}
+      <div
+        style={{
+          position: 'absolute',
+          left: '-2%',
+          right: '-2%',
+          bottom: -72,
+          pointerEvents: 'none',
+          zIndex: 3,
+        }}
+      >
+        <img
+          src={FRAMER_IMAGES.heroGrassHills}
+          alt=""
           style={{
-            position: 'relative',
-            zIndex: 3,
-            maxWidth: 1260,
             width: '100%',
-            padding: '0 30px',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            textAlign: 'center',
-            opacity: titleOpacity,
-            y: titleY,
+            height: 'auto',
+            display: 'block',
           }}
-        >
-          {/* H1 Display Title with Inline 3D AI Icon */}
-          <h1
-            style={{
-              fontFamily: HEADING_FONT,
-              fontSize: 'clamp(40px, 5.4vw, 76px)',
-              fontWeight: 600,
-              lineHeight: 1.05,
-              letterSpacing: '-0.02em',
-              color: '#1d1d1d',
-              margin: 0,
-              maxWidth: 980,
-            }}
-          >
-            <span
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexWrap: 'wrap',
-                gap: '0 14px',
-              }}
-            >
-              <span>Inteligensi</span>
-              <motion.img
-                src={FRAMER_IMAGES.heroTitleAiIcon}
-                alt="AI Badge"
-                initial={{ scale: 0.85, rotate: 4 }}
-                animate={{ scale: 1, rotate: 10 }}
-                transition={{ type: 'spring', stiffness: 220, damping: 16 }}
-                style={{
-                  width: 'clamp(48px, 5.2vw, 74px)',
-                  height: 'clamp(48px, 5.2vw, 74px)',
-                  objectFit: 'contain',
-                  display: 'inline-block',
-                  verticalAlign: 'middle',
-                  filter: 'drop-shadow(0 12px 18px rgba(37, 99, 235, 0.25))',
-                }}
-              />
-              <span>Risiko Klaim</span>
-            </span>
-            <br />
-            <span>untuk Proteksi JKN Modern</span>
-          </h1>
-
-          {/* Subtitle */}
-          <p
-            style={{
-              fontFamily: BODY_FONT,
-              fontSize: 'clamp(16px, 1.3vw, 18px)',
-              fontWeight: 500,
-              lineHeight: 1.4,
-              color: '#4d585f',
-              maxWidth: 610,
-              marginTop: 22,
-              marginBottom: 32,
-            }}
-          >
-            Lacak, analisis, dan optimalkan pengawasan klaim JKN dengan wawasan berbasis AI
-            real-time serta otomatisasi cerdas Permenkes No. 16 Tahun 2019.
-          </p>
-
-          {/* 2 CTA Buttons */}
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexWrap: 'wrap',
-              gap: 14,
-              marginBottom: 38,
-            }}
-          >
-            <ButtonIcon
-              variant="Default"
-              title={userEmail ? 'Buka Dashboard' : 'Mulai Sekarang'}
-              onClick={onPrimaryAction}
-            />
-            <Button
-              variant="Default"
-              title="Jelajahi Fitur"
-              onClick={() => onScrollToSection('#features')}
-            />
-          </div>
-
-          {/* 3 ListItem Feature Pills with Vertical Dividers */}
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexWrap: 'wrap',
-              gap: 24,
-            }}
-          >
-            <ListItem
-              variant="Fit"
-              icon={FRAMER_IMAGES.iconStarYellow}
-              title="Wawasan Klaim Berbasis AI"
-              color="rgb(29, 29, 29)"
-            />
-            <div style={{ width: 1, height: 20, backgroundColor: '#dde5ed' }} />
-            <ListItem
-              variant="Fit"
-              icon={FRAMER_IMAGES.iconShieldGreen}
-              title="Keamanan Setara Bank & UU PDP"
-              color="rgb(29, 29, 29)"
-            />
-            <div style={{ width: 1, height: 20, backgroundColor: '#dde5ed' }} />
-            <ListItem
-              variant="Fit"
-              icon={FRAMER_IMAGES.iconBoltRed}
-              title="Pelacakan Klaim Real-Time"
-              color="rgb(29, 29, 29)"
-            />
-          </div>
-        </motion.div>
-
-        {/* Scroll-Zoom Dashboard Mockup Card */}
-        <motion.div
+        />
+        <div
           style={{
-            position: 'relative',
-            zIndex: 4,
-            width: '100%',
-            maxWidth: 1160,
-            padding: '0 24px',
-            marginTop: 24,
-            scale: dashboardScale,
-            y: dashboardY,
-            transformOrigin: 'center top',
+            position: 'absolute',
+            left: 0,
+            right: 0,
+            bottom: 0,
+            height: 120,
+            background: 'linear-gradient(0deg, #ffffff 15%, rgba(255,255,255,0) 100%)',
           }}
-        >
-          <div
-            onClick={onPrimaryAction}
-            style={{
-              cursor: 'pointer',
-              padding: 10,
-              borderRadius: 28,
-              backgroundColor: 'rgba(255, 255, 255, 0.92)',
-              border: '1px solid #dde5ed',
-              boxShadow: '0 32px 80px rgba(15, 23, 42, 0.16)',
-              overflow: 'hidden',
-            }}
-          >
-            <img
-              src={FRAMER_IMAGES.heroDashboard}
-              alt="INFERA Analytics Dashboard"
-              style={{
-                width: '100%',
-                height: 'auto',
-                display: 'block',
-                borderRadius: 20,
-              }}
-            />
-          </div>
-        </motion.div>
+        />
       </div>
     </section>
   );
@@ -507,26 +454,40 @@ export const ClientLogoSection: React.FC = () => {
 // ============================================================================
 export const BeforeAfterSection: React.FC = () => {
   const [mode, setMode] = useState<'Before' | 'After'>('Before');
-  const [isMobile, setIsMobile] = useState(false);
+  const sectionRef = useRef<HTMLElement>(null);
+  const userInteractedRef = useRef<boolean>(false);
 
+  // Auto-switch to 'After' on scroll into view, reset to 'Before' when scrolling back above
   useEffect(() => {
-    const checkViewport = () => setIsMobile(window.innerWidth < 810);
-    checkViewport();
-    window.addEventListener('resize', checkViewport);
-    return () => window.removeEventListener('resize', checkViewport);
-  }, []);
+    const handleScroll = () => {
+      if (!sectionRef.current) return;
+      const rect = sectionRef.current.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
 
-  const activeVariant = isMobile
-    ? mode === 'Before'
-      ? 'Before - Phone'
-      : 'After - Phone'
-    : mode;
+      // When the top of the comparison section reaches ~45% of the viewport (user scrolled into it)
+      if (rect.top <= viewportHeight * 0.45 && rect.bottom >= viewportHeight * 0.2) {
+        if (!userInteractedRef.current && mode !== 'After') {
+          setMode('After');
+        }
+      } else if (rect.top > viewportHeight * 0.65) {
+        // Scrolled back up above the section: reset so scrolling down again will trigger auto-switch
+        userInteractedRef.current = false;
+        if (mode !== 'Before') {
+          setMode('Before');
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [mode]);
 
   return (
     <section
+      ref={sectionRef}
       style={{
         width: '100%',
-        padding: '170px 0 0',
+        padding: '160px 0 0',
         backgroundColor: '#ffffff',
       }}
     >
@@ -538,7 +499,7 @@ export const BeforeAfterSection: React.FC = () => {
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          gap: 50,
+          gap: 46,
         }}
       >
         <h2
@@ -550,77 +511,477 @@ export const BeforeAfterSection: React.FC = () => {
             color: '#1d1d1d',
             textAlign: 'center',
             margin: 0,
-            maxWidth: 540,
+            maxWidth: 580,
           }}
         >
           Mengapa verifikasi klaim lama tidak lagi cukup
         </h2>
 
-        {/* BeforeAfter Component with Interactive Click Zones on its Built-In Tabs & Dial */}
+        {/* Interactive Comparison Component Matching FintechX 3D Rotary Switch & Exact Styles */}
         <div
           style={{
             position: 'relative',
             width: '100%',
             maxWidth: 750,
             display: 'flex',
-            justifyContent: 'center',
+            flexDirection: 'column',
+            alignItems: 'center',
           }}
         >
-          {/* Left Tab Click Zone ("Before FintechX") */}
+          {/* Top Tab Bar with Integrated Rotary Dial */}
           <div
-            role="button"
-            tabIndex={0}
-            aria-label="Tampilkan kondisi sebelum INFERA"
-            onClick={() => setMode('Before')}
-            onKeyDown={(e) => e.key === 'Enter' && setMode('Before')}
             style={{
-              position: 'absolute',
-              top: 0,
-              left: 40,
-              width: 'calc(50% - 95px)',
+              position: 'relative',
+              width: '100%',
               height: 90,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '0 50px',
               zIndex: 10,
-              cursor: 'pointer',
             }}
-          />
-          {/* Center 3D Rotary Dial Click Zone */}
-          <div
-            role="button"
-            tabIndex={0}
-            aria-label="Alihkan Before dan After"
-            onClick={() => setMode((prev) => (prev === 'Before' ? 'After' : 'Before'))}
-            onKeyDown={(e) =>
-              e.key === 'Enter' && setMode((prev) => (prev === 'Before' ? 'After' : 'Before'))
-            }
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 'calc(50% - 55px)',
-              width: 110,
-              height: 95,
-              zIndex: 10,
-              cursor: 'pointer',
-            }}
-          />
-          {/* Right Tab Click Zone ("After FintechX") */}
-          <div
-            role="button"
-            tabIndex={0}
-            aria-label="Tampilkan kondisi sesudah INFERA"
-            onClick={() => setMode('After')}
-            onKeyDown={(e) => e.key === 'Enter' && setMode('After')}
-            style={{
-              position: 'absolute',
-              top: 0,
-              right: 40,
-              width: 'calc(50% - 95px)',
-              height: 90,
-              zIndex: 10,
-              cursor: 'pointer',
-            }}
-          />
+          >
+            {/* Top Fade Gradient */}
+            <div
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: '25%',
+                right: '25%',
+                height: 45,
+                background: 'linear-gradient(180deg, #ffffff 0%, rgba(255, 255, 255, 0) 100%)',
+                pointerEvents: 'none',
+                zIndex: 2,
+              }}
+            />
 
-          <BeforeAfter variant={activeVariant} style={{ width: '100%', maxWidth: 750 }} />
+            {/* Left Tab: Sebelum INFERA */}
+            <button
+              type="button"
+              onClick={() => {
+                userInteractedRef.current = true;
+                setMode('Before');
+              }}
+              style={{
+                flex: 1,
+                display: 'flex',
+                alignItems: 'flex-end',
+                justifyContent: 'flex-end',
+                paddingRight: 35,
+                paddingBottom: 18,
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                fontFamily: BODY_FONT,
+                fontSize: 16,
+                fontWeight: 600,
+                color: mode === 'Before' ? '#1d1d1d' : 'rgba(29, 29, 29, 0.35)',
+                transition: 'color 0.25s ease',
+              }}
+            >
+              Sebelum INFERA
+            </button>
+
+            {/* Center 3D Rotary Dial Button */}
+            <button
+              type="button"
+              onClick={() => {
+                userInteractedRef.current = true;
+                setMode((prev) => (prev === 'Before' ? 'After' : 'Before'));
+              }}
+              title="Klik untuk beralih mode"
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: 0,
+                width: 130,
+                height: 95,
+                position: 'relative',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 5,
+              }}
+            >
+              <motion.img
+                key={mode}
+                src={
+                  mode === 'Before'
+                    ? 'https://framerusercontent.com/images/BepIwACX380EUEqBMK5sdcQgh3k.png?width=390&height=480&format=webp'
+                    : 'https://framerusercontent.com/images/KVlQJuvBpDGKGjMPCFXDMbkUo.png?width=390&height=480&format=webp'
+                }
+                alt="Switch dial"
+                initial={{ rotate: mode === 'Before' ? 45 : -45, scale: 0.95 }}
+                animate={{ rotate: 0, scale: 1 }}
+                transition={{ type: 'spring', stiffness: 380, damping: 24 }}
+                style={{
+                  width: 130,
+                  height: 'auto',
+                  display: 'block',
+                  filter: 'drop-shadow(0 6px 12px rgba(0, 0, 0, 0.16))',
+                }}
+              />
+            </button>
+
+            {/* Right Tab: Sesudah INFERA */}
+            <button
+              type="button"
+              onClick={() => {
+                userInteractedRef.current = true;
+                setMode('After');
+              }}
+              style={{
+                flex: 1,
+                display: 'flex',
+                alignItems: 'flex-end',
+                justifyContent: 'flex-start',
+                paddingLeft: 35,
+                paddingBottom: 18,
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                fontFamily: BODY_FONT,
+                fontSize: 16,
+                fontWeight: 600,
+                color: mode === 'After' ? '#10b981' : 'rgba(29, 29, 29, 0.35)',
+                transition: 'color 0.25s ease',
+              }}
+            >
+              Sesudah INFERA
+            </button>
+          </div>
+
+          {/* Dynamic Comparison Card Container */}
+          <div
+            style={{
+              position: 'relative',
+              width: '100%',
+              minHeight: 460,
+              borderRadius: 30,
+              overflow: 'hidden',
+              marginTop: -16,
+            }}
+          >
+            <AnimatePresence mode="wait">
+              {mode === 'Before' ? (
+                <motion.div
+                  key="before"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.28, ease: 'easeInOut' }}
+                  style={{
+                    width: '100%',
+                    backgroundColor: '#edf1f4',
+                    border: '1px solid #dde5ed',
+                    borderRadius: 30,
+                    padding: 'clamp(28px, 4vw, 44px) clamp(22px, 3.5vw, 36px)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 32,
+                  }}
+                >
+                  <div
+                    className="grid grid-cols-1 md:grid-cols-12"
+                    style={{ gap: 30, alignItems: 'center' }}
+                  >
+                    {/* Left: Pain Points List */}
+                    <div className="md:col-span-8" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                      <h3
+                        style={{
+                          fontFamily: HEADING_FONT,
+                          fontSize: 22,
+                          fontWeight: 600,
+                          color: '#1d1d1d',
+                          margin: 0,
+                        }}
+                      >
+                        Tantangan verifikasi klaim JKN konvensional
+                      </h3>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                        {[
+                          'Data klaim terfragmentasi di berbagai sistem (VClaim, SIMRS, Apotek) dan sulit divalidasi cepat',
+                          'Minim panduan otomatis deterministik untuk putusan klaim setuju, tolak, atau pending',
+                          'Verifikasi manual berkas medis memakan waktu auditor berhari-hari per siklus pengajuan',
+                          'Audit berisiko tinggi terhadap bias subjektif tanpa integrasi aturan Permenkes No. 16/2019',
+                        ].map((text, i) => (
+                          <div
+                            key={i}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'flex-start',
+                              gap: 12,
+                              fontSize: 14.5,
+                              color: '#4d585f',
+                              lineHeight: 1.45,
+                            }}
+                          >
+                            <span
+                              style={{
+                                flexShrink: 0,
+                                marginTop: 3,
+                                width: 18,
+                                height: 18,
+                                borderRadius: '50%',
+                                backgroundColor: 'rgba(239, 68, 68, 0.12)',
+                                color: '#ef4444',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: 11,
+                                fontWeight: 800,
+                              }}
+                            >
+                              ✕
+                            </span>
+                            <span>{text}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Right: Metric Pain Statistics */}
+                    <div
+                      className="md:col-span-4"
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(1, 1fr)',
+                        gap: 16,
+                      }}
+                    >
+                      <div
+                        style={{
+                          padding: '22px 20px',
+                          borderRadius: 20,
+                          backgroundColor: 'rgba(255, 13, 13, 0.05)',
+                          border: '1px solid rgba(255, 13, 13, 0.22)',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: 6,
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontFamily: HEADING_FONT,
+                            fontSize: 34,
+                            fontWeight: 700,
+                            color: '#1d1d1d',
+                            lineHeight: 1,
+                          }}
+                        >
+                          68%
+                        </span>
+                        <span style={{ fontSize: 13.5, color: '#4d585f', fontWeight: 500 }}>
+                          Beban administrasi verifikasi manual
+                        </span>
+                      </div>
+
+                      <div
+                        style={{
+                          padding: '22px 20px',
+                          borderRadius: 20,
+                          backgroundColor: 'rgba(255, 13, 13, 0.05)',
+                          border: '1px solid rgba(255, 13, 13, 0.22)',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: 6,
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontFamily: HEADING_FONT,
+                            fontSize: 34,
+                            fontWeight: 700,
+                            color: '#1d1d1d',
+                            lineHeight: 1,
+                          }}
+                        >
+                          55%
+                        </span>
+                        <span style={{ fontSize: 13.5, color: '#4d585f', fontWeight: 500 }}>
+                          Keterlambatan penyelesaian audit klaim
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="after"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.28, ease: 'easeInOut' }}
+                  style={{
+                    position: 'relative',
+                    width: '100%',
+                    backgroundColor: '#070c0a',
+                    border: '1px solid rgba(16, 185, 129, 0.35)',
+                    borderRadius: 30,
+                    padding: 'clamp(28px, 4vw, 44px) clamp(22px, 3.5vw, 36px)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 32,
+                    overflow: 'hidden',
+                    boxShadow: '0 20px 50px rgba(0, 0, 0, 0.45)',
+                  }}
+                >
+                  {/* Subtle Background Meadow Ambient with Dark Gradient */}
+                  <img
+                    src="https://framerusercontent.com/images/Osh2UHQcarC8mZnL6oh6gwYnbA.jpg?width=1920&height=1080&format=webp"
+                    alt=""
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      opacity: 0.22,
+                      pointerEvents: 'none',
+                      zIndex: 0,
+                    }}
+                  />
+                  <div
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      background:
+                        'linear-gradient(180deg, rgba(7,12,10,0.85) 0%, rgba(7,12,10,0.96) 100%)',
+                      pointerEvents: 'none',
+                      zIndex: 1,
+                    }}
+                  />
+
+                  <div
+                    className="grid grid-cols-1 md:grid-cols-12"
+                    style={{ position: 'relative', zIndex: 2, gap: 30, alignItems: 'center' }}
+                  >
+                    {/* Left: Solution Benefits List */}
+                    <div className="md:col-span-8" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                      <h3
+                        style={{
+                          fontFamily: HEADING_FONT,
+                          fontSize: 22,
+                          fontWeight: 600,
+                          color: '#ffffff',
+                          margin: 0,
+                        }}
+                      >
+                        Cara lebih cerdas mengawal kepatuhan klaim JKN
+                      </h3>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                        {[
+                          'Rekomendasi verifikasi akurat berbasis telemetri real-time dan analisis 4 modus deterministik',
+                          'Deteksi dini anomali klaim dan potensi fraud sebelum pembayaran dicairkan',
+                          'Audit berkas otomatis dan validasi rekam medis tanpa proses manual yang melelahkan',
+                          'Keputusan konsisten, objektif, dan 100% patuh UU PDP No. 27/2022 & Permenkes No. 16/2019',
+                        ].map((text, i) => (
+                          <div
+                            key={i}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'flex-start',
+                              gap: 12,
+                              fontSize: 14.5,
+                              color: '#d1d5db',
+                              lineHeight: 1.45,
+                            }}
+                          >
+                            <span
+                              style={{
+                                flexShrink: 0,
+                                marginTop: 3,
+                                width: 18,
+                                height: 18,
+                                borderRadius: '50%',
+                                backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                                color: '#10b981',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: 11,
+                                fontWeight: 800,
+                              }}
+                            >
+                              ✓
+                            </span>
+                            <span>{text}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Right: Positive Metric Results */}
+                    <div
+                      className="md:col-span-4"
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(1, 1fr)',
+                        gap: 16,
+                      }}
+                    >
+                      <div
+                        style={{
+                          padding: '22px 20px',
+                          borderRadius: 20,
+                          backgroundColor: 'rgba(16, 185, 129, 0.12)',
+                          border: '1px solid rgba(16, 185, 129, 0.35)',
+                          backdropFilter: 'blur(10px)',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: 6,
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontFamily: HEADING_FONT,
+                            fontSize: 34,
+                            fontWeight: 700,
+                            color: '#ffffff',
+                            lineHeight: 1,
+                          }}
+                        >
+                          3X
+                        </span>
+                        <span style={{ fontSize: 13.5, color: '#a7f3d0', fontWeight: 500 }}>
+                          Verifikasi dan pengambilan keputusan lebih cepat
+                        </span>
+                      </div>
+
+                      <div
+                        style={{
+                          padding: '22px 20px',
+                          borderRadius: 20,
+                          backgroundColor: 'rgba(16, 185, 129, 0.12)',
+                          border: '1px solid rgba(16, 185, 129, 0.35)',
+                          backdropFilter: 'blur(10px)',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: 6,
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontFamily: HEADING_FONT,
+                            fontSize: 34,
+                            fontWeight: 700,
+                            color: '#ffffff',
+                            lineHeight: 1,
+                          }}
+                        >
+                          24/7
+                        </span>
+                        <span style={{ fontSize: 13.5, color: '#a7f3d0', fontWeight: 500 }}>
+                          Pengawasan telemetri dan pemantauan risiko real-time
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </div>
     </section>
@@ -777,9 +1138,11 @@ export const CoreFeaturesSection: React.FC<SectionActionProps> = ({ onPrimaryAct
                   Keamanan yang dapat Anda percaya
                 </h3>
 
-                <img
+                <motion.img
                   src={FRAMER_IMAGES.featureShieldSvg}
                   alt="Security Shield"
+                  animate={{ y: [0, -8, 0] }}
+                  transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
                   style={{
                     width: 240,
                     height: 'auto',
@@ -871,9 +1234,11 @@ export const CoreFeaturesSection: React.FC<SectionActionProps> = ({ onPrimaryAct
                   Visibilitas klaim secara real-time
                 </h3>
 
-                <img
+                <motion.img
                   src={FRAMER_IMAGES.featureChartSvg}
                   alt="Real-time Chart"
+                  animate={{ y: [0, -6, 0] }}
+                  transition={{ duration: 4.5, repeat: Infinity, ease: 'easeInOut', delay: 0.6 }}
                   style={{
                     position: 'relative',
                     zIndex: 2,
@@ -1081,10 +1446,12 @@ export const CoreFeaturesSection: React.FC<SectionActionProps> = ({ onPrimaryAct
                 Peringatan cerdas untuk hal yang krusial
               </h3>
 
-              {/* Floating 3D Pink Bell */}
-              <img
+              {/* Floating 3D Pink Bell with Smooth Floating Animation */}
+              <motion.img
                 src={FRAMER_IMAGES.featureBell3d}
                 alt="3D Notification Bell"
+                animate={{ y: [0, -7, 0], rotate: [0, 5, -5, 0] }}
+                transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut', delay: 0.3 }}
                 style={{
                   position: 'absolute',
                   top: 76,
@@ -1656,20 +2023,20 @@ export const IntegrationsSection: React.FC<SectionActionProps> = ({ onPrimaryAct
             position: 'relative',
             width: '100%',
             backgroundColor: '#eef1f3',
-            borderRadius: 30,
-            padding: '76px 30px 0',
+            borderRadius: 32,
+            padding: '76px 30px 40px',
             overflow: 'hidden',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            minHeight: 720,
+            minHeight: 820,
           }}
         >
           {/* Centered Header Block */}
           <div
             style={{
               position: 'relative',
-              zIndex: 3,
+              zIndex: 10,
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
@@ -1710,15 +2077,15 @@ export const IntegrationsSection: React.FC<SectionActionProps> = ({ onPrimaryAct
             </div>
           </div>
 
-          {/* Semi-Circular Arc of 8 IntegrationIcon Components + Central 3D Sphere */}
+          {/* Semi-Circular Arc of 8 SVG Badges + Central Dark 3D Sphere */}
           <div
             style={{
               position: 'relative',
-              zIndex: 2,
+              zIndex: 5,
               width: '100%',
-              maxWidth: 820,
-              height: 410,
-              marginTop: 24,
+              maxWidth: 880,
+              height: 440,
+              marginTop: 32,
             }}
           >
             {INFERA_INTEGRATION_ARC.map((item, idx) => (
@@ -1733,11 +2100,36 @@ export const IntegrationsSection: React.FC<SectionActionProps> = ({ onPrimaryAct
                   left: item.left,
                   top: item.top,
                   transform: `rotate(${item.rotate}deg)`,
-                  boxShadow: '0 12px 30px rgba(15, 23, 42, 0.06)',
-                  borderRadius: '50%',
+                  zIndex: 6,
                 }}
               >
-                <IntegrationIcon icon={item.icon} />
+                <div
+                  title={item.name}
+                  style={{
+                    width: 80,
+                    height: 80,
+                    borderRadius: '50%',
+                    backgroundColor: '#ffffff',
+                    border: '1px solid rgba(221, 229, 237, 0.9)',
+                    boxShadow: '0 12px 28px rgba(15, 23, 42, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    transition: 'transform 0.25s ease, box-shadow 0.25s ease',
+                  }}
+                >
+                  <img
+                    src={item.icon}
+                    alt={item.name}
+                    style={{
+                      width: 32,
+                      height: 32,
+                      objectFit: 'contain',
+                      display: 'block',
+                    }}
+                  />
+                </div>
               </motion.div>
             ))}
 
@@ -1746,14 +2138,15 @@ export const IntegrationsSection: React.FC<SectionActionProps> = ({ onPrimaryAct
               style={{
                 position: 'absolute',
                 left: '50%',
-                bottom: -35,
+                bottom: 0,
                 transform: 'translateX(-50%)',
-                width: 350,
-                height: 350,
+                width: 360,
+                height: 360,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 textAlign: 'center',
+                zIndex: 3,
               }}
             >
               <img
@@ -1770,7 +2163,7 @@ export const IntegrationsSection: React.FC<SectionActionProps> = ({ onPrimaryAct
               <p
                 style={{
                   position: 'relative',
-                  zIndex: 2,
+                  zIndex: 4,
                   fontFamily: BODY_FONT,
                   fontSize: 16,
                   fontWeight: 500,
@@ -1785,7 +2178,7 @@ export const IntegrationsSection: React.FC<SectionActionProps> = ({ onPrimaryAct
             </div>
           </div>
 
-          {/* Bottom Green Hills Foreground */}
+          {/* Bottom Green Hills Background (zIndex: 2, sits behind badges and sphere) */}
           <img
             src={FRAMER_IMAGES.integrationHills}
             alt=""
@@ -1793,10 +2186,10 @@ export const IntegrationsSection: React.FC<SectionActionProps> = ({ onPrimaryAct
               position: 'absolute',
               left: -10,
               right: -10,
-              bottom: -65,
+              bottom: 0,
               width: 'calc(100% + 20px)',
               height: 'auto',
-              zIndex: 3,
+              zIndex: 2,
               pointerEvents: 'none',
             }}
           />

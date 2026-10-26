@@ -5,6 +5,7 @@ import {
   ButtonIcon,
   Badge,
   BlurgradientProd,
+  SmoothscrollProd,
   FramerEffects,
 } from './framer-ui/components';
 import {
@@ -63,6 +64,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ userEmail, onOpenAuth 
     >
       {/* Framer WAAPI Appear/Loop Effects */}
       <FramerEffects />
+
+      {/* Framer Momentum Smooth Scrolling (Matches FintechX Video Feel) */}
+      <SmoothscrollProd intensity={50} />
 
       {/* Top Fixed Blur Gradient (Framer BlurgradientProd) */}
       <div
@@ -260,7 +264,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ userEmail, onOpenAuth 
         style={{
           position: 'relative',
           width: '100%',
-          padding: '110px 0 80px',
+          padding: '140px 0 100px',
           overflow: 'hidden',
           backgroundColor: '#ffffff',
         }}
@@ -269,6 +273,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ userEmail, onOpenAuth 
         <img
           src={FRAMER_IMAGES.footerBgMeadow}
           alt=""
+          loading="lazy"
+          decoding="async"
           style={{
             position: 'absolute',
             inset: 0,
@@ -287,7 +293,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ userEmail, onOpenAuth 
             top: 0,
             left: 0,
             right: 0,
-            height: 220,
+            height: 240,
             background: 'linear-gradient(180deg, #ffffff 0%, rgba(255,255,255,0) 100%)',
             zIndex: 1,
             pointerEvents: 'none',
@@ -304,7 +310,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ userEmail, onOpenAuth 
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            gap: 64,
+            gap: 72,
           }}
         >
           {/* Top Centered CTA Block */}

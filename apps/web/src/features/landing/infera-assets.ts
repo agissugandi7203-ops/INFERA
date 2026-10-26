@@ -5,13 +5,13 @@
 
 export const FRAMER_IMAGES = {
   // 1. Hero Section (181634.png, 181701.png, 181707.png)
-  heroBgMeadow: 'https://framerusercontent.com/images/QonQfzdUmEwRaww2TW9LW9ODvR0.jpg?width=1920&height=1600',
-  heroCloudLeft: 'https://framerusercontent.com/images/Rorgfh4qpKNsZyFzGNQ9wt5C0i4.png?width=800&height=436',
-  heroCloudRight: 'https://framerusercontent.com/images/fLN6Wx8BsWTV2MkQDeC8mB2BQKA.png?width=800&height=442',
-  heroCloudBottom: 'https://framerusercontent.com/images/lSZuKptayJeB4Xcw10qjE7IisQw.png?width=800&height=479',
-  heroGrassHills: 'https://framerusercontent.com/images/OH5Re0X1fnTabOLoEQYYNvYZWdQ.png?width=1960&height=767',
-  heroTitleAiIcon: 'https://framerusercontent.com/images/MvCoibXjquEPyTLgOctzXJU.png?width=400&height=400',
-  heroDashboard: 'https://framerusercontent.com/images/DyMdJq1T1QOvaqt7lS1v7R7bwI.jpg?width=1600&height=927',
+  heroBgMeadow: 'https://framerusercontent.com/images/QonQfzdUmEwRaww2TW9LW9ODvR0.jpg?width=1920&height=1600&format=webp',
+  heroCloudLeft: 'https://framerusercontent.com/images/Rorgfh4qpKNsZyFzGNQ9wt5C0i4.png?width=800&height=436&format=webp',
+  heroCloudRight: 'https://framerusercontent.com/images/fLN6Wx8BsWTV2MkQDeC8mB2BQKA.png?width=800&height=442&format=webp',
+  heroCloudBottom: 'https://framerusercontent.com/images/lSZuKptayJeB4Xcw10qjE7IisQw.png?width=800&height=479&format=webp',
+  heroGrassHills: 'https://framerusercontent.com/images/OH5Re0X1fnTabOLoEQYYNvYZWdQ.png?width=1960&height=767&format=webp',
+  heroTitleAiIcon: 'https://framerusercontent.com/images/MvCoibXjquEPyTLgOctzXJU.png?width=400&height=400&format=webp',
+  heroDashboard: 'https://framerusercontent.com/images/DyMdJq1T1QOvaqt7lS1v7R7bwI.jpg?width=1600&height=927&format=webp',
 
   // Hero ListItem Icons
   iconStarYellow: 'https://framerusercontent.com/images/DR5ESv57oR37TVFwEH7Mx1yI0.svg?width=19&height=18',
@@ -20,35 +20,35 @@ export const FRAMER_IMAGES = {
 
   // 2. Core Features Bento Grid (181750.png)
   featureShieldSvg: 'https://framerusercontent.com/images/G7W3uXGEWJ2M7xixcWnVJPdzxEc.svg?width=303&height=246',
-  featureMeadowCardBg: 'https://framerusercontent.com/images/IZgCL46gW5tJW2TUtUKnT2MFgMs.jpg?width=800&height=800',
+  featureMeadowCardBg: 'https://framerusercontent.com/images/IZgCL46gW5tJW2TUtUKnT2MFgMs.jpg?width=800&height=800&format=webp',
   featureChartSvg: 'https://framerusercontent.com/images/LLeScfWulZWyA0jZhMBwmQgQHA.svg?width=252&height=235',
-  featureSkyCardBg: 'https://framerusercontent.com/images/subirXJz7lXrSNejZPxoXXA90Ik.jpg?width=800&height=400',
+  featureSkyCardBg: 'https://framerusercontent.com/images/subirXJz7lXrSNejZPxoXXA90Ik.jpg?width=800&height=400&format=webp',
   featureTiltedCardsSvg: 'https://framerusercontent.com/images/LP5Ny6NdFTClX39IhTGUIolDygE.svg?width=304&height=280',
-  featureBell3d: 'https://framerusercontent.com/images/dIhxLbN1GBZu7TFHjssn0JUI4kY.png?width=175&height=148',
+  featureBell3d: 'https://framerusercontent.com/images/dIhxLbN1GBZu7TFHjssn0JUI4kY.png?width=175&height=148&format=webp',
 
   // 3. Platform Overview (181755.png)
-  overviewBgMeadow: 'https://framerusercontent.com/images/sGvx8VOXGYVGBocxGp5Wy6GfeA.jpg?width=1920&height=1800',
-  overviewDashboard: 'https://framerusercontent.com/images/AywdWt5A04h9qxUf1D6vjhKo.jpg?width=1600&height=928',
+  overviewBgMeadow: 'https://framerusercontent.com/images/sGvx8VOXGYVGBocxGp5Wy6GfeA.jpg?width=1920&height=1800&format=webp',
+  overviewDashboard: 'https://framerusercontent.com/images/AywdWt5A04h9qxUf1D6vjhKo.jpg?width=1600&height=928&format=webp',
 
   // 4. Security & Compliance (181806.png)
-  securityCloudShield: 'https://framerusercontent.com/images/ShWpChwHKJXjkAo8ZPOmvydAuFE.png?width=1480&height=1160',
+  securityCloudShield: 'https://framerusercontent.com/images/ShWpChwHKJXjkAo8ZPOmvydAuFE.png?width=1480&height=1160&format=webp',
   iconChevronGreen: 'https://framerusercontent.com/images/OXmFlFjSz1lrJp3vaL02MNthg.svg?width=20&height=16',
 
   // 5. Use Cases & Founder (181820.png)
-  founderAvatar: 'https://framerusercontent.com/images/7Z2d6WeDiCpoz0B6ookMTPOFAU.jpg?width=800&height=920',
+  founderAvatar: 'https://framerusercontent.com/images/7Z2d6WeDiCpoz0B6ookMTPOFAU.jpg?width=800&height=920&format=webp',
 
   // 6. Integrations (181825.png)
   integrationCenterSphere: 'https://framerusercontent.com/images/4LS9gC9h4W4WbsmhQmoxQ7DsncQ.svg?width=470&height=470',
-  integrationHills: 'https://framerusercontent.com/images/XlxsE037ei7LGhxYPQDC3jctO9A.png?width=1960&height=707',
+  integrationHills: 'https://framerusercontent.com/images/XlxsE037ei7LGhxYPQDC3jctO9A.png?width=1960&height=707&format=webp',
 
   // 7. Testimonials (181837.png)
-  testimonialsBgMeadow: 'https://framerusercontent.com/images/cQBpXWVe2IileA0HCzW5W4uvgY.jpg?width=1920&height=1080',
+  testimonialsBgMeadow: 'https://framerusercontent.com/images/cQBpXWVe2IileA0HCzW5W4uvgY.jpg?width=1920&height=1080&format=webp',
   iconChatGreen: 'https://framerusercontent.com/images/aljF5lhKI0wLwJbLJN7Va9tNyCI.svg?width=20&height=20',
   iconThumbBlue: 'https://framerusercontent.com/images/haC1N7nJkCBSyVJF33CEFhE4Ls.svg?width=22&height=20',
   ratingFiveStars: 'https://framerusercontent.com/images/Ks3rxCrb5LDuCsoN57uNgnYXtc.svg?width=106&height=18',
 
   // 8. Footer Sunrise Meadow (181902.png)
-  footerBgMeadow: 'https://framerusercontent.com/images/Osh2UHQcarC8mZnL6oh6gwYnbA.jpg?width=1920&height=1080',
+  footerBgMeadow: 'https://framerusercontent.com/images/Osh2UHQcarC8mZnL6oh6gwYnbA.jpg?width=1920&height=1080&format=webp',
   socialFacebook: 'https://framerusercontent.com/images/H9Hsu1XWqgxCmWVKfgBn5BvSlrI.svg?width=12&height=20',
   socialInstagram: 'https://framerusercontent.com/images/yapJfaMs4UJGW8x5avLvLiT0juU.svg?width=20&height=20',
   socialTwitterX: 'https://framerusercontent.com/images/DFinrfV7RnNPMg9DUYcgTgRnaM.svg?width=20&height=18',
@@ -155,57 +155,57 @@ export const INFERA_INTEGRATION_ARC = [
   {
     name: 'VClaim SEP',
     icon: 'https://framerusercontent.com/images/6v4CjsDf4gvmPpf7ZtLW7G99Tc.svg?width=32&height=30',
-    left: '2%',
-    top: '66%',
+    left: '4%',
+    top: '54%',
     rotate: -14,
   },
   {
     name: 'SATUSEHAT',
     icon: 'https://framerusercontent.com/images/iSF7qOzhCe2kHFtzp023A7Su5Y4.svg?width=32&height=30',
-    left: '11%',
-    top: '38%',
+    left: '14%',
+    top: '30%',
     rotate: -10,
   },
   {
     name: 'INA-CBGs',
     icon: 'https://framerusercontent.com/images/oCjXqTKPpfQHNzVG3RMACjYdDn4.svg?width=31&height=30',
-    left: '24%',
-    top: '16%',
+    left: '26%',
+    top: '12%',
     rotate: -6,
   },
   {
     name: 'P-Care FKTP',
     icon: 'https://framerusercontent.com/images/4cTZo2mECVaFc4LeLKFAjcOFZi0.svg?width=34&height=30',
-    left: '39%',
-    top: '4%',
+    left: '41%',
+    top: '2%',
     rotate: -2,
   },
   {
     name: 'Apotek PRB',
     icon: 'https://framerusercontent.com/images/C9McjHMSQSnRTJJraeYy1FnTxk.svg?width=25&height=30',
     left: '53%',
-    top: '4%',
+    top: '2%',
     rotate: 2,
   },
   {
     name: 'Dukcapil NIK',
     icon: 'https://framerusercontent.com/images/IKob6Rf6oNE2AA0Ljnrxy64qX8.svg?width=28&height=30',
     left: '68%',
-    top: '16%',
+    top: '12%',
     rotate: 6,
   },
   {
     name: 'Hybrid RAG',
     icon: 'https://framerusercontent.com/images/y19UMvv1KCbNvFgwFlFjufnrRg.svg?width=31&height=30',
     left: '80%',
-    top: '38%',
+    top: '30%',
     rotate: 10,
   },
   {
     name: 'Redis Cache',
     icon: 'https://framerusercontent.com/images/UoQUbbEaQZyR3CxLxoIhGhmYL3c.svg?width=31&height=30',
-    left: '89%',
-    top: '66%',
+    left: '90%',
+    top: '54%',
     rotate: 14,
   },
 ];

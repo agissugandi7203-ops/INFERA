@@ -4,32 +4,51 @@ import { LandingPage } from '../features/landing/LandingPage';
 import { ProtectedRoute } from '../components/common/ProtectedRoute';
 import { DashboardLayout } from '../features/dashboard/layout/DashboardLayout';
 
+function lazyWithRetry<T extends React.ComponentType<any>>(
+  factory: () => Promise<{ default: T }>
+) {
+  return React.lazy(async () => {
+    try {
+      return await factory();
+    } catch (error) {
+      const pageHasAlreadyBeenForceRefreshed = sessionStorage.getItem('chunk_retry_refreshed');
+      if (!pageHasAlreadyBeenForceRefreshed) {
+        sessionStorage.setItem('chunk_retry_refreshed', 'true');
+        window.location.reload();
+        return new Promise<{ default: T }>(() => {});
+      }
+      sessionStorage.removeItem('chunk_retry_refreshed');
+      throw error;
+    }
+  });
+}
+
 // Lazy-load dashboard pages for instantaneous initial page load & anti-lag startup
-const OverviewPage = React.lazy(() =>
+const OverviewPage = lazyWithRetry(() =>
   import('../features/dashboard/pages/OverviewPage').then((m) => ({ default: m.OverviewPage }))
 );
-const AiReportPage = React.lazy(() =>
+const AiReportPage = lazyWithRetry(() =>
   import('../features/dashboard/pages/AiReportPage').then((m) => ({ default: m.AiReportPage }))
 );
-const TransactionsPage = React.lazy(() =>
+const TransactionsPage = lazyWithRetry(() =>
   import('../features/dashboard/pages/TransactionsPage').then((m) => ({ default: m.TransactionsPage }))
 );
-const CasesDeepDivePage = React.lazy(() =>
+const CasesDeepDivePage = lazyWithRetry(() =>
   import('../features/dashboard/pages/CasesDeepDivePage').then((m) => ({ default: m.CasesDeepDivePage }))
 );
-const IdentityRiskPage = React.lazy(() =>
+const IdentityRiskPage = lazyWithRetry(() =>
   import('../features/dashboard/pages/IdentityRiskPage').then((m) => ({ default: m.IdentityRiskPage }))
 );
-const UnnecessaryServicesPage = React.lazy(() =>
+const UnnecessaryServicesPage = lazyWithRetry(() =>
   import('../features/dashboard/pages/UnnecessaryServicesPage').then((m) => ({ default: m.UnnecessaryServicesPage }))
 );
-const PharmacyAlkesPage = React.lazy(() =>
+const PharmacyAlkesPage = lazyWithRetry(() =>
   import('../features/dashboard/pages/PharmacyAlkesPage').then((m) => ({ default: m.PharmacyAlkesPage }))
 );
-const RegulationsPage = React.lazy(() =>
+const RegulationsPage = lazyWithRetry(() =>
   import('../features/dashboard/pages/RegulationsPage').then((m) => ({ default: m.RegulationsPage }))
 );
-const MasterDataPage = React.lazy(() =>
+const MasterDataPage = lazyWithRetry(() =>
   import('../features/dashboard/pages/MasterDataPage').then((m) => ({ default: m.MasterDataPage }))
 );
 
