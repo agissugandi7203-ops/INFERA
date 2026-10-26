@@ -47,6 +47,14 @@ export interface HealthStatus {
   services: {
     database: ServiceHealth;
     aiProvider: ServiceHealth;
+    cache?: ServiceHealth & {
+      driver?: 'redis-tcp' | 'upstash-rest' | 'memory-lru';
+      stats?: {
+        hits: number;
+        misses: number;
+        keys?: number;
+      };
+    };
   };
 }
 
@@ -132,7 +140,7 @@ export interface AiChatMessage {
   role: AiRole;
   content: AiMessageContent;
   reasoning?: string;
-  annotations?: AiFileAnnotation[];
+  annotations?: Array<AiFileAnnotation | Record<string, unknown>>;
 }
 
 export interface AiReasoningConfig {

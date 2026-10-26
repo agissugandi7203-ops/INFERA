@@ -3,6 +3,7 @@ import {
   BASE_VOICE_SETTINGS,
   ElevenLabsVoiceSettings,
 } from './tts-processor';
+import { getAuthHeaders } from '../../../lib/supabase';
 
 export class SpeechService {
   private static synth = typeof window !== 'undefined' ? window.speechSynthesis : null;
@@ -134,9 +135,10 @@ export class SpeechService {
     try {
       const backendUrl = import.meta.env.VITE_API_URL || '/api/v1';
       try {
+        const authHeaders = await getAuthHeaders();
         const res = await fetch(`${backendUrl}/voice/tts`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', ...authHeaders },
           body: JSON.stringify({
             text,
             voiceId,

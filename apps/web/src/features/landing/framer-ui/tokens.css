@@ -1,0 +1,802 @@
+/**
+ * Project design tokens extracted from the Framer canvas.
+ * Import this file once at the root of your app so the
+ * --token-<uuid> CSS variables referenced by exported components resolve.
+ */
+@font-face {
+  font-family: 'Inter Display';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/gazZKZuUEtvr9ULhdA4SprP0AZ0.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/pe8RoujoPxuTZhqoNzYqHX2MXA.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/teGhWnhH3bCqefKGsIsqFy3hK8.woff2') format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/qQHxgTnEk6Czu1yW4xS82HQWFOk.woff2') format('woff2');
+  unicode-range: U+0370-03FF;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/MJ3N6lfN4iP5Um8rJGqLYl03tE.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/PfdOpgzFf7N2Uye9JX7xRKYTgSc.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2070, U+2074-207E, U+2080-208E, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/0SEEmmWc3vovhaai4RlRQSWRrz0.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/DpPBYI0sL4fYLgAkX8KXOPVt7c.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/4RAEQdEOrcnDkhHiiCbJOw92Lk.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/1K3W8DizY3v4emK8Mb08YHxTbs.woff2') format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/tUSCtfYVM1I1IchuyCwz9gDdQ.woff2') format('woff2');
+  unicode-range: U+0370-03FF;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/VgYFWiwsAC5OYxAycRXXvhze58.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/syRNPWzAMIrcJ3wIlPIP43KjQs.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2070, U+2074-207E, U+2080-208E, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/GIryZETIX4IFypco5pYZONKhJIo.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/H89BbHkbHDzlxZzxi8uPzTsp90.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/u6gJwDuwB143kpNK1T1MDKDWkMc.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/43sJ6MfOPh1LCJt46OvyDuSbA6o.woff2') format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/wccHG0r4gBDAIRhfHiOlq6oEkqw.woff2') format('woff2');
+  unicode-range: U+0370-03FF;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/WZ367JPwf9bRW6LdTHN8rXgSjw.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/ia3uin3hQWqDrVloC1zEtYHWw.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2070, U+2074-207E, U+2080-208E, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/2A4Xx7CngadFGlVV4xrO06OBHY.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/CfMzU8w2e7tHgF4T4rATMPuWosA.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/867QObYax8ANsfX4TGEVU9YiCM.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/Oyn2ZbENFdnW7mt2Lzjk1h9Zb9k.woff2') format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/cdAe8hgZ1cMyLu9g005pAW3xMo.woff2') format('woff2');
+  unicode-range: U+0370-03FF;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/DOfvtmE1UplCq161m6Hj8CSQYg.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/pKRFNWFoZl77qYCAIp84lN1h944.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2070, U+2074-207E, U+2080-208E, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/tKtBcDnBMevsEEJKdNGhhkLzYo.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/5vvr9Vy74if2I6bQbJvbw7SY1pQ.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/EOr0mi4hNtlgWNn9if640EZzXCo.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/Y9k9QrlZAqio88Klkmbd8VoMQc.woff2') format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/OYrD2tBIBPvoJXiIHnLoOXnY9M.woff2') format('woff2');
+  unicode-range: U+0370-03FF;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/JeYwfuaPfZHQhEG8U5gtPDZ7WQ.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/GrgcKwrN6d3Uz8EwcLHZxwEfC4.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2070, U+2074-207E, U+2080-208E, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/b6Y37FthZeALduNqHicBT6FutY.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/ePuN3mCjzajIHnyCdvKBFiZkyY0.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/V3j1L0o5vPFKe26Sw4HcpXCfHo.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/F3kdpd2N0cToWV5huaZjjgM.woff2') format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/0iDmxkizU9goZoclqIqsV5rvETU.woff2') format('woff2');
+  unicode-range: U+0370-03FF;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/r0mv3NegmA0akcQsNFotG32Las.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/iwWTDc49ENF2tCHbqlNARXw6Ug.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2070, U+2074-207E, U+2080-208E, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/Ii21jnSJkulBKsHHXKlapi7fv9w.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/I11LrmuBDQZweplJ62KkVsklU5Y.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/UjFZPDy3qGuDktQM4q9CxhKfIa8.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/8exwVHJy2DhJ4N5prYlVMrEKmQ.woff2') format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/UTeedEK21hO5jDxEUldzdScUqpg.woff2') format('woff2');
+  unicode-range: U+0370-03FF;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/Ig8B8nzy11hzIWEIYnkg91sofjo.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/qITWJ2WdG0wrgQPDb8lvnYnTXDg.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2070, U+2074-207E, U+2080-208E, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/qctQFoJqJ9aIbRSIp0AhCQpFxn8.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/fXvVh2JeZlehNcEhKHpHH0frSl0.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/7pScaNeb6M7n2HF2jKemDqzCIr4.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/qS4UjQYyATcVV9rODk0Zx9KhkY8.woff2') format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/VfD2n20yM7v0hrUEBHEyafsmMBY.woff2') format('woff2');
+  unicode-range: U+0370-03FF;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/4oIO9fB59bn3cKFWz7piCj28z9s.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/MzumQQZJQBC6KM1omtmwOtsogtI.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2070, U+2074-207E, U+2080-208E, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/F5Lmfd3fCAu7TwiYbI4DLWw4ks.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: italic;
+  font-weight: 500;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/A5P4nkYCJlLQxGxaS1lzG8PNSc.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: italic;
+  font-weight: 500;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/vuPfygr1n1zYxscvWgGI8hRf3LE.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: italic;
+  font-weight: 500;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/jplzYzqFHXreyADwk9yrkQlWQ.woff2') format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: italic;
+  font-weight: 500;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/sSIKP2TfVPvfK7YVENPE5H87A.woff2') format('woff2');
+  unicode-range: U+0370-03FF;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: italic;
+  font-weight: 500;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/gawbeo7iEJSRZ4kcrh6YRrU8o.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: italic;
+  font-weight: 500;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/RkMAGv2iAm3rw7tZzs7FaZf0rM.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2070, U+2074-207E, U+2080-208E, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: italic;
+  font-weight: 500;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/8E92vrr3j1gDqzepmeSbD2u0JxA.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Bricolage Grotesque';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('https://fonts.gstatic.com/s/bricolagegrotesque/v9/3y9U6as8bTXq_nANBjzKo3IeZx8z6up5BeSl5jBNz_19PpbpMXuECpwUxJBOm_OJWiaaD30YfKfjZZoLvcXlyMgvs-wJDtw.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Bricolage Grotesque';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://fonts.gstatic.com/s/bricolagegrotesque/v9/3y9U6as8bTXq_nANBjzKo3IeZx8z6up5BeSl5jBNz_19PpbpMXuECpwUxJBOm_OJWiaaD30YfKfjZZoLvfzlyMgvs-wJDtw.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/EZSFVoaPWKnZ6GuVk5dlS5pk.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/TMYuLEOqLWgunxD5qCFeADEgk.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/EL4v8OG6t2XwHSJLO1YF25DNiDw.woff2') format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/vSoBOmgqFUd0rVCgogjwL7jQI.woff2') format('woff2');
+  unicode-range: U+0370-03FF;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/bIwBTbnyeAOa9wQIBagEdRDHXhE.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/x8eJ5VkmPMHVhVbF0E8JYFJmwc.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2070, U+2074-207E, U+2080-208E, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/fmXYBApyDC604dR7g2aaACGvCk.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: italic;
+  font-weight: 900;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/yHWoQPBZSEiCC3aW3JXtcoFby8o.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: italic;
+  font-weight: 900;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/UHqhq621TbUtspKtPKPA1Ne8qY.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: italic;
+  font-weight: 900;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/6dsy2CbviAWDcszGLlgyaLpRMk.woff2') format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: italic;
+  font-weight: 900;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/TQqnntSFYYGDv7XtyT3ZhfvDA.woff2') format('woff2');
+  unicode-range: U+0370-03FF;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: italic;
+  font-weight: 900;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/nE03Xxh2GngsU8hDpg6CRGxqfoM.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: italic;
+  font-weight: 900;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/U1kEiQQO1ar9PuYJyyRkclmq8o.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2070, U+2074-207E, U+2080-208E, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: italic;
+  font-weight: 900;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/dWFiPjtJpfcxAIDV8RPyuCq04.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+1EA0-1EF9, U+20AB;
+}
+
+:root {
+  --token-b78e610c-391a-4120-aa0e-c0769ee3dfd0: rgb(64, 106, 228);
+  --token-bddc6f23-9f6b-430c-b28d-50ac8b0b25ba: rgb(59, 130, 246);
+  --token-0edc2e6a-5fd1-47c5-a905-c3de9f07cea3: rgb(29, 29, 29);
+  --token-b923e1cb-cf6e-406c-a3d3-6c79738c4b54: rgb(77, 88, 95);
+  --token-8a16c1e0-9178-435f-8361-d83efd74d213: rgb(237, 241, 244);
+  --token-60bca774-6ba3-4c34-a431-2fd8d1ea1b8a: rgb(50, 50, 50);
+  --token-a4ae1e21-2b71-445e-8792-31bd9220629a: rgb(0, 0, 0);
+  --token-51f94b53-bb42-43ec-9cc4-5f5eec0c08b0: rgb(186, 186, 186);
+  --token-3992e4b1-4934-4fc5-9122-067e1dd544fa: rgb(221, 229, 237);
+  --token-260f9222-11bc-40e3-a74c-4f1dae7b4ffa: rgb(255, 255, 255);
+  --token-1b8f888c-e7bb-4096-83cf-bc6a0a87c24d: rgba(255, 255, 255, 0);
+  --token-0a34df0a-701b-4bf9-bdf5-c1a9964dab0b: rgba(255, 255, 255, 0.3);
+  --token-0810840b-a17e-48e5-b9f0-8da453e4251d: rgba(255, 255, 255, 0.1);
+  --token-a6a29af8-9670-4cbf-81ec-cd0fd970b181: rgb(82, 144, 244);
+  --token-c2de9ec9-96e5-4565-81f0-1a5f789cc986: rgba(58, 119, 229, 0.5);
+  --token-3773b559-408e-44fa-b41c-14281b49a454: rgba(29, 29, 29, 0.5);
+  --token-08dc1709-8178-4e8a-935e-cbadce9f78a4: rgba(0, 0, 0, 0.1);
+  --token-fffc2df6-9817-4522-b0c0-6b2c412b44dc: rgb(226, 245, 255);
+  --token-22e76413-54a7-49e7-b94c-fb66f119d431: rgba(0, 0, 0, 0.2);
+  --token-1da6f336-7e27-4609-af93-da7817fb442b: rgba(0, 0, 0, 0.3);
+  --token-a545ebfd-5179-4ff0-bfb3-68703755a1be: rgba(255, 13, 13, 0.05);
+  --token-1b12818c-058c-4797-a04f-5ca5424b73cd: rgba(255, 13, 13, 0.3);
+  --token-da6f8224-04a5-4d90-b1b5-5b6af8cdf88d: rgba(16, 185, 129, 0.1);
+  --token-022f990a-67ab-4d66-bc58-1786ab5e6332: rgba(16, 185, 129, 0.3);
+  --token-f02a5c8a-b667-414e-a18b-3b00bb922668: rgba(0, 0, 0, 0.8);
+  --token-3434016c-2b1b-421d-a7a4-de1700e08024: rgba(221, 229, 237, 0.7);
+  --token-f56bc79b-27bf-46e1-9faa-c1587e0095c1: rgb(255, 139, 6);
+  --token-9ac3fcd6-eb33-41e6-91d9-0d196055ba91: rgb(253, 187, 110);
+  --token-014f2a3f-947b-4963-813b-cb48c53d14f1: rgb(245, 28, 35);
+  --token-5a4e4777-8abf-440c-b816-af317d987f6d: rgb(242, 135, 120);
+  --token-e16e43db-452f-46a8-b1c4-cc290f6b35d1: rgb(11, 207, 45);
+  --token-1d407f87-1145-4d70-b118-069910dbdacc: rgb(138, 227, 137);
+  --token-e266aeaf-00d6-433e-94f9-0ad61361974f: rgba(255, 255, 255, 0.5);
+  --token-7db4a30a-a581-42ea-9c56-7f9f4315db2b: rgb(16, 185, 129);
+  --token-7ef1bbb2-8b98-4e77-ae4e-208f206a737d: rgba(16, 185, 129, 0.2);
+  --token-456a706a-3175-452e-a8be-f8b4e2e708c1: rgba(255, 255, 255, 0.7);
+  --token-3d8d5b27-9a7a-42ff-88f5-3a7cb9b8c13b: rgba(0, 0, 0, 0.9);
+}
+
+.text-style-uf55qntp3 {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 72px;
+  line-height: 1.1em;
+  color: rgb(29, 29, 29);
+}
+.text-style-vxo9lP1tq {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 48px;
+  line-height: 1.2em;
+  color: rgb(29, 29, 29);
+}
+.text-style-TW0SdfaCW {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 32px;
+  line-height: 1.2em;
+  color: rgb(29, 29, 29);
+}
+.text-style-Ve6siI6CN {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 22px;
+  line-height: 1.2em;
+  color: rgb(29, 29, 29);
+}
+.text-style-CXQiiDSGW {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 200px;
+  line-height: 0.7em;
+  color: rgb(29, 29, 29);
+}
+.text-style-THVQgirlm {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 100px;
+  line-height: 1em;
+  color: rgb(29, 29, 29);
+}
+.text-style-G2h1PlZCb {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 40px;
+  line-height: 1.2em;
+  color: rgb(29, 29, 29);
+}
+.text-style-a9zsrKn04 {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 32px;
+  line-height: 1.2em;
+  color: rgb(29, 29, 29);
+}
+.text-style-eaSVQg4j4 {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 32px;
+  line-height: 1.2em;
+  color: rgb(29, 29, 29);
+}
+.text-style-vl_TM9PXW {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 30px;
+  line-height: 1.2em;
+  color: rgb(29, 29, 29);
+}
+.text-style-jUb4JLM3m {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 28px;
+  line-height: 1.2em;
+  color: rgb(29, 29, 29);
+}
+.text-style-k6zcj6FY_ {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 24px;
+  line-height: 1.2em;
+  color: rgb(29, 29, 29);
+}
+.text-style-EpfgTb3LW {
+  font-family: 'Inter Display', sans-serif;
+  font-size: 18px;
+  line-height: 1.3em;
+  color: rgb(77, 88, 95);
+}
+.text-style-KWh0MOVFb {
+  font-family: 'Inter Display', sans-serif;
+  font-size: 18px;
+  line-height: 1.3em;
+  color: rgb(77, 88, 95);
+}
+.text-style-wJJlHAuBp {
+  font-family: 'Inter Display', sans-serif;
+  font-size: 86px;
+  line-height: 0.72em;
+  color: rgb(255, 255, 255);
+}
+.text-style-OblTs8rtN {
+  font-family: 'Inter Display', sans-serif;
+  font-size: 16px;
+  line-height: 1.3em;
+  color: rgb(77, 88, 95);
+}
+.text-style-Lb6ff2C_Q {
+  font-family: 'Inter Display', sans-serif;
+  font-size: 16px;
+  line-height: 1.3em;
+  color: rgb(77, 88, 95);
+}
+.text-style-NwDqOD0lC {
+  font-family: 'Inter Display', sans-serif;
+  font-size: 20px;
+  line-height: 1.3em;
+  color: rgb(77, 88, 95);
+}
+.text-style-xDpw_VO59 {
+  font-family: 'Inter Display', sans-serif;
+  font-size: 18px;
+  line-height: 1.3em;
+  color: rgb(29, 29, 29);
+}
+.text-style-OKYo87J9J {
+  font-family: 'Inter Display', sans-serif;
+  font-size: 14px;
+  line-height: 1.3em;
+  color: rgb(77, 88, 95);
+}
+.text-style-roK1lt6bc {
+  font-family: 'Inter Display', sans-serif;
+  font-size: 14px;
+  line-height: 1.3em;
+  color: rgb(77, 88, 95);
+}

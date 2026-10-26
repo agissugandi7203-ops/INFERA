@@ -59,17 +59,17 @@ export const AppRoutes: React.FC<AppRoutesProps> = ({
   onOpenAuth,
   onLogout,
 }) => {
+  const landingElement = (
+    <LandingPage
+      userEmail={userEmail}
+      onOpenAuth={onOpenAuth}
+    />
+  );
+
   return (
     <Routes>
-      <Route
-        path="/"
-        element={
-          <LandingPage
-            userEmail={userEmail}
-            onOpenAuth={onOpenAuth}
-          />
-        }
-      />
+      {/* Home Landing Page */}
+      <Route path="/" element={landingElement} />
 
       {/* Multi-Page Dashboard with Anti-Lag Global Layout */}
       <Route

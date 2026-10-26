@@ -9,6 +9,7 @@ import type {
   RiskLevel,
 } from '@healthathon/shared';
 import { supabaseService } from './supabase.service.js';
+import { cacheService } from './cache.service.js';
 
 /**
  * Haversine Distance in Kilometers
@@ -91,9 +92,17 @@ class ParticipantRiskService {
     // ------------------------------------------------------------------------
     // ALGORITMA 2: DOCTOR SHOPPING INDEX (MODUS 3: PELAYANAN TIDAK PERLU)
     // ------------------------------------------------------------------------
+    // Anchor the 30-day rolling window to the latest encounter timestamp in the
+    // profile so historical/benchmark audit datasets evaluate deterministically.
+    const anchorTimestampMs =
+      encounters.length > 0
+        ? new Date(encounters[encounters.length - 1]!.timestamp).getTime()
+        : Date.now();
+
     const recentEncounters = encounters.filter((e) => {
       const diffDays =
-        (Date.now() - new Date(e.timestamp).getTime()) / (1000 * 60 * 60 * 24);
+        Math.abs(anchorTimestampMs - new Date(e.timestamp).getTime()) /
+        (1000 * 60 * 60 * 24);
       return diffDays <= 30;
     });
 
@@ -324,114 +333,248 @@ class ParticipantRiskService {
   }
 
   /**
-   * Search participants and claims dynamically from Supabase database or fallback cases
+   * Record UU PDP Pasal 35 Audit Access Log (fire-and-forget, non-blocking)
+   */
+  public recordAuditLog(params: {
+    userId?: string;
+    role?: string;
+    action: 'SEARCH_PESERTA' | 'EVALUATE_PESERTA' | 'VIEW_CASE_STUDY';
+    targetNoKartu?: string;
+    ipAddress?: string;
+    userAgent?: string;
+  }): void {
+    const admin = supabaseService.getAdminClient();
+    if (!admin) return;
+
+    const isUuid =
+      params.userId &&
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(params.userId);
+
+    void (async () => {
+      try {
+        await admin.from('audit_access_logs').insert({
+          accessed_by_user_id: isUuid ? params.userId : null,
+          auditor_role: (params.role || 'auditor').slice(0, 30),
+          action_performed: params.action,
+          target_no_kartu: params.targetNoKartu ? params.targetNoKartu.slice(0, 13) : null,
+          user_agent: params.userAgent ? params.userAgent.slice(0, 255) : 'INFERA-API/1.0',
+        });
+      } catch {
+        // Non-blocking audit log
+      }
+    })();
+  }
+
+  /**
+   * Search participants and claims dynamically from Supabase database or fallback cases.
+   * Uses Multi-Tier Cache (L1 Memory + L2 Redis/Upstash) for fast repeated lookups.
    */
   public async searchParticipants(query: string): Promise<any[]> {
     const cleanQ = query.trim();
     if (!cleanQ) return [];
 
-    const admin = supabaseService.getAdminClient();
-    if (admin) {
-      try {
-        // 1. Query Supabase peserta_profiles with joined encounters
-        const { data: profileMatches, error: pErr } = await admin
-          .from('peserta_profiles')
-          .select('*, encounters:peserta_encounters(*)')
-          .or(`full_name.ilike.%${cleanQ}%,no_kartu.ilike.%${cleanQ}%,nik_masked.ilike.%${cleanQ}%`)
-          .limit(10);
+    const cacheKey = cacheService.hashKey('risk:search', cleanQ.toLowerCase());
 
-        if (!pErr && Array.isArray(profileMatches) && profileMatches.length > 0) {
-          return profileMatches.map((p) => ({
-            id: p.no_kartu,
-            noKartu: p.no_kartu,
-            patientName: p.full_name,
-            nikMasked: p.nik_masked,
-            gender: p.gender,
-            dateOfBirth: p.date_of_birth,
-            faskesTingkat1: p.faskes_tingkat_1,
-            membershipSegment: p.membership_segment,
-            statusIuran: p.status_iuran,
-            riskScore: p.overall_risk_score,
-            riskLevel: p.risk_level,
-            primaryCategory: p.primary_risk_category,
-            flaggedForAudit: p.flagged_for_audit,
-            encounters: (p.encounters || []).map((e: any) => ({
-              id: e.id,
-              noSep: e.no_sep,
-              timestamp: e.encounter_timestamp,
-              ppkCode: e.ppk_code,
-              faskesName: e.faskes_name,
-              faskesClass: e.faskes_class,
-              city: e.city,
-              province: e.province,
-              diagnosaUtama: e.diagnosa_utama,
-              namaDiagnosa: e.nama_diagnosa,
-              cbgCode: e.cbg_code,
-              cbgTariff: Number(e.cbg_tariff),
-            })),
-          }));
-        }
+    return cacheService.getOrSet<any[]>(
+      cacheKey,
+      async () => {
+        const admin = supabaseService.getAdminClient();
+        const isMaskedNikQuery = cleanQ.includes('*');
+        // Strip PostgREST filter metacharacters before interpolating into .or()
+        const safeOrTerm = cleanQ.replace(/[*%(),:"\\]/g, '').trim();
 
-        // 2. Query by encounter attributes (e.g. SEP number or diagnosis)
-        const { data: encounterMatches, error: eErr } = await admin
-          .from('peserta_encounters')
-          .select('*, profile:peserta_profiles(*)')
-          .or(`no_sep.ilike.%${cleanQ}%,diagnosa_utama.ilike.%${cleanQ}%,nama_diagnosa.ilike.%${cleanQ}%,faskes_name.ilike.%${cleanQ}%`)
-          .limit(10);
+        if (admin) {
+          try {
+            // 1. Query Supabase peserta_profiles with joined encounters
+            const profileQuery = admin
+              .from('peserta_profiles')
+              .select('*, encounters:peserta_encounters(*)')
+              .limit(10);
 
-        if (!eErr && Array.isArray(encounterMatches) && encounterMatches.length > 0) {
-          return encounterMatches.map((e: any) => {
-            const p = e.profile || {};
-            return {
-              id: p.no_kartu || e.no_kartu,
-              noKartu: p.no_kartu || e.no_kartu,
-              patientName: p.full_name || 'Peserta JKN',
-              nikMasked: p.nik_masked || '-',
-              riskScore: p.overall_risk_score || 75,
-              riskLevel: p.risk_level || 'HIGH',
-              primaryCategory: p.primary_risk_category || 'UNNECESSARY_SERVICES',
-              encounters: [
-                {
+            const { data: profileMatches, error: pErr } = isMaskedNikQuery
+              ? await profileQuery.eq('nik_masked', cleanQ)
+              : await profileQuery.or(
+                  `full_name.ilike.%${safeOrTerm}%,no_kartu.ilike.%${safeOrTerm}%,nik_masked.ilike.%${safeOrTerm}%`
+                );
+
+            if (!pErr && Array.isArray(profileMatches) && profileMatches.length > 0) {
+              return profileMatches.map((p) => ({
+                id: p.no_kartu,
+                noKartu: p.no_kartu,
+                patientName: p.full_name,
+                nikMasked: p.nik_masked,
+                gender: p.gender,
+                dateOfBirth: p.date_of_birth,
+                faskesTingkat1: p.faskes_tingkat_1,
+                membershipSegment: p.membership_segment,
+                statusIuran: p.status_iuran,
+                riskScore: p.overall_risk_score,
+                riskLevel: p.risk_level,
+                primaryCategory: p.primary_risk_category,
+                flaggedForAudit: p.flagged_for_audit,
+                encounters: (p.encounters || []).map((e: any) => ({
                   id: e.id,
                   noSep: e.no_sep,
                   timestamp: e.encounter_timestamp,
                   ppkCode: e.ppk_code,
                   faskesName: e.faskes_name,
+                  faskesClass: e.faskes_class,
+                  city: e.city,
+                  province: e.province,
                   diagnosaUtama: e.diagnosa_utama,
                   namaDiagnosa: e.nama_diagnosa,
+                  cbgCode: e.cbg_code,
                   cbgTariff: Number(e.cbg_tariff),
-                },
-              ],
-            };
-          });
-        }
-      } catch (err) {
-        console.warn('[ParticipantRiskService] Supabase search error, using local fallback:', err);
-      }
-    }
+                })),
+              }));
+            }
 
-    // Local fallback matching against benchmark cases
-    const lower = cleanQ.toLowerCase();
-    const cases = this.getCaseStudies();
-    return cases
-      .filter(
-        (c) =>
-          c.noKartu.includes(lower) ||
-          c.patientName.toLowerCase().includes(lower) ||
-          c.nikMasked.toLowerCase().includes(lower) ||
-          c.caseCode.toLowerCase().includes(lower) ||
-          c.encounters.some((e) => e.noSep.toLowerCase().includes(lower) || e.namaDiagnosa.toLowerCase().includes(lower))
-      )
-      .map((c) => ({
-        id: c.noKartu,
-        noKartu: c.noKartu,
-        patientName: c.patientName,
-        nikMasked: c.nikMasked,
-        riskScore: c.riskScore,
-        riskLevel: c.riskLevel,
-        primaryCategory: c.category,
-        encounters: c.encounters,
-      }));
+            // 2. Query by encounter attributes (e.g. SEP number or diagnosis)
+            if (!isMaskedNikQuery && safeOrTerm.length >= 2) {
+              const { data: encounterMatches, error: eErr } = await admin
+                .from('peserta_encounters')
+                .select('*, profile:peserta_profiles(*)')
+                .or(
+                  `no_sep.ilike.%${safeOrTerm}%,diagnosa_utama.ilike.%${safeOrTerm}%,nama_diagnosa.ilike.%${safeOrTerm}%,faskes_name.ilike.%${safeOrTerm}%`
+                )
+                .limit(10);
+
+              if (!eErr && Array.isArray(encounterMatches) && encounterMatches.length > 0) {
+                return encounterMatches.map((e: any) => {
+                  const p = e.profile || {};
+                  return {
+                    id: p.no_kartu || e.no_kartu,
+                    noKartu: p.no_kartu || e.no_kartu,
+                    patientName: p.full_name || 'Peserta JKN',
+                    nikMasked: p.nik_masked || '-',
+                    riskScore: p.overall_risk_score || 75,
+                    riskLevel: p.risk_level || 'HIGH',
+                    primaryCategory: p.primary_risk_category || 'UNNECESSARY_SERVICES',
+                    encounters: [
+                      {
+                        id: e.id,
+                        noSep: e.no_sep,
+                        timestamp: e.encounter_timestamp,
+                        ppkCode: e.ppk_code,
+                        faskesName: e.faskes_name,
+                        diagnosaUtama: e.diagnosa_utama,
+                        namaDiagnosa: e.nama_diagnosa,
+                        cbgTariff: Number(e.cbg_tariff),
+                      },
+                    ],
+                  };
+                });
+              }
+            }
+          } catch (err) {
+            console.warn('[ParticipantRiskService] Supabase search error, using local fallback:', err);
+          }
+        }
+
+        // Local fallback matching against benchmark cases + extended benchmark directory
+        const lower = cleanQ.toLowerCase();
+        const cases = [
+          ...this.getCaseStudies(),
+          ...this.getAdditionalBenchmarkDirectory(),
+        ];
+        return cases
+          .filter(
+            (c) =>
+              c.noKartu.toLowerCase().includes(lower) ||
+              c.patientName.toLowerCase().includes(lower) ||
+              c.nikMasked.toLowerCase().includes(lower) ||
+              c.caseCode.toLowerCase().includes(lower) ||
+              c.encounters.some(
+                (e) =>
+                  e.noSep.toLowerCase().includes(lower) ||
+                  e.namaDiagnosa.toLowerCase().includes(lower)
+              )
+          )
+          .map((c) => ({
+            id: c.noKartu,
+            noKartu: c.noKartu,
+            patientName: c.patientName,
+            nikMasked: c.nikMasked,
+            riskScore: c.riskScore,
+            riskLevel: c.riskLevel,
+            primaryCategory: c.category,
+            encounters: c.encounters,
+          }));
+      },
+      { ttlSeconds: 120, l1TtlSeconds: 60 }
+    );
+  }
+
+  /**
+   * Additional benchmark participant profiles used across UnnecessaryServicesPage & Audit Suite
+   */
+  private getAdditionalBenchmarkDirectory(): ParticipantAuditCase[] {
+    return [
+      {
+        id: 'CASE-005',
+        caseCode: 'HK-DOC-SHOPPING-SITI-2026',
+        category: 'UNNECESSARY_SERVICES',
+        categoryLabel: 'Pelayanan Tidak Perlu: Kunjungan Poli Spesialis Berulang',
+        patientName: 'Siti Rahayu',
+        noKartu: '0005192837465',
+        nikMasked: '3174**********29',
+        riskScore: 86,
+        riskLevel: 'HIGH',
+        potentialLoss: 2450000,
+        summary:
+          'Peserta mengunjungi 4 fasilitas kesehatan berbeda di Jakarta Selatan dalam 12 hari dengan keluhan dyspepsia ringan (K30) tanpa rujukan berjenjang.',
+        detailedAnalysis:
+          'Audit utilisasi klaim menunjukkan Siti Rahayu melakukan pendaftaran berulang di berbagai klinik pratama dan poli penyakit dalam dengan keluhan identik (Dyspepsia) guna mengumpulkan obat PPI dan vitamin berlebih.',
+        encounters: [
+          {
+            id: 'ENC-09',
+            noSep: '0903P0020926V0031',
+            timestamp: '2026-09-02T09:00:00Z',
+            ppkCode: '0903P002',
+            faskesName: 'Klinik Pratama Melawai',
+            faskesClass: 'FKTP',
+            location: { city: 'Jakarta Selatan', province: 'DKI Jakarta', lat: -6.244, lng: 106.799 },
+            jnsPelayanan: 2,
+            diagnosaUtama: 'K30',
+            namaDiagnosa: 'Functional dyspepsia',
+            cbgTariff: 175000,
+          },
+          {
+            id: 'ENC-10',
+            noSep: '0903R0080926V0072',
+            timestamp: '2026-09-06T13:20:00Z',
+            ppkCode: '0903R008',
+            faskesName: 'RS Tebet Jakarta',
+            faskesClass: 'C',
+            location: { city: 'Jakarta Selatan', province: 'DKI Jakarta', lat: -6.230, lng: 106.853 },
+            jnsPelayanan: 2,
+            diagnosaUtama: 'K30',
+            namaDiagnosa: 'Functional dyspepsia',
+            cbgTariff: 890000,
+          },
+          {
+            id: 'ENC-11',
+            noSep: '0903R0110926V0104',
+            timestamp: '2026-09-10T10:15:00Z',
+            ppkCode: '0903R011',
+            faskesName: 'RS Setia Mitra Jakarta',
+            faskesClass: 'C',
+            location: { city: 'Jakarta Selatan', province: 'DKI Jakarta', lat: -6.278, lng: 106.797 },
+            jnsPelayanan: 2,
+            diagnosaUtama: 'K30',
+            namaDiagnosa: 'Functional dyspepsia',
+            cbgTariff: 920000,
+          },
+        ],
+        legalReference: {
+          regulation: 'Permenkes No. 16 Tahun 2019',
+          article: 'Pasal 2 & Pasal 5 ayat (3)',
+          summary: 'Pemanfaatan hak pelayanan kesehatan yang berulang dan tidak berindikasi medis.',
+          sanction: 'Penguncian eligibilitas rujukan poli dan konseling kepatuhan pelayanan di FKTP terdaftar.',
+        },
+        recommendedSanction: 'KUNCI RUJUKAN MANDIRI & EDUKASI FKTP',
+      },
+    ];
   }
 
   /**

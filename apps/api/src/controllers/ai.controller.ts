@@ -1,7 +1,8 @@
 import type { Request, Response, NextFunction } from 'express';
 import { sendSuccess } from '../utils/response.js';
-import { openRouterService } from '../services/openrouter.service.js';
+import { openRouterService, ALLOWED_MODELS } from '../services/openrouter.service.js';
 import { ragService } from '../services/rag.service.js';
+import { env } from '../config/env.js';
 import type { AiChatInput } from '../validators/ai.validator.js';
 import type { RagSearchResult } from '@healthathon/shared';
 
@@ -114,8 +115,9 @@ export const chatStream = async (req: Request, res: Response): Promise<void> => 
     clearInterval(heartbeatInterval);
   };
 
-  req.on('close', () => {
-    abortController.abort();
+  res.on('close', () => {
+    // Client went away before we finished → stop spending upstream tokens
+    if (!res.writableFinished) abortController.abort();
     cleanup();
   });
 
@@ -146,10 +148,15 @@ export const chatStream = async (req: Request, res: Response): Promise<void> => 
 
     // 2. Send metadata event immediately (citations, chosen model, mode)
     sendEvent('metadata', {
-      model: input.model || (mode === 'voice' ? 'google/gemini-2.0-flash-001' : 'openai/gpt-oss-120b:nitro'),
+      model:
+        mode === 'voice'
+          ? 'meta-llama/llama-3.3-70b-instruct'
+          : input.model && ALLOWED_MODELS.has(input.model)
+            ? input.model
+            : env.OPENROUTER_DEFAULT_MODEL,
       mode,
       citations: ragResults,
-      requestId: `req-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      requestId: req.requestId ?? `req-${Date.now()}`,
     });
 
     // 3. Assemble prompt context without polluting prior history
@@ -162,7 +169,7 @@ export const chatStream = async (req: Request, res: Response): Promise<void> => 
       ...filteredMessages,
     ];
 
-    const enableReasoning = Boolean((input as any).enableReasoning);
+    const enableReasoning = Boolean(input.enableReasoning);
     const aiRequest = {
       ...input,
       mode,

@@ -191,14 +191,20 @@ CREATE POLICY "service_role_manage_audit_logs" ON public.audit_access_logs
   FOR ALL TO service_role USING (true) WITH CHECK (true);
 
 -- 8.2. Kebijakan untuk authenticated users (Tim Verifikator & Auditor BPJS)
--- Auditor hanya dapat membaca peserta yang ditandai audit atau data anomali
+-- Auditor hanya dapat membaca peserta yang ditandai audit atau data anomali.
+-- Memeriksa klaim role di dalam app_metadata / user_metadata JWT Supabase (bukan top-level role yang selalu 'authenticated').
 CREATE POLICY "auditors_read_flagged_profiles" ON public.peserta_profiles
   FOR SELECT TO authenticated
-  USING (flagged_for_audit = true OR auth.jwt() ->> 'role' IN ('admin', 'auditor'));
+  USING (
+    flagged_for_audit = true
+    OR COALESCE(auth.jwt() -> 'app_metadata' ->> 'role', auth.jwt() -> 'user_metadata' ->> 'role') IN ('admin', 'auditor')
+  );
 
 CREATE POLICY "auditors_read_encounters" ON public.peserta_encounters
   FOR SELECT TO authenticated
-  USING (auth.jwt() ->> 'role' IN ('admin', 'auditor'));
+  USING (
+    COALESCE(auth.jwt() -> 'app_metadata' ->> 'role', auth.jwt() -> 'user_metadata' ->> 'role') IN ('admin', 'auditor')
+  );
 
 CREATE POLICY "auditors_read_anomalies" ON public.peserta_risk_anomalies
   FOR SELECT TO authenticated
@@ -206,12 +212,18 @@ CREATE POLICY "auditors_read_anomalies" ON public.peserta_risk_anomalies
 
 CREATE POLICY "auditors_update_anomaly_status" ON public.peserta_risk_anomalies
   FOR UPDATE TO authenticated
-  USING (auth.jwt() ->> 'role' IN ('admin', 'auditor'))
-  WITH CHECK (auth.jwt() ->> 'role' IN ('admin', 'auditor'));
+  USING (
+    COALESCE(auth.jwt() -> 'app_metadata' ->> 'role', auth.jwt() -> 'user_metadata' ->> 'role') IN ('admin', 'auditor')
+  )
+  WITH CHECK (
+    COALESCE(auth.jwt() -> 'app_metadata' ->> 'role', auth.jwt() -> 'user_metadata' ->> 'role') IN ('admin', 'auditor')
+  );
 
 CREATE POLICY "auditors_insert_access_logs" ON public.audit_access_logs
   FOR INSERT TO authenticated
-  WITH CHECK (true);
+  WITH CHECK (
+    accessed_by_user_id IS NULL OR accessed_by_user_id = auth.uid()
+  );
 
 -- 8.3. Anon users (Tidak ada izin akses langsung ke data identitas peserta)
 -- Pengunjung anonim DILARANG membaca identitas peserta, hanya dapat melihat metrik agregat melalui RPC/View aman

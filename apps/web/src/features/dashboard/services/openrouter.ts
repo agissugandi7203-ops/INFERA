@@ -8,6 +8,7 @@ import {
 } from './tts-processor';
 import type { RagSearchResult, ActionRecommendation, ToolProgressStep } from '@healthathon/shared';
 import { webRagService } from '../../../services/rag.service';
+import { getAuthHeaders } from '../../../lib/supabase';
 
 export interface AiShortcut {
   label: string;
@@ -391,10 +392,12 @@ export async function streamOpenRouterChat(
 
   // 1. Try Backend SSE Stream first
   try {
+    const authHeaders = await getAuthHeaders();
     const res = await fetch(`${backendUrl}/ai/chat/stream`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        ...authHeaders,
       },
       body: JSON.stringify({
         messages: [
@@ -677,9 +680,10 @@ export async function sendOpenRouterChat(
         { role: 'user' as const, content: userText },
       ];
 
+      const authHeaders = await getAuthHeaders();
       const res = await fetch(`${import.meta.env.VITE_API_URL || '/api/v1'}/ai/chat`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...authHeaders },
         body: JSON.stringify({
           messages,
           mode,

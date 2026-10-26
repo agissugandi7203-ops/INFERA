@@ -1,0 +1,2918 @@
+{
+  "name": "Button Icon",
+  "version": "1.0.0",
+  "description": "Exported Framer components: ButtonIcon, Button, ListItem, ListItem2, ListItem3, PreTitle, ClientLogo, ClientLogo2, ClientLogo3, ClientLogo4, ClientLogo5, ClientLogo6, ClientLogo7, ClientLogo8, ClientLogo9, ClientLogo10, ClientLogo11, BeforeAfter, PreTitle2, ButtonIcon2, Badge, Badge2, Badge3, FeatureBoxTitle, AlertCard, PreTitle3, ButtonIcon3, Button2, OverviewCard, OverviewCard2, OverviewCard3, PreTitle4, StatItem, StatItem2, WorkflowSteps, PreTitle5, ButtonIcon4, ListItem4, ListItem5, ListItem6, ListItem7, PreTitle6, UseCaseCard, UseCaseCard2, UseCaseCard3, UseCaseCard4, Badge4, Badge5, Badge6, Badge7, FounderCard, PreTitle7, ButtonIcon5, IntegrationIcon, IntegrationIcon2, IntegrationIcon3, IntegrationIcon4, IntegrationIcon5, IntegrationIcon6, IntegrationIcon7, IntegrationIcon8, IntegrationIcon9, IntegrationIcon10, IntegrationIcon11, IntegrationIcon12, IntegrationIcon13, IntegrationIcon14, IntegrationIcon15, IntegrationIcon16, PreTitle8, StatLgCard, StatLgCard2, StatLgCard3, StatLgCard4, StatLgCard5, ListItem8, ListItem9, ListItem10, ButtonIcon6, TestimonialItem, TestimonialItem2, TestimonialItem3, TestimonialItem4, TestimonialItem5, PreTitle9, PricingItem, FaqsCta, Accordion, Accordion2, Accordion3, Accordion4, Accordion5, FaqsCta2, SmoothscrollProd, BlurgradientProd, ButtonIcon7, Button3, ListItem11, ListItem12, ListItem13, PreTitle10, ClientLogo12, ClientLogo13, ClientLogo14, ClientLogo15, ClientLogo16, ClientLogo17, ClientLogo18, ClientLogo19, ClientLogo20, ClientLogo21, ClientLogo22, BeforeAfter2, PreTitle11, ButtonIcon8, Badge8, Badge9, Badge10, FeatureBoxTitle2, AlertCard2, PreTitle12, ButtonIcon9, Button4, OverviewCard4, OverviewCard5, OverviewCard6, PreTitle13, StatItem3, StatItem4, WorkflowSteps2, PreTitle14, ButtonIcon10, ListItem14, ListItem15, ListItem16, ListItem17, PreTitle15, UseCaseCard5, UseCaseCard6, UseCaseCard7, UseCaseCard8, Badge11, Badge12, Badge13, Badge14, FounderCard2, PreTitle16, ButtonIcon11, IntegrationIcon17, IntegrationIcon18, IntegrationIcon19, IntegrationIcon20, IntegrationIcon21, IntegrationIcon22, IntegrationIcon23, IntegrationIcon24, IntegrationIcon25, IntegrationIcon26, IntegrationIcon27, IntegrationIcon28, IntegrationIcon29, IntegrationIcon30, IntegrationIcon31, IntegrationIcon32, PreTitle17, StatLgCard6, StatLgCard7, StatLgCard8, StatLgCard9, StatLgCard10, ListItem18, ListItem19, ListItem20, ButtonIcon12, TestimonialItem6, TestimonialItem7, TestimonialItem8, TestimonialItem9, TestimonialItem10, PreTitle18, PricingItem2, FaqsCta3, Accordion6, Accordion7, Accordion8, Accordion9, Accordion10, FaqsCta4, SmoothscrollProd2, ButtonIcon13, Button5, ListItem21, ListItem22, ListItem23, ButtonIcon14, Button6, ListItem24, ListItem25, ListItem26, ButtonIcon15, Button7, ListItem27, ListItem28, ListItem29, ButtonIcon16, Button8, ListItem30, ListItem31, ListItem32, ButtonIcon17, Button9, ButtonIcon18, Button10, ListItem33, ListItem34, ListItem35, ListItem36, ListItem37, ListItem38, PreTitle19, ClientLogo23, ClientLogo24, ClientLogo25, ClientLogo26, ClientLogo27, ClientLogo28, ClientLogo29, ClientLogo30, ClientLogo31, ClientLogo32, ClientLogo33, PreTitle20, ClientLogo34, ClientLogo35, ClientLogo36, ClientLogo37, ClientLogo38, ClientLogo39, ClientLogo40, ClientLogo41, ClientLogo42, ClientLogo43, ClientLogo44, PreTitle21, ClientLogo45, ClientLogo46, ClientLogo47, ClientLogo48, ClientLogo49, ClientLogo50, ClientLogo51, ClientLogo52, ClientLogo53, ClientLogo54, ClientLogo55, PreTitle22, PreTitle23, ClientLogo56, ClientLogo57, ClientLogo58, ClientLogo59, ClientLogo60, ClientLogo61, ClientLogo62, ClientLogo63, ClientLogo64, ClientLogo65, ClientLogo66, ClientLogo67, ClientLogo68, ClientLogo69, ClientLogo70, ClientLogo71, ClientLogo72, ClientLogo73, ClientLogo74, BeforeAfter3, BeforeAfter4, BeforeAfter5, BeforeAfter6, PreTitle24, ButtonIcon19, Badge15, Badge16, Badge17, FeatureBoxTitle3, AlertCard3, PreTitle25, ButtonIcon20, Badge18, Badge19, Badge20, FeatureBoxTitle4, AlertCard4, PreTitle26, ButtonIcon21, Badge21, Badge22, Badge23, FeatureBoxTitle5, AlertCard5, PreTitle27, ButtonIcon22, PreTitle28, PreTitle29, ButtonIcon23, ButtonIcon24, Badge24, Badge25, Badge26, FeatureBoxTitle6, AlertCard6, Badge27, Badge28, Badge29, Badge30, Badge31, Badge32, Badge33, Badge34, Badge35, Badge36, Badge37, Badge38, FeatureBoxTitle7, AlertCard7, FeatureBoxTitle8, FeatureBoxTitle9, AlertCard8, AlertCard9, PreTitle30, ButtonIcon25, Button11, OverviewCard7, OverviewCard8, OverviewCard9, PreTitle31, ButtonIcon26, Button12, OverviewCard10, OverviewCard11, OverviewCard12, PreTitle32, ButtonIcon27, Button13, OverviewCard13, OverviewCard14, OverviewCard15, PreTitle33, ButtonIcon28, Button14, PreTitle34, PreTitle35, ButtonIcon29, Button15, ButtonIcon30, Button16, OverviewCard16, OverviewCard17, OverviewCard18, OverviewCard19, OverviewCard20, OverviewCard21, OverviewCard22, OverviewCard23, OverviewCard24, PreTitle36, StatItem5, StatItem6, WorkflowSteps3, PreTitle37, StatItem7, StatItem8, WorkflowSteps4, PreTitle38, StatItem9, StatItem10, WorkflowSteps5, PreTitle39, StatItem11, StatItem12, PreTitle40, PreTitle41, StatItem13, StatItem14, StatItem15, StatItem16, WorkflowSteps6, PreTitle42, ButtonIcon31, ListItem39, ListItem40, ListItem41, ListItem42, PreTitle43, ButtonIcon32, ListItem43, ListItem44, ListItem45, ListItem46, PreTitle44, ButtonIcon33, ListItem47, ListItem48, ListItem49, ListItem50, PreTitle45, ButtonIcon34, ListItem51, ListItem52, ListItem53, ListItem54, PreTitle46, ButtonIcon35, PreTitle47, ButtonIcon36, ListItem55, ListItem56, ListItem57, ListItem58, ListItem59, ListItem60, ListItem61, ListItem62, PreTitle48, UseCaseCard9, UseCaseCard10, UseCaseCard11, UseCaseCard12, Badge39, Badge40, Badge41, Badge42, FounderCard3, PreTitle49, UseCaseCard13, UseCaseCard14, UseCaseCard15, UseCaseCard16, Badge43, Badge44, Badge45, Badge46, FounderCard4, PreTitle50, UseCaseCard17, UseCaseCard18, UseCaseCard19, UseCaseCard20, Badge47, Badge48, Badge49, Badge50, FounderCard5, PreTitle51, PreTitle52, UseCaseCard21, UseCaseCard22, UseCaseCard23, UseCaseCard24, UseCaseCard25, UseCaseCard26, Badge51, Badge52, Badge53, Badge54, FounderCard6, Badge55, Badge56, Badge57, Badge58, Badge59, Badge60, Badge61, Badge62, FounderCard7, PreTitle53, ButtonIcon37, IntegrationIcon33, IntegrationIcon34, IntegrationIcon35, IntegrationIcon36, IntegrationIcon37, IntegrationIcon38, IntegrationIcon39, IntegrationIcon40, IntegrationIcon41, IntegrationIcon42, IntegrationIcon43, IntegrationIcon44, IntegrationIcon45, IntegrationIcon46, IntegrationIcon47, IntegrationIcon48, PreTitle54, ButtonIcon38, IntegrationIcon49, IntegrationIcon50, IntegrationIcon51, IntegrationIcon52, IntegrationIcon53, IntegrationIcon54, IntegrationIcon55, IntegrationIcon56, IntegrationIcon57, IntegrationIcon58, IntegrationIcon59, IntegrationIcon60, IntegrationIcon61, IntegrationIcon62, IntegrationIcon63, IntegrationIcon64, PreTitle55, ButtonIcon39, IntegrationIcon65, IntegrationIcon66, IntegrationIcon67, IntegrationIcon68, IntegrationIcon69, IntegrationIcon70, IntegrationIcon71, IntegrationIcon72, IntegrationIcon73, IntegrationIcon74, IntegrationIcon75, IntegrationIcon76, IntegrationIcon77, IntegrationIcon78, IntegrationIcon79, IntegrationIcon80, PreTitle56, ButtonIcon40, PreTitle57, PreTitle58, ButtonIcon41, IntegrationIcon81, IntegrationIcon82, IntegrationIcon83, IntegrationIcon84, IntegrationIcon85, IntegrationIcon86, IntegrationIcon87, IntegrationIcon88, IntegrationIcon89, IntegrationIcon90, IntegrationIcon91, IntegrationIcon92, IntegrationIcon93, IntegrationIcon94, IntegrationIcon95, IntegrationIcon96, IntegrationIcon97, IntegrationIcon98, IntegrationIcon99, IntegrationIcon100, IntegrationIcon101, IntegrationIcon102, IntegrationIcon103, IntegrationIcon104, IntegrationIcon105, IntegrationIcon106, IntegrationIcon107, IntegrationIcon108, IntegrationIcon109, IntegrationIcon110, IntegrationIcon111, IntegrationIcon112, IntegrationIcon113, IntegrationIcon114, IntegrationIcon115, IntegrationIcon116, IntegrationIcon117, IntegrationIcon118, IntegrationIcon119, IntegrationIcon120, IntegrationIcon121, IntegrationIcon122, IntegrationIcon123, IntegrationIcon124, IntegrationIcon125, IntegrationIcon126, IntegrationIcon127, IntegrationIcon128, IntegrationIcon129, IntegrationIcon130, IntegrationIcon131, IntegrationIcon132, IntegrationIcon133, IntegrationIcon134, IntegrationIcon135, IntegrationIcon136, IntegrationIcon137, IntegrationIcon138, IntegrationIcon139, IntegrationIcon140, IntegrationIcon141, IntegrationIcon142, IntegrationIcon143, IntegrationIcon144, PreTitle59, StatLgCard11, StatLgCard12, StatLgCard13, StatLgCard14, StatLgCard15, PreTitle60, StatLgCard16, StatLgCard17, StatLgCard18, StatLgCard19, StatLgCard20, PreTitle61, StatLgCard21, StatLgCard22, StatLgCard23, StatLgCard24, StatLgCard25, PreTitle62, PreTitle63, StatLgCard26, StatLgCard27, StatLgCard28, StatLgCard29, StatLgCard30, StatLgCard31, StatLgCard32, StatLgCard33, StatLgCard34, StatLgCard35, ListItem63, ListItem64, ListItem65, ButtonIcon42, TestimonialItem11, TestimonialItem12, TestimonialItem13, TestimonialItem14, TestimonialItem15, ListItem66, ListItem67, ListItem68, ButtonIcon43, TestimonialItem16, TestimonialItem17, TestimonialItem18, TestimonialItem19, TestimonialItem20, ListItem69, ListItem70, ListItem71, ButtonIcon44, TestimonialItem21, TestimonialItem22, TestimonialItem23, TestimonialItem24, TestimonialItem25, ListItem72, ListItem73, ListItem74, ButtonIcon45, ListItem75, ListItem76, ListItem77, ListItem78, ListItem79, ListItem80, ListItem81, ListItem82, ListItem83, ButtonIcon46, ButtonIcon47, TestimonialItem26, TestimonialItem27, TestimonialItem28, TestimonialItem29, TestimonialItem30, TestimonialItem31, TestimonialItem32, TestimonialItem33, PreTitle64, PricingItem3, PreTitle65, PricingItem4, PreTitle66, PricingItem5, PreTitle67, PreTitle68, PricingItem6, FaqsCta5, Accordion11, Accordion12, Accordion13, Accordion14, Accordion15, FaqsCta6, FaqsCta7, Accordion16, Accordion17, Accordion18, Accordion19, Accordion20, FaqsCta8, FaqsCta9, Accordion21, Accordion22, Accordion23, Accordion24, Accordion25, FaqsCta10, FaqsCta11, FaqsCta12, Accordion26, Accordion27, Accordion28, Accordion29, Accordion30, Accordion31, Accordion32, Accordion33, Accordion34, Accordion35, SmoothscrollProd3, BlurgradientProd2",
+  "type": "module",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./index.js",
+      "types": "./index.d.ts"
+    },
+    "./ButtonIcon": {
+      "import": "./ButtonIcon.js",
+      "types": "./ButtonIcon.d.ts"
+    },
+    "./Button": {
+      "import": "./Button.js",
+      "types": "./Button.d.ts"
+    },
+    "./ListItem": {
+      "import": "./ListItem.js",
+      "types": "./ListItem.d.ts"
+    },
+    "./ListItem2": {
+      "import": "./ListItem2.js",
+      "types": "./ListItem2.d.ts"
+    },
+    "./ListItem3": {
+      "import": "./ListItem3.js",
+      "types": "./ListItem3.d.ts"
+    },
+    "./PreTitle": {
+      "import": "./PreTitle.js",
+      "types": "./PreTitle.d.ts"
+    },
+    "./ClientLogo": {
+      "import": "./ClientLogo.js",
+      "types": "./ClientLogo.d.ts"
+    },
+    "./ClientLogo2": {
+      "import": "./ClientLogo2.js",
+      "types": "./ClientLogo2.d.ts"
+    },
+    "./ClientLogo3": {
+      "import": "./ClientLogo3.js",
+      "types": "./ClientLogo3.d.ts"
+    },
+    "./ClientLogo4": {
+      "import": "./ClientLogo4.js",
+      "types": "./ClientLogo4.d.ts"
+    },
+    "./ClientLogo5": {
+      "import": "./ClientLogo5.js",
+      "types": "./ClientLogo5.d.ts"
+    },
+    "./ClientLogo6": {
+      "import": "./ClientLogo6.js",
+      "types": "./ClientLogo6.d.ts"
+    },
+    "./ClientLogo7": {
+      "import": "./ClientLogo7.js",
+      "types": "./ClientLogo7.d.ts"
+    },
+    "./ClientLogo8": {
+      "import": "./ClientLogo8.js",
+      "types": "./ClientLogo8.d.ts"
+    },
+    "./ClientLogo9": {
+      "import": "./ClientLogo9.js",
+      "types": "./ClientLogo9.d.ts"
+    },
+    "./ClientLogo10": {
+      "import": "./ClientLogo10.js",
+      "types": "./ClientLogo10.d.ts"
+    },
+    "./ClientLogo11": {
+      "import": "./ClientLogo11.js",
+      "types": "./ClientLogo11.d.ts"
+    },
+    "./BeforeAfter": {
+      "import": "./BeforeAfter.js",
+      "types": "./BeforeAfter.d.ts"
+    },
+    "./PreTitle2": {
+      "import": "./PreTitle2.js",
+      "types": "./PreTitle2.d.ts"
+    },
+    "./ButtonIcon2": {
+      "import": "./ButtonIcon2.js",
+      "types": "./ButtonIcon2.d.ts"
+    },
+    "./Badge": {
+      "import": "./Badge.js",
+      "types": "./Badge.d.ts"
+    },
+    "./Badge2": {
+      "import": "./Badge2.js",
+      "types": "./Badge2.d.ts"
+    },
+    "./Badge3": {
+      "import": "./Badge3.js",
+      "types": "./Badge3.d.ts"
+    },
+    "./FeatureBoxTitle": {
+      "import": "./FeatureBoxTitle.js",
+      "types": "./FeatureBoxTitle.d.ts"
+    },
+    "./AlertCard": {
+      "import": "./AlertCard.js",
+      "types": "./AlertCard.d.ts"
+    },
+    "./PreTitle3": {
+      "import": "./PreTitle3.js",
+      "types": "./PreTitle3.d.ts"
+    },
+    "./ButtonIcon3": {
+      "import": "./ButtonIcon3.js",
+      "types": "./ButtonIcon3.d.ts"
+    },
+    "./Button2": {
+      "import": "./Button2.js",
+      "types": "./Button2.d.ts"
+    },
+    "./OverviewCard": {
+      "import": "./OverviewCard.js",
+      "types": "./OverviewCard.d.ts"
+    },
+    "./OverviewCard2": {
+      "import": "./OverviewCard2.js",
+      "types": "./OverviewCard2.d.ts"
+    },
+    "./OverviewCard3": {
+      "import": "./OverviewCard3.js",
+      "types": "./OverviewCard3.d.ts"
+    },
+    "./PreTitle4": {
+      "import": "./PreTitle4.js",
+      "types": "./PreTitle4.d.ts"
+    },
+    "./StatItem": {
+      "import": "./StatItem.js",
+      "types": "./StatItem.d.ts"
+    },
+    "./StatItem2": {
+      "import": "./StatItem2.js",
+      "types": "./StatItem2.d.ts"
+    },
+    "./WorkflowSteps": {
+      "import": "./WorkflowSteps.js",
+      "types": "./WorkflowSteps.d.ts"
+    },
+    "./PreTitle5": {
+      "import": "./PreTitle5.js",
+      "types": "./PreTitle5.d.ts"
+    },
+    "./ButtonIcon4": {
+      "import": "./ButtonIcon4.js",
+      "types": "./ButtonIcon4.d.ts"
+    },
+    "./ListItem4": {
+      "import": "./ListItem4.js",
+      "types": "./ListItem4.d.ts"
+    },
+    "./ListItem5": {
+      "import": "./ListItem5.js",
+      "types": "./ListItem5.d.ts"
+    },
+    "./ListItem6": {
+      "import": "./ListItem6.js",
+      "types": "./ListItem6.d.ts"
+    },
+    "./ListItem7": {
+      "import": "./ListItem7.js",
+      "types": "./ListItem7.d.ts"
+    },
+    "./PreTitle6": {
+      "import": "./PreTitle6.js",
+      "types": "./PreTitle6.d.ts"
+    },
+    "./UseCaseCard": {
+      "import": "./UseCaseCard.js",
+      "types": "./UseCaseCard.d.ts"
+    },
+    "./UseCaseCard2": {
+      "import": "./UseCaseCard2.js",
+      "types": "./UseCaseCard2.d.ts"
+    },
+    "./UseCaseCard3": {
+      "import": "./UseCaseCard3.js",
+      "types": "./UseCaseCard3.d.ts"
+    },
+    "./UseCaseCard4": {
+      "import": "./UseCaseCard4.js",
+      "types": "./UseCaseCard4.d.ts"
+    },
+    "./Badge4": {
+      "import": "./Badge4.js",
+      "types": "./Badge4.d.ts"
+    },
+    "./Badge5": {
+      "import": "./Badge5.js",
+      "types": "./Badge5.d.ts"
+    },
+    "./Badge6": {
+      "import": "./Badge6.js",
+      "types": "./Badge6.d.ts"
+    },
+    "./Badge7": {
+      "import": "./Badge7.js",
+      "types": "./Badge7.d.ts"
+    },
+    "./FounderCard": {
+      "import": "./FounderCard.js",
+      "types": "./FounderCard.d.ts"
+    },
+    "./PreTitle7": {
+      "import": "./PreTitle7.js",
+      "types": "./PreTitle7.d.ts"
+    },
+    "./ButtonIcon5": {
+      "import": "./ButtonIcon5.js",
+      "types": "./ButtonIcon5.d.ts"
+    },
+    "./IntegrationIcon": {
+      "import": "./IntegrationIcon.js",
+      "types": "./IntegrationIcon.d.ts"
+    },
+    "./IntegrationIcon2": {
+      "import": "./IntegrationIcon2.js",
+      "types": "./IntegrationIcon2.d.ts"
+    },
+    "./IntegrationIcon3": {
+      "import": "./IntegrationIcon3.js",
+      "types": "./IntegrationIcon3.d.ts"
+    },
+    "./IntegrationIcon4": {
+      "import": "./IntegrationIcon4.js",
+      "types": "./IntegrationIcon4.d.ts"
+    },
+    "./IntegrationIcon5": {
+      "import": "./IntegrationIcon5.js",
+      "types": "./IntegrationIcon5.d.ts"
+    },
+    "./IntegrationIcon6": {
+      "import": "./IntegrationIcon6.js",
+      "types": "./IntegrationIcon6.d.ts"
+    },
+    "./IntegrationIcon7": {
+      "import": "./IntegrationIcon7.js",
+      "types": "./IntegrationIcon7.d.ts"
+    },
+    "./IntegrationIcon8": {
+      "import": "./IntegrationIcon8.js",
+      "types": "./IntegrationIcon8.d.ts"
+    },
+    "./IntegrationIcon9": {
+      "import": "./IntegrationIcon9.js",
+      "types": "./IntegrationIcon9.d.ts"
+    },
+    "./IntegrationIcon10": {
+      "import": "./IntegrationIcon10.js",
+      "types": "./IntegrationIcon10.d.ts"
+    },
+    "./IntegrationIcon11": {
+      "import": "./IntegrationIcon11.js",
+      "types": "./IntegrationIcon11.d.ts"
+    },
+    "./IntegrationIcon12": {
+      "import": "./IntegrationIcon12.js",
+      "types": "./IntegrationIcon12.d.ts"
+    },
+    "./IntegrationIcon13": {
+      "import": "./IntegrationIcon13.js",
+      "types": "./IntegrationIcon13.d.ts"
+    },
+    "./IntegrationIcon14": {
+      "import": "./IntegrationIcon14.js",
+      "types": "./IntegrationIcon14.d.ts"
+    },
+    "./IntegrationIcon15": {
+      "import": "./IntegrationIcon15.js",
+      "types": "./IntegrationIcon15.d.ts"
+    },
+    "./IntegrationIcon16": {
+      "import": "./IntegrationIcon16.js",
+      "types": "./IntegrationIcon16.d.ts"
+    },
+    "./PreTitle8": {
+      "import": "./PreTitle8.js",
+      "types": "./PreTitle8.d.ts"
+    },
+    "./StatLgCard": {
+      "import": "./StatLgCard.js",
+      "types": "./StatLgCard.d.ts"
+    },
+    "./StatLgCard2": {
+      "import": "./StatLgCard2.js",
+      "types": "./StatLgCard2.d.ts"
+    },
+    "./StatLgCard3": {
+      "import": "./StatLgCard3.js",
+      "types": "./StatLgCard3.d.ts"
+    },
+    "./StatLgCard4": {
+      "import": "./StatLgCard4.js",
+      "types": "./StatLgCard4.d.ts"
+    },
+    "./StatLgCard5": {
+      "import": "./StatLgCard5.js",
+      "types": "./StatLgCard5.d.ts"
+    },
+    "./ListItem8": {
+      "import": "./ListItem8.js",
+      "types": "./ListItem8.d.ts"
+    },
+    "./ListItem9": {
+      "import": "./ListItem9.js",
+      "types": "./ListItem9.d.ts"
+    },
+    "./ListItem10": {
+      "import": "./ListItem10.js",
+      "types": "./ListItem10.d.ts"
+    },
+    "./ButtonIcon6": {
+      "import": "./ButtonIcon6.js",
+      "types": "./ButtonIcon6.d.ts"
+    },
+    "./TestimonialItem": {
+      "import": "./TestimonialItem.js",
+      "types": "./TestimonialItem.d.ts"
+    },
+    "./TestimonialItem2": {
+      "import": "./TestimonialItem2.js",
+      "types": "./TestimonialItem2.d.ts"
+    },
+    "./TestimonialItem3": {
+      "import": "./TestimonialItem3.js",
+      "types": "./TestimonialItem3.d.ts"
+    },
+    "./TestimonialItem4": {
+      "import": "./TestimonialItem4.js",
+      "types": "./TestimonialItem4.d.ts"
+    },
+    "./TestimonialItem5": {
+      "import": "./TestimonialItem5.js",
+      "types": "./TestimonialItem5.d.ts"
+    },
+    "./PreTitle9": {
+      "import": "./PreTitle9.js",
+      "types": "./PreTitle9.d.ts"
+    },
+    "./PricingItem": {
+      "import": "./PricingItem.js",
+      "types": "./PricingItem.d.ts"
+    },
+    "./FaqsCta": {
+      "import": "./FaqsCta.js",
+      "types": "./FaqsCta.d.ts"
+    },
+    "./Accordion": {
+      "import": "./Accordion.js",
+      "types": "./Accordion.d.ts"
+    },
+    "./Accordion2": {
+      "import": "./Accordion2.js",
+      "types": "./Accordion2.d.ts"
+    },
+    "./Accordion3": {
+      "import": "./Accordion3.js",
+      "types": "./Accordion3.d.ts"
+    },
+    "./Accordion4": {
+      "import": "./Accordion4.js",
+      "types": "./Accordion4.d.ts"
+    },
+    "./Accordion5": {
+      "import": "./Accordion5.js",
+      "types": "./Accordion5.d.ts"
+    },
+    "./FaqsCta2": {
+      "import": "./FaqsCta2.js",
+      "types": "./FaqsCta2.d.ts"
+    },
+    "./SmoothscrollProd": {
+      "import": "./SmoothscrollProd.js",
+      "types": "./SmoothscrollProd.d.ts"
+    },
+    "./BlurgradientProd": {
+      "import": "./BlurgradientProd.js",
+      "types": "./BlurgradientProd.d.ts"
+    },
+    "./ButtonIcon7": {
+      "import": "./ButtonIcon7.js",
+      "types": "./ButtonIcon7.d.ts"
+    },
+    "./Button3": {
+      "import": "./Button3.js",
+      "types": "./Button3.d.ts"
+    },
+    "./ListItem11": {
+      "import": "./ListItem11.js",
+      "types": "./ListItem11.d.ts"
+    },
+    "./ListItem12": {
+      "import": "./ListItem12.js",
+      "types": "./ListItem12.d.ts"
+    },
+    "./ListItem13": {
+      "import": "./ListItem13.js",
+      "types": "./ListItem13.d.ts"
+    },
+    "./PreTitle10": {
+      "import": "./PreTitle10.js",
+      "types": "./PreTitle10.d.ts"
+    },
+    "./ClientLogo12": {
+      "import": "./ClientLogo12.js",
+      "types": "./ClientLogo12.d.ts"
+    },
+    "./ClientLogo13": {
+      "import": "./ClientLogo13.js",
+      "types": "./ClientLogo13.d.ts"
+    },
+    "./ClientLogo14": {
+      "import": "./ClientLogo14.js",
+      "types": "./ClientLogo14.d.ts"
+    },
+    "./ClientLogo15": {
+      "import": "./ClientLogo15.js",
+      "types": "./ClientLogo15.d.ts"
+    },
+    "./ClientLogo16": {
+      "import": "./ClientLogo16.js",
+      "types": "./ClientLogo16.d.ts"
+    },
+    "./ClientLogo17": {
+      "import": "./ClientLogo17.js",
+      "types": "./ClientLogo17.d.ts"
+    },
+    "./ClientLogo18": {
+      "import": "./ClientLogo18.js",
+      "types": "./ClientLogo18.d.ts"
+    },
+    "./ClientLogo19": {
+      "import": "./ClientLogo19.js",
+      "types": "./ClientLogo19.d.ts"
+    },
+    "./ClientLogo20": {
+      "import": "./ClientLogo20.js",
+      "types": "./ClientLogo20.d.ts"
+    },
+    "./ClientLogo21": {
+      "import": "./ClientLogo21.js",
+      "types": "./ClientLogo21.d.ts"
+    },
+    "./ClientLogo22": {
+      "import": "./ClientLogo22.js",
+      "types": "./ClientLogo22.d.ts"
+    },
+    "./BeforeAfter2": {
+      "import": "./BeforeAfter2.js",
+      "types": "./BeforeAfter2.d.ts"
+    },
+    "./PreTitle11": {
+      "import": "./PreTitle11.js",
+      "types": "./PreTitle11.d.ts"
+    },
+    "./ButtonIcon8": {
+      "import": "./ButtonIcon8.js",
+      "types": "./ButtonIcon8.d.ts"
+    },
+    "./Badge8": {
+      "import": "./Badge8.js",
+      "types": "./Badge8.d.ts"
+    },
+    "./Badge9": {
+      "import": "./Badge9.js",
+      "types": "./Badge9.d.ts"
+    },
+    "./Badge10": {
+      "import": "./Badge10.js",
+      "types": "./Badge10.d.ts"
+    },
+    "./FeatureBoxTitle2": {
+      "import": "./FeatureBoxTitle2.js",
+      "types": "./FeatureBoxTitle2.d.ts"
+    },
+    "./AlertCard2": {
+      "import": "./AlertCard2.js",
+      "types": "./AlertCard2.d.ts"
+    },
+    "./PreTitle12": {
+      "import": "./PreTitle12.js",
+      "types": "./PreTitle12.d.ts"
+    },
+    "./ButtonIcon9": {
+      "import": "./ButtonIcon9.js",
+      "types": "./ButtonIcon9.d.ts"
+    },
+    "./Button4": {
+      "import": "./Button4.js",
+      "types": "./Button4.d.ts"
+    },
+    "./OverviewCard4": {
+      "import": "./OverviewCard4.js",
+      "types": "./OverviewCard4.d.ts"
+    },
+    "./OverviewCard5": {
+      "import": "./OverviewCard5.js",
+      "types": "./OverviewCard5.d.ts"
+    },
+    "./OverviewCard6": {
+      "import": "./OverviewCard6.js",
+      "types": "./OverviewCard6.d.ts"
+    },
+    "./PreTitle13": {
+      "import": "./PreTitle13.js",
+      "types": "./PreTitle13.d.ts"
+    },
+    "./StatItem3": {
+      "import": "./StatItem3.js",
+      "types": "./StatItem3.d.ts"
+    },
+    "./StatItem4": {
+      "import": "./StatItem4.js",
+      "types": "./StatItem4.d.ts"
+    },
+    "./WorkflowSteps2": {
+      "import": "./WorkflowSteps2.js",
+      "types": "./WorkflowSteps2.d.ts"
+    },
+    "./PreTitle14": {
+      "import": "./PreTitle14.js",
+      "types": "./PreTitle14.d.ts"
+    },
+    "./ButtonIcon10": {
+      "import": "./ButtonIcon10.js",
+      "types": "./ButtonIcon10.d.ts"
+    },
+    "./ListItem14": {
+      "import": "./ListItem14.js",
+      "types": "./ListItem14.d.ts"
+    },
+    "./ListItem15": {
+      "import": "./ListItem15.js",
+      "types": "./ListItem15.d.ts"
+    },
+    "./ListItem16": {
+      "import": "./ListItem16.js",
+      "types": "./ListItem16.d.ts"
+    },
+    "./ListItem17": {
+      "import": "./ListItem17.js",
+      "types": "./ListItem17.d.ts"
+    },
+    "./PreTitle15": {
+      "import": "./PreTitle15.js",
+      "types": "./PreTitle15.d.ts"
+    },
+    "./UseCaseCard5": {
+      "import": "./UseCaseCard5.js",
+      "types": "./UseCaseCard5.d.ts"
+    },
+    "./UseCaseCard6": {
+      "import": "./UseCaseCard6.js",
+      "types": "./UseCaseCard6.d.ts"
+    },
+    "./UseCaseCard7": {
+      "import": "./UseCaseCard7.js",
+      "types": "./UseCaseCard7.d.ts"
+    },
+    "./UseCaseCard8": {
+      "import": "./UseCaseCard8.js",
+      "types": "./UseCaseCard8.d.ts"
+    },
+    "./Badge11": {
+      "import": "./Badge11.js",
+      "types": "./Badge11.d.ts"
+    },
+    "./Badge12": {
+      "import": "./Badge12.js",
+      "types": "./Badge12.d.ts"
+    },
+    "./Badge13": {
+      "import": "./Badge13.js",
+      "types": "./Badge13.d.ts"
+    },
+    "./Badge14": {
+      "import": "./Badge14.js",
+      "types": "./Badge14.d.ts"
+    },
+    "./FounderCard2": {
+      "import": "./FounderCard2.js",
+      "types": "./FounderCard2.d.ts"
+    },
+    "./PreTitle16": {
+      "import": "./PreTitle16.js",
+      "types": "./PreTitle16.d.ts"
+    },
+    "./ButtonIcon11": {
+      "import": "./ButtonIcon11.js",
+      "types": "./ButtonIcon11.d.ts"
+    },
+    "./IntegrationIcon17": {
+      "import": "./IntegrationIcon17.js",
+      "types": "./IntegrationIcon17.d.ts"
+    },
+    "./IntegrationIcon18": {
+      "import": "./IntegrationIcon18.js",
+      "types": "./IntegrationIcon18.d.ts"
+    },
+    "./IntegrationIcon19": {
+      "import": "./IntegrationIcon19.js",
+      "types": "./IntegrationIcon19.d.ts"
+    },
+    "./IntegrationIcon20": {
+      "import": "./IntegrationIcon20.js",
+      "types": "./IntegrationIcon20.d.ts"
+    },
+    "./IntegrationIcon21": {
+      "import": "./IntegrationIcon21.js",
+      "types": "./IntegrationIcon21.d.ts"
+    },
+    "./IntegrationIcon22": {
+      "import": "./IntegrationIcon22.js",
+      "types": "./IntegrationIcon22.d.ts"
+    },
+    "./IntegrationIcon23": {
+      "import": "./IntegrationIcon23.js",
+      "types": "./IntegrationIcon23.d.ts"
+    },
+    "./IntegrationIcon24": {
+      "import": "./IntegrationIcon24.js",
+      "types": "./IntegrationIcon24.d.ts"
+    },
+    "./IntegrationIcon25": {
+      "import": "./IntegrationIcon25.js",
+      "types": "./IntegrationIcon25.d.ts"
+    },
+    "./IntegrationIcon26": {
+      "import": "./IntegrationIcon26.js",
+      "types": "./IntegrationIcon26.d.ts"
+    },
+    "./IntegrationIcon27": {
+      "import": "./IntegrationIcon27.js",
+      "types": "./IntegrationIcon27.d.ts"
+    },
+    "./IntegrationIcon28": {
+      "import": "./IntegrationIcon28.js",
+      "types": "./IntegrationIcon28.d.ts"
+    },
+    "./IntegrationIcon29": {
+      "import": "./IntegrationIcon29.js",
+      "types": "./IntegrationIcon29.d.ts"
+    },
+    "./IntegrationIcon30": {
+      "import": "./IntegrationIcon30.js",
+      "types": "./IntegrationIcon30.d.ts"
+    },
+    "./IntegrationIcon31": {
+      "import": "./IntegrationIcon31.js",
+      "types": "./IntegrationIcon31.d.ts"
+    },
+    "./IntegrationIcon32": {
+      "import": "./IntegrationIcon32.js",
+      "types": "./IntegrationIcon32.d.ts"
+    },
+    "./PreTitle17": {
+      "import": "./PreTitle17.js",
+      "types": "./PreTitle17.d.ts"
+    },
+    "./StatLgCard6": {
+      "import": "./StatLgCard6.js",
+      "types": "./StatLgCard6.d.ts"
+    },
+    "./StatLgCard7": {
+      "import": "./StatLgCard7.js",
+      "types": "./StatLgCard7.d.ts"
+    },
+    "./StatLgCard8": {
+      "import": "./StatLgCard8.js",
+      "types": "./StatLgCard8.d.ts"
+    },
+    "./StatLgCard9": {
+      "import": "./StatLgCard9.js",
+      "types": "./StatLgCard9.d.ts"
+    },
+    "./StatLgCard10": {
+      "import": "./StatLgCard10.js",
+      "types": "./StatLgCard10.d.ts"
+    },
+    "./ListItem18": {
+      "import": "./ListItem18.js",
+      "types": "./ListItem18.d.ts"
+    },
+    "./ListItem19": {
+      "import": "./ListItem19.js",
+      "types": "./ListItem19.d.ts"
+    },
+    "./ListItem20": {
+      "import": "./ListItem20.js",
+      "types": "./ListItem20.d.ts"
+    },
+    "./ButtonIcon12": {
+      "import": "./ButtonIcon12.js",
+      "types": "./ButtonIcon12.d.ts"
+    },
+    "./TestimonialItem6": {
+      "import": "./TestimonialItem6.js",
+      "types": "./TestimonialItem6.d.ts"
+    },
+    "./TestimonialItem7": {
+      "import": "./TestimonialItem7.js",
+      "types": "./TestimonialItem7.d.ts"
+    },
+    "./TestimonialItem8": {
+      "import": "./TestimonialItem8.js",
+      "types": "./TestimonialItem8.d.ts"
+    },
+    "./TestimonialItem9": {
+      "import": "./TestimonialItem9.js",
+      "types": "./TestimonialItem9.d.ts"
+    },
+    "./TestimonialItem10": {
+      "import": "./TestimonialItem10.js",
+      "types": "./TestimonialItem10.d.ts"
+    },
+    "./PreTitle18": {
+      "import": "./PreTitle18.js",
+      "types": "./PreTitle18.d.ts"
+    },
+    "./PricingItem2": {
+      "import": "./PricingItem2.js",
+      "types": "./PricingItem2.d.ts"
+    },
+    "./FaqsCta3": {
+      "import": "./FaqsCta3.js",
+      "types": "./FaqsCta3.d.ts"
+    },
+    "./Accordion6": {
+      "import": "./Accordion6.js",
+      "types": "./Accordion6.d.ts"
+    },
+    "./Accordion7": {
+      "import": "./Accordion7.js",
+      "types": "./Accordion7.d.ts"
+    },
+    "./Accordion8": {
+      "import": "./Accordion8.js",
+      "types": "./Accordion8.d.ts"
+    },
+    "./Accordion9": {
+      "import": "./Accordion9.js",
+      "types": "./Accordion9.d.ts"
+    },
+    "./Accordion10": {
+      "import": "./Accordion10.js",
+      "types": "./Accordion10.d.ts"
+    },
+    "./FaqsCta4": {
+      "import": "./FaqsCta4.js",
+      "types": "./FaqsCta4.d.ts"
+    },
+    "./SmoothscrollProd2": {
+      "import": "./SmoothscrollProd2.js",
+      "types": "./SmoothscrollProd2.d.ts"
+    },
+    "./ButtonIcon13": {
+      "import": "./ButtonIcon13.js",
+      "types": "./ButtonIcon13.d.ts"
+    },
+    "./Button5": {
+      "import": "./Button5.js",
+      "types": "./Button5.d.ts"
+    },
+    "./ListItem21": {
+      "import": "./ListItem21.js",
+      "types": "./ListItem21.d.ts"
+    },
+    "./ListItem22": {
+      "import": "./ListItem22.js",
+      "types": "./ListItem22.d.ts"
+    },
+    "./ListItem23": {
+      "import": "./ListItem23.js",
+      "types": "./ListItem23.d.ts"
+    },
+    "./ButtonIcon14": {
+      "import": "./ButtonIcon14.js",
+      "types": "./ButtonIcon14.d.ts"
+    },
+    "./Button6": {
+      "import": "./Button6.js",
+      "types": "./Button6.d.ts"
+    },
+    "./ListItem24": {
+      "import": "./ListItem24.js",
+      "types": "./ListItem24.d.ts"
+    },
+    "./ListItem25": {
+      "import": "./ListItem25.js",
+      "types": "./ListItem25.d.ts"
+    },
+    "./ListItem26": {
+      "import": "./ListItem26.js",
+      "types": "./ListItem26.d.ts"
+    },
+    "./ButtonIcon15": {
+      "import": "./ButtonIcon15.js",
+      "types": "./ButtonIcon15.d.ts"
+    },
+    "./Button7": {
+      "import": "./Button7.js",
+      "types": "./Button7.d.ts"
+    },
+    "./ListItem27": {
+      "import": "./ListItem27.js",
+      "types": "./ListItem27.d.ts"
+    },
+    "./ListItem28": {
+      "import": "./ListItem28.js",
+      "types": "./ListItem28.d.ts"
+    },
+    "./ListItem29": {
+      "import": "./ListItem29.js",
+      "types": "./ListItem29.d.ts"
+    },
+    "./ButtonIcon16": {
+      "import": "./ButtonIcon16.js",
+      "types": "./ButtonIcon16.d.ts"
+    },
+    "./Button8": {
+      "import": "./Button8.js",
+      "types": "./Button8.d.ts"
+    },
+    "./ListItem30": {
+      "import": "./ListItem30.js",
+      "types": "./ListItem30.d.ts"
+    },
+    "./ListItem31": {
+      "import": "./ListItem31.js",
+      "types": "./ListItem31.d.ts"
+    },
+    "./ListItem32": {
+      "import": "./ListItem32.js",
+      "types": "./ListItem32.d.ts"
+    },
+    "./ButtonIcon17": {
+      "import": "./ButtonIcon17.js",
+      "types": "./ButtonIcon17.d.ts"
+    },
+    "./Button9": {
+      "import": "./Button9.js",
+      "types": "./Button9.d.ts"
+    },
+    "./ButtonIcon18": {
+      "import": "./ButtonIcon18.js",
+      "types": "./ButtonIcon18.d.ts"
+    },
+    "./Button10": {
+      "import": "./Button10.js",
+      "types": "./Button10.d.ts"
+    },
+    "./ListItem33": {
+      "import": "./ListItem33.js",
+      "types": "./ListItem33.d.ts"
+    },
+    "./ListItem34": {
+      "import": "./ListItem34.js",
+      "types": "./ListItem34.d.ts"
+    },
+    "./ListItem35": {
+      "import": "./ListItem35.js",
+      "types": "./ListItem35.d.ts"
+    },
+    "./ListItem36": {
+      "import": "./ListItem36.js",
+      "types": "./ListItem36.d.ts"
+    },
+    "./ListItem37": {
+      "import": "./ListItem37.js",
+      "types": "./ListItem37.d.ts"
+    },
+    "./ListItem38": {
+      "import": "./ListItem38.js",
+      "types": "./ListItem38.d.ts"
+    },
+    "./PreTitle19": {
+      "import": "./PreTitle19.js",
+      "types": "./PreTitle19.d.ts"
+    },
+    "./ClientLogo23": {
+      "import": "./ClientLogo23.js",
+      "types": "./ClientLogo23.d.ts"
+    },
+    "./ClientLogo24": {
+      "import": "./ClientLogo24.js",
+      "types": "./ClientLogo24.d.ts"
+    },
+    "./ClientLogo25": {
+      "import": "./ClientLogo25.js",
+      "types": "./ClientLogo25.d.ts"
+    },
+    "./ClientLogo26": {
+      "import": "./ClientLogo26.js",
+      "types": "./ClientLogo26.d.ts"
+    },
+    "./ClientLogo27": {
+      "import": "./ClientLogo27.js",
+      "types": "./ClientLogo27.d.ts"
+    },
+    "./ClientLogo28": {
+      "import": "./ClientLogo28.js",
+      "types": "./ClientLogo28.d.ts"
+    },
+    "./ClientLogo29": {
+      "import": "./ClientLogo29.js",
+      "types": "./ClientLogo29.d.ts"
+    },
+    "./ClientLogo30": {
+      "import": "./ClientLogo30.js",
+      "types": "./ClientLogo30.d.ts"
+    },
+    "./ClientLogo31": {
+      "import": "./ClientLogo31.js",
+      "types": "./ClientLogo31.d.ts"
+    },
+    "./ClientLogo32": {
+      "import": "./ClientLogo32.js",
+      "types": "./ClientLogo32.d.ts"
+    },
+    "./ClientLogo33": {
+      "import": "./ClientLogo33.js",
+      "types": "./ClientLogo33.d.ts"
+    },
+    "./PreTitle20": {
+      "import": "./PreTitle20.js",
+      "types": "./PreTitle20.d.ts"
+    },
+    "./ClientLogo34": {
+      "import": "./ClientLogo34.js",
+      "types": "./ClientLogo34.d.ts"
+    },
+    "./ClientLogo35": {
+      "import": "./ClientLogo35.js",
+      "types": "./ClientLogo35.d.ts"
+    },
+    "./ClientLogo36": {
+      "import": "./ClientLogo36.js",
+      "types": "./ClientLogo36.d.ts"
+    },
+    "./ClientLogo37": {
+      "import": "./ClientLogo37.js",
+      "types": "./ClientLogo37.d.ts"
+    },
+    "./ClientLogo38": {
+      "import": "./ClientLogo38.js",
+      "types": "./ClientLogo38.d.ts"
+    },
+    "./ClientLogo39": {
+      "import": "./ClientLogo39.js",
+      "types": "./ClientLogo39.d.ts"
+    },
+    "./ClientLogo40": {
+      "import": "./ClientLogo40.js",
+      "types": "./ClientLogo40.d.ts"
+    },
+    "./ClientLogo41": {
+      "import": "./ClientLogo41.js",
+      "types": "./ClientLogo41.d.ts"
+    },
+    "./ClientLogo42": {
+      "import": "./ClientLogo42.js",
+      "types": "./ClientLogo42.d.ts"
+    },
+    "./ClientLogo43": {
+      "import": "./ClientLogo43.js",
+      "types": "./ClientLogo43.d.ts"
+    },
+    "./ClientLogo44": {
+      "import": "./ClientLogo44.js",
+      "types": "./ClientLogo44.d.ts"
+    },
+    "./PreTitle21": {
+      "import": "./PreTitle21.js",
+      "types": "./PreTitle21.d.ts"
+    },
+    "./ClientLogo45": {
+      "import": "./ClientLogo45.js",
+      "types": "./ClientLogo45.d.ts"
+    },
+    "./ClientLogo46": {
+      "import": "./ClientLogo46.js",
+      "types": "./ClientLogo46.d.ts"
+    },
+    "./ClientLogo47": {
+      "import": "./ClientLogo47.js",
+      "types": "./ClientLogo47.d.ts"
+    },
+    "./ClientLogo48": {
+      "import": "./ClientLogo48.js",
+      "types": "./ClientLogo48.d.ts"
+    },
+    "./ClientLogo49": {
+      "import": "./ClientLogo49.js",
+      "types": "./ClientLogo49.d.ts"
+    },
+    "./ClientLogo50": {
+      "import": "./ClientLogo50.js",
+      "types": "./ClientLogo50.d.ts"
+    },
+    "./ClientLogo51": {
+      "import": "./ClientLogo51.js",
+      "types": "./ClientLogo51.d.ts"
+    },
+    "./ClientLogo52": {
+      "import": "./ClientLogo52.js",
+      "types": "./ClientLogo52.d.ts"
+    },
+    "./ClientLogo53": {
+      "import": "./ClientLogo53.js",
+      "types": "./ClientLogo53.d.ts"
+    },
+    "./ClientLogo54": {
+      "import": "./ClientLogo54.js",
+      "types": "./ClientLogo54.d.ts"
+    },
+    "./ClientLogo55": {
+      "import": "./ClientLogo55.js",
+      "types": "./ClientLogo55.d.ts"
+    },
+    "./PreTitle22": {
+      "import": "./PreTitle22.js",
+      "types": "./PreTitle22.d.ts"
+    },
+    "./PreTitle23": {
+      "import": "./PreTitle23.js",
+      "types": "./PreTitle23.d.ts"
+    },
+    "./ClientLogo56": {
+      "import": "./ClientLogo56.js",
+      "types": "./ClientLogo56.d.ts"
+    },
+    "./ClientLogo57": {
+      "import": "./ClientLogo57.js",
+      "types": "./ClientLogo57.d.ts"
+    },
+    "./ClientLogo58": {
+      "import": "./ClientLogo58.js",
+      "types": "./ClientLogo58.d.ts"
+    },
+    "./ClientLogo59": {
+      "import": "./ClientLogo59.js",
+      "types": "./ClientLogo59.d.ts"
+    },
+    "./ClientLogo60": {
+      "import": "./ClientLogo60.js",
+      "types": "./ClientLogo60.d.ts"
+    },
+    "./ClientLogo61": {
+      "import": "./ClientLogo61.js",
+      "types": "./ClientLogo61.d.ts"
+    },
+    "./ClientLogo62": {
+      "import": "./ClientLogo62.js",
+      "types": "./ClientLogo62.d.ts"
+    },
+    "./ClientLogo63": {
+      "import": "./ClientLogo63.js",
+      "types": "./ClientLogo63.d.ts"
+    },
+    "./ClientLogo64": {
+      "import": "./ClientLogo64.js",
+      "types": "./ClientLogo64.d.ts"
+    },
+    "./ClientLogo65": {
+      "import": "./ClientLogo65.js",
+      "types": "./ClientLogo65.d.ts"
+    },
+    "./ClientLogo66": {
+      "import": "./ClientLogo66.js",
+      "types": "./ClientLogo66.d.ts"
+    },
+    "./ClientLogo67": {
+      "import": "./ClientLogo67.js",
+      "types": "./ClientLogo67.d.ts"
+    },
+    "./ClientLogo68": {
+      "import": "./ClientLogo68.js",
+      "types": "./ClientLogo68.d.ts"
+    },
+    "./ClientLogo69": {
+      "import": "./ClientLogo69.js",
+      "types": "./ClientLogo69.d.ts"
+    },
+    "./ClientLogo70": {
+      "import": "./ClientLogo70.js",
+      "types": "./ClientLogo70.d.ts"
+    },
+    "./ClientLogo71": {
+      "import": "./ClientLogo71.js",
+      "types": "./ClientLogo71.d.ts"
+    },
+    "./ClientLogo72": {
+      "import": "./ClientLogo72.js",
+      "types": "./ClientLogo72.d.ts"
+    },
+    "./ClientLogo73": {
+      "import": "./ClientLogo73.js",
+      "types": "./ClientLogo73.d.ts"
+    },
+    "./ClientLogo74": {
+      "import": "./ClientLogo74.js",
+      "types": "./ClientLogo74.d.ts"
+    },
+    "./BeforeAfter3": {
+      "import": "./BeforeAfter3.js",
+      "types": "./BeforeAfter3.d.ts"
+    },
+    "./BeforeAfter4": {
+      "import": "./BeforeAfter4.js",
+      "types": "./BeforeAfter4.d.ts"
+    },
+    "./BeforeAfter5": {
+      "import": "./BeforeAfter5.js",
+      "types": "./BeforeAfter5.d.ts"
+    },
+    "./BeforeAfter6": {
+      "import": "./BeforeAfter6.js",
+      "types": "./BeforeAfter6.d.ts"
+    },
+    "./PreTitle24": {
+      "import": "./PreTitle24.js",
+      "types": "./PreTitle24.d.ts"
+    },
+    "./ButtonIcon19": {
+      "import": "./ButtonIcon19.js",
+      "types": "./ButtonIcon19.d.ts"
+    },
+    "./Badge15": {
+      "import": "./Badge15.js",
+      "types": "./Badge15.d.ts"
+    },
+    "./Badge16": {
+      "import": "./Badge16.js",
+      "types": "./Badge16.d.ts"
+    },
+    "./Badge17": {
+      "import": "./Badge17.js",
+      "types": "./Badge17.d.ts"
+    },
+    "./FeatureBoxTitle3": {
+      "import": "./FeatureBoxTitle3.js",
+      "types": "./FeatureBoxTitle3.d.ts"
+    },
+    "./AlertCard3": {
+      "import": "./AlertCard3.js",
+      "types": "./AlertCard3.d.ts"
+    },
+    "./PreTitle25": {
+      "import": "./PreTitle25.js",
+      "types": "./PreTitle25.d.ts"
+    },
+    "./ButtonIcon20": {
+      "import": "./ButtonIcon20.js",
+      "types": "./ButtonIcon20.d.ts"
+    },
+    "./Badge18": {
+      "import": "./Badge18.js",
+      "types": "./Badge18.d.ts"
+    },
+    "./Badge19": {
+      "import": "./Badge19.js",
+      "types": "./Badge19.d.ts"
+    },
+    "./Badge20": {
+      "import": "./Badge20.js",
+      "types": "./Badge20.d.ts"
+    },
+    "./FeatureBoxTitle4": {
+      "import": "./FeatureBoxTitle4.js",
+      "types": "./FeatureBoxTitle4.d.ts"
+    },
+    "./AlertCard4": {
+      "import": "./AlertCard4.js",
+      "types": "./AlertCard4.d.ts"
+    },
+    "./PreTitle26": {
+      "import": "./PreTitle26.js",
+      "types": "./PreTitle26.d.ts"
+    },
+    "./ButtonIcon21": {
+      "import": "./ButtonIcon21.js",
+      "types": "./ButtonIcon21.d.ts"
+    },
+    "./Badge21": {
+      "import": "./Badge21.js",
+      "types": "./Badge21.d.ts"
+    },
+    "./Badge22": {
+      "import": "./Badge22.js",
+      "types": "./Badge22.d.ts"
+    },
+    "./Badge23": {
+      "import": "./Badge23.js",
+      "types": "./Badge23.d.ts"
+    },
+    "./FeatureBoxTitle5": {
+      "import": "./FeatureBoxTitle5.js",
+      "types": "./FeatureBoxTitle5.d.ts"
+    },
+    "./AlertCard5": {
+      "import": "./AlertCard5.js",
+      "types": "./AlertCard5.d.ts"
+    },
+    "./PreTitle27": {
+      "import": "./PreTitle27.js",
+      "types": "./PreTitle27.d.ts"
+    },
+    "./ButtonIcon22": {
+      "import": "./ButtonIcon22.js",
+      "types": "./ButtonIcon22.d.ts"
+    },
+    "./PreTitle28": {
+      "import": "./PreTitle28.js",
+      "types": "./PreTitle28.d.ts"
+    },
+    "./PreTitle29": {
+      "import": "./PreTitle29.js",
+      "types": "./PreTitle29.d.ts"
+    },
+    "./ButtonIcon23": {
+      "import": "./ButtonIcon23.js",
+      "types": "./ButtonIcon23.d.ts"
+    },
+    "./ButtonIcon24": {
+      "import": "./ButtonIcon24.js",
+      "types": "./ButtonIcon24.d.ts"
+    },
+    "./Badge24": {
+      "import": "./Badge24.js",
+      "types": "./Badge24.d.ts"
+    },
+    "./Badge25": {
+      "import": "./Badge25.js",
+      "types": "./Badge25.d.ts"
+    },
+    "./Badge26": {
+      "import": "./Badge26.js",
+      "types": "./Badge26.d.ts"
+    },
+    "./FeatureBoxTitle6": {
+      "import": "./FeatureBoxTitle6.js",
+      "types": "./FeatureBoxTitle6.d.ts"
+    },
+    "./AlertCard6": {
+      "import": "./AlertCard6.js",
+      "types": "./AlertCard6.d.ts"
+    },
+    "./Badge27": {
+      "import": "./Badge27.js",
+      "types": "./Badge27.d.ts"
+    },
+    "./Badge28": {
+      "import": "./Badge28.js",
+      "types": "./Badge28.d.ts"
+    },
+    "./Badge29": {
+      "import": "./Badge29.js",
+      "types": "./Badge29.d.ts"
+    },
+    "./Badge30": {
+      "import": "./Badge30.js",
+      "types": "./Badge30.d.ts"
+    },
+    "./Badge31": {
+      "import": "./Badge31.js",
+      "types": "./Badge31.d.ts"
+    },
+    "./Badge32": {
+      "import": "./Badge32.js",
+      "types": "./Badge32.d.ts"
+    },
+    "./Badge33": {
+      "import": "./Badge33.js",
+      "types": "./Badge33.d.ts"
+    },
+    "./Badge34": {
+      "import": "./Badge34.js",
+      "types": "./Badge34.d.ts"
+    },
+    "./Badge35": {
+      "import": "./Badge35.js",
+      "types": "./Badge35.d.ts"
+    },
+    "./Badge36": {
+      "import": "./Badge36.js",
+      "types": "./Badge36.d.ts"
+    },
+    "./Badge37": {
+      "import": "./Badge37.js",
+      "types": "./Badge37.d.ts"
+    },
+    "./Badge38": {
+      "import": "./Badge38.js",
+      "types": "./Badge38.d.ts"
+    },
+    "./FeatureBoxTitle7": {
+      "import": "./FeatureBoxTitle7.js",
+      "types": "./FeatureBoxTitle7.d.ts"
+    },
+    "./AlertCard7": {
+      "import": "./AlertCard7.js",
+      "types": "./AlertCard7.d.ts"
+    },
+    "./FeatureBoxTitle8": {
+      "import": "./FeatureBoxTitle8.js",
+      "types": "./FeatureBoxTitle8.d.ts"
+    },
+    "./FeatureBoxTitle9": {
+      "import": "./FeatureBoxTitle9.js",
+      "types": "./FeatureBoxTitle9.d.ts"
+    },
+    "./AlertCard8": {
+      "import": "./AlertCard8.js",
+      "types": "./AlertCard8.d.ts"
+    },
+    "./AlertCard9": {
+      "import": "./AlertCard9.js",
+      "types": "./AlertCard9.d.ts"
+    },
+    "./PreTitle30": {
+      "import": "./PreTitle30.js",
+      "types": "./PreTitle30.d.ts"
+    },
+    "./ButtonIcon25": {
+      "import": "./ButtonIcon25.js",
+      "types": "./ButtonIcon25.d.ts"
+    },
+    "./Button11": {
+      "import": "./Button11.js",
+      "types": "./Button11.d.ts"
+    },
+    "./OverviewCard7": {
+      "import": "./OverviewCard7.js",
+      "types": "./OverviewCard7.d.ts"
+    },
+    "./OverviewCard8": {
+      "import": "./OverviewCard8.js",
+      "types": "./OverviewCard8.d.ts"
+    },
+    "./OverviewCard9": {
+      "import": "./OverviewCard9.js",
+      "types": "./OverviewCard9.d.ts"
+    },
+    "./PreTitle31": {
+      "import": "./PreTitle31.js",
+      "types": "./PreTitle31.d.ts"
+    },
+    "./ButtonIcon26": {
+      "import": "./ButtonIcon26.js",
+      "types": "./ButtonIcon26.d.ts"
+    },
+    "./Button12": {
+      "import": "./Button12.js",
+      "types": "./Button12.d.ts"
+    },
+    "./OverviewCard10": {
+      "import": "./OverviewCard10.js",
+      "types": "./OverviewCard10.d.ts"
+    },
+    "./OverviewCard11": {
+      "import": "./OverviewCard11.js",
+      "types": "./OverviewCard11.d.ts"
+    },
+    "./OverviewCard12": {
+      "import": "./OverviewCard12.js",
+      "types": "./OverviewCard12.d.ts"
+    },
+    "./PreTitle32": {
+      "import": "./PreTitle32.js",
+      "types": "./PreTitle32.d.ts"
+    },
+    "./ButtonIcon27": {
+      "import": "./ButtonIcon27.js",
+      "types": "./ButtonIcon27.d.ts"
+    },
+    "./Button13": {
+      "import": "./Button13.js",
+      "types": "./Button13.d.ts"
+    },
+    "./OverviewCard13": {
+      "import": "./OverviewCard13.js",
+      "types": "./OverviewCard13.d.ts"
+    },
+    "./OverviewCard14": {
+      "import": "./OverviewCard14.js",
+      "types": "./OverviewCard14.d.ts"
+    },
+    "./OverviewCard15": {
+      "import": "./OverviewCard15.js",
+      "types": "./OverviewCard15.d.ts"
+    },
+    "./PreTitle33": {
+      "import": "./PreTitle33.js",
+      "types": "./PreTitle33.d.ts"
+    },
+    "./ButtonIcon28": {
+      "import": "./ButtonIcon28.js",
+      "types": "./ButtonIcon28.d.ts"
+    },
+    "./Button14": {
+      "import": "./Button14.js",
+      "types": "./Button14.d.ts"
+    },
+    "./PreTitle34": {
+      "import": "./PreTitle34.js",
+      "types": "./PreTitle34.d.ts"
+    },
+    "./PreTitle35": {
+      "import": "./PreTitle35.js",
+      "types": "./PreTitle35.d.ts"
+    },
+    "./ButtonIcon29": {
+      "import": "./ButtonIcon29.js",
+      "types": "./ButtonIcon29.d.ts"
+    },
+    "./Button15": {
+      "import": "./Button15.js",
+      "types": "./Button15.d.ts"
+    },
+    "./ButtonIcon30": {
+      "import": "./ButtonIcon30.js",
+      "types": "./ButtonIcon30.d.ts"
+    },
+    "./Button16": {
+      "import": "./Button16.js",
+      "types": "./Button16.d.ts"
+    },
+    "./OverviewCard16": {
+      "import": "./OverviewCard16.js",
+      "types": "./OverviewCard16.d.ts"
+    },
+    "./OverviewCard17": {
+      "import": "./OverviewCard17.js",
+      "types": "./OverviewCard17.d.ts"
+    },
+    "./OverviewCard18": {
+      "import": "./OverviewCard18.js",
+      "types": "./OverviewCard18.d.ts"
+    },
+    "./OverviewCard19": {
+      "import": "./OverviewCard19.js",
+      "types": "./OverviewCard19.d.ts"
+    },
+    "./OverviewCard20": {
+      "import": "./OverviewCard20.js",
+      "types": "./OverviewCard20.d.ts"
+    },
+    "./OverviewCard21": {
+      "import": "./OverviewCard21.js",
+      "types": "./OverviewCard21.d.ts"
+    },
+    "./OverviewCard22": {
+      "import": "./OverviewCard22.js",
+      "types": "./OverviewCard22.d.ts"
+    },
+    "./OverviewCard23": {
+      "import": "./OverviewCard23.js",
+      "types": "./OverviewCard23.d.ts"
+    },
+    "./OverviewCard24": {
+      "import": "./OverviewCard24.js",
+      "types": "./OverviewCard24.d.ts"
+    },
+    "./PreTitle36": {
+      "import": "./PreTitle36.js",
+      "types": "./PreTitle36.d.ts"
+    },
+    "./StatItem5": {
+      "import": "./StatItem5.js",
+      "types": "./StatItem5.d.ts"
+    },
+    "./StatItem6": {
+      "import": "./StatItem6.js",
+      "types": "./StatItem6.d.ts"
+    },
+    "./WorkflowSteps3": {
+      "import": "./WorkflowSteps3.js",
+      "types": "./WorkflowSteps3.d.ts"
+    },
+    "./PreTitle37": {
+      "import": "./PreTitle37.js",
+      "types": "./PreTitle37.d.ts"
+    },
+    "./StatItem7": {
+      "import": "./StatItem7.js",
+      "types": "./StatItem7.d.ts"
+    },
+    "./StatItem8": {
+      "import": "./StatItem8.js",
+      "types": "./StatItem8.d.ts"
+    },
+    "./WorkflowSteps4": {
+      "import": "./WorkflowSteps4.js",
+      "types": "./WorkflowSteps4.d.ts"
+    },
+    "./PreTitle38": {
+      "import": "./PreTitle38.js",
+      "types": "./PreTitle38.d.ts"
+    },
+    "./StatItem9": {
+      "import": "./StatItem9.js",
+      "types": "./StatItem9.d.ts"
+    },
+    "./StatItem10": {
+      "import": "./StatItem10.js",
+      "types": "./StatItem10.d.ts"
+    },
+    "./WorkflowSteps5": {
+      "import": "./WorkflowSteps5.js",
+      "types": "./WorkflowSteps5.d.ts"
+    },
+    "./PreTitle39": {
+      "import": "./PreTitle39.js",
+      "types": "./PreTitle39.d.ts"
+    },
+    "./StatItem11": {
+      "import": "./StatItem11.js",
+      "types": "./StatItem11.d.ts"
+    },
+    "./StatItem12": {
+      "import": "./StatItem12.js",
+      "types": "./StatItem12.d.ts"
+    },
+    "./PreTitle40": {
+      "import": "./PreTitle40.js",
+      "types": "./PreTitle40.d.ts"
+    },
+    "./PreTitle41": {
+      "import": "./PreTitle41.js",
+      "types": "./PreTitle41.d.ts"
+    },
+    "./StatItem13": {
+      "import": "./StatItem13.js",
+      "types": "./StatItem13.d.ts"
+    },
+    "./StatItem14": {
+      "import": "./StatItem14.js",
+      "types": "./StatItem14.d.ts"
+    },
+    "./StatItem15": {
+      "import": "./StatItem15.js",
+      "types": "./StatItem15.d.ts"
+    },
+    "./StatItem16": {
+      "import": "./StatItem16.js",
+      "types": "./StatItem16.d.ts"
+    },
+    "./WorkflowSteps6": {
+      "import": "./WorkflowSteps6.js",
+      "types": "./WorkflowSteps6.d.ts"
+    },
+    "./PreTitle42": {
+      "import": "./PreTitle42.js",
+      "types": "./PreTitle42.d.ts"
+    },
+    "./ButtonIcon31": {
+      "import": "./ButtonIcon31.js",
+      "types": "./ButtonIcon31.d.ts"
+    },
+    "./ListItem39": {
+      "import": "./ListItem39.js",
+      "types": "./ListItem39.d.ts"
+    },
+    "./ListItem40": {
+      "import": "./ListItem40.js",
+      "types": "./ListItem40.d.ts"
+    },
+    "./ListItem41": {
+      "import": "./ListItem41.js",
+      "types": "./ListItem41.d.ts"
+    },
+    "./ListItem42": {
+      "import": "./ListItem42.js",
+      "types": "./ListItem42.d.ts"
+    },
+    "./PreTitle43": {
+      "import": "./PreTitle43.js",
+      "types": "./PreTitle43.d.ts"
+    },
+    "./ButtonIcon32": {
+      "import": "./ButtonIcon32.js",
+      "types": "./ButtonIcon32.d.ts"
+    },
+    "./ListItem43": {
+      "import": "./ListItem43.js",
+      "types": "./ListItem43.d.ts"
+    },
+    "./ListItem44": {
+      "import": "./ListItem44.js",
+      "types": "./ListItem44.d.ts"
+    },
+    "./ListItem45": {
+      "import": "./ListItem45.js",
+      "types": "./ListItem45.d.ts"
+    },
+    "./ListItem46": {
+      "import": "./ListItem46.js",
+      "types": "./ListItem46.d.ts"
+    },
+    "./PreTitle44": {
+      "import": "./PreTitle44.js",
+      "types": "./PreTitle44.d.ts"
+    },
+    "./ButtonIcon33": {
+      "import": "./ButtonIcon33.js",
+      "types": "./ButtonIcon33.d.ts"
+    },
+    "./ListItem47": {
+      "import": "./ListItem47.js",
+      "types": "./ListItem47.d.ts"
+    },
+    "./ListItem48": {
+      "import": "./ListItem48.js",
+      "types": "./ListItem48.d.ts"
+    },
+    "./ListItem49": {
+      "import": "./ListItem49.js",
+      "types": "./ListItem49.d.ts"
+    },
+    "./ListItem50": {
+      "import": "./ListItem50.js",
+      "types": "./ListItem50.d.ts"
+    },
+    "./PreTitle45": {
+      "import": "./PreTitle45.js",
+      "types": "./PreTitle45.d.ts"
+    },
+    "./ButtonIcon34": {
+      "import": "./ButtonIcon34.js",
+      "types": "./ButtonIcon34.d.ts"
+    },
+    "./ListItem51": {
+      "import": "./ListItem51.js",
+      "types": "./ListItem51.d.ts"
+    },
+    "./ListItem52": {
+      "import": "./ListItem52.js",
+      "types": "./ListItem52.d.ts"
+    },
+    "./ListItem53": {
+      "import": "./ListItem53.js",
+      "types": "./ListItem53.d.ts"
+    },
+    "./ListItem54": {
+      "import": "./ListItem54.js",
+      "types": "./ListItem54.d.ts"
+    },
+    "./PreTitle46": {
+      "import": "./PreTitle46.js",
+      "types": "./PreTitle46.d.ts"
+    },
+    "./ButtonIcon35": {
+      "import": "./ButtonIcon35.js",
+      "types": "./ButtonIcon35.d.ts"
+    },
+    "./PreTitle47": {
+      "import": "./PreTitle47.js",
+      "types": "./PreTitle47.d.ts"
+    },
+    "./ButtonIcon36": {
+      "import": "./ButtonIcon36.js",
+      "types": "./ButtonIcon36.d.ts"
+    },
+    "./ListItem55": {
+      "import": "./ListItem55.js",
+      "types": "./ListItem55.d.ts"
+    },
+    "./ListItem56": {
+      "import": "./ListItem56.js",
+      "types": "./ListItem56.d.ts"
+    },
+    "./ListItem57": {
+      "import": "./ListItem57.js",
+      "types": "./ListItem57.d.ts"
+    },
+    "./ListItem58": {
+      "import": "./ListItem58.js",
+      "types": "./ListItem58.d.ts"
+    },
+    "./ListItem59": {
+      "import": "./ListItem59.js",
+      "types": "./ListItem59.d.ts"
+    },
+    "./ListItem60": {
+      "import": "./ListItem60.js",
+      "types": "./ListItem60.d.ts"
+    },
+    "./ListItem61": {
+      "import": "./ListItem61.js",
+      "types": "./ListItem61.d.ts"
+    },
+    "./ListItem62": {
+      "import": "./ListItem62.js",
+      "types": "./ListItem62.d.ts"
+    },
+    "./PreTitle48": {
+      "import": "./PreTitle48.js",
+      "types": "./PreTitle48.d.ts"
+    },
+    "./UseCaseCard9": {
+      "import": "./UseCaseCard9.js",
+      "types": "./UseCaseCard9.d.ts"
+    },
+    "./UseCaseCard10": {
+      "import": "./UseCaseCard10.js",
+      "types": "./UseCaseCard10.d.ts"
+    },
+    "./UseCaseCard11": {
+      "import": "./UseCaseCard11.js",
+      "types": "./UseCaseCard11.d.ts"
+    },
+    "./UseCaseCard12": {
+      "import": "./UseCaseCard12.js",
+      "types": "./UseCaseCard12.d.ts"
+    },
+    "./Badge39": {
+      "import": "./Badge39.js",
+      "types": "./Badge39.d.ts"
+    },
+    "./Badge40": {
+      "import": "./Badge40.js",
+      "types": "./Badge40.d.ts"
+    },
+    "./Badge41": {
+      "import": "./Badge41.js",
+      "types": "./Badge41.d.ts"
+    },
+    "./Badge42": {
+      "import": "./Badge42.js",
+      "types": "./Badge42.d.ts"
+    },
+    "./FounderCard3": {
+      "import": "./FounderCard3.js",
+      "types": "./FounderCard3.d.ts"
+    },
+    "./PreTitle49": {
+      "import": "./PreTitle49.js",
+      "types": "./PreTitle49.d.ts"
+    },
+    "./UseCaseCard13": {
+      "import": "./UseCaseCard13.js",
+      "types": "./UseCaseCard13.d.ts"
+    },
+    "./UseCaseCard14": {
+      "import": "./UseCaseCard14.js",
+      "types": "./UseCaseCard14.d.ts"
+    },
+    "./UseCaseCard15": {
+      "import": "./UseCaseCard15.js",
+      "types": "./UseCaseCard15.d.ts"
+    },
+    "./UseCaseCard16": {
+      "import": "./UseCaseCard16.js",
+      "types": "./UseCaseCard16.d.ts"
+    },
+    "./Badge43": {
+      "import": "./Badge43.js",
+      "types": "./Badge43.d.ts"
+    },
+    "./Badge44": {
+      "import": "./Badge44.js",
+      "types": "./Badge44.d.ts"
+    },
+    "./Badge45": {
+      "import": "./Badge45.js",
+      "types": "./Badge45.d.ts"
+    },
+    "./Badge46": {
+      "import": "./Badge46.js",
+      "types": "./Badge46.d.ts"
+    },
+    "./FounderCard4": {
+      "import": "./FounderCard4.js",
+      "types": "./FounderCard4.d.ts"
+    },
+    "./PreTitle50": {
+      "import": "./PreTitle50.js",
+      "types": "./PreTitle50.d.ts"
+    },
+    "./UseCaseCard17": {
+      "import": "./UseCaseCard17.js",
+      "types": "./UseCaseCard17.d.ts"
+    },
+    "./UseCaseCard18": {
+      "import": "./UseCaseCard18.js",
+      "types": "./UseCaseCard18.d.ts"
+    },
+    "./UseCaseCard19": {
+      "import": "./UseCaseCard19.js",
+      "types": "./UseCaseCard19.d.ts"
+    },
+    "./UseCaseCard20": {
+      "import": "./UseCaseCard20.js",
+      "types": "./UseCaseCard20.d.ts"
+    },
+    "./Badge47": {
+      "import": "./Badge47.js",
+      "types": "./Badge47.d.ts"
+    },
+    "./Badge48": {
+      "import": "./Badge48.js",
+      "types": "./Badge48.d.ts"
+    },
+    "./Badge49": {
+      "import": "./Badge49.js",
+      "types": "./Badge49.d.ts"
+    },
+    "./Badge50": {
+      "import": "./Badge50.js",
+      "types": "./Badge50.d.ts"
+    },
+    "./FounderCard5": {
+      "import": "./FounderCard5.js",
+      "types": "./FounderCard5.d.ts"
+    },
+    "./PreTitle51": {
+      "import": "./PreTitle51.js",
+      "types": "./PreTitle51.d.ts"
+    },
+    "./PreTitle52": {
+      "import": "./PreTitle52.js",
+      "types": "./PreTitle52.d.ts"
+    },
+    "./UseCaseCard21": {
+      "import": "./UseCaseCard21.js",
+      "types": "./UseCaseCard21.d.ts"
+    },
+    "./UseCaseCard22": {
+      "import": "./UseCaseCard22.js",
+      "types": "./UseCaseCard22.d.ts"
+    },
+    "./UseCaseCard23": {
+      "import": "./UseCaseCard23.js",
+      "types": "./UseCaseCard23.d.ts"
+    },
+    "./UseCaseCard24": {
+      "import": "./UseCaseCard24.js",
+      "types": "./UseCaseCard24.d.ts"
+    },
+    "./UseCaseCard25": {
+      "import": "./UseCaseCard25.js",
+      "types": "./UseCaseCard25.d.ts"
+    },
+    "./UseCaseCard26": {
+      "import": "./UseCaseCard26.js",
+      "types": "./UseCaseCard26.d.ts"
+    },
+    "./Badge51": {
+      "import": "./Badge51.js",
+      "types": "./Badge51.d.ts"
+    },
+    "./Badge52": {
+      "import": "./Badge52.js",
+      "types": "./Badge52.d.ts"
+    },
+    "./Badge53": {
+      "import": "./Badge53.js",
+      "types": "./Badge53.d.ts"
+    },
+    "./Badge54": {
+      "import": "./Badge54.js",
+      "types": "./Badge54.d.ts"
+    },
+    "./FounderCard6": {
+      "import": "./FounderCard6.js",
+      "types": "./FounderCard6.d.ts"
+    },
+    "./Badge55": {
+      "import": "./Badge55.js",
+      "types": "./Badge55.d.ts"
+    },
+    "./Badge56": {
+      "import": "./Badge56.js",
+      "types": "./Badge56.d.ts"
+    },
+    "./Badge57": {
+      "import": "./Badge57.js",
+      "types": "./Badge57.d.ts"
+    },
+    "./Badge58": {
+      "import": "./Badge58.js",
+      "types": "./Badge58.d.ts"
+    },
+    "./Badge59": {
+      "import": "./Badge59.js",
+      "types": "./Badge59.d.ts"
+    },
+    "./Badge60": {
+      "import": "./Badge60.js",
+      "types": "./Badge60.d.ts"
+    },
+    "./Badge61": {
+      "import": "./Badge61.js",
+      "types": "./Badge61.d.ts"
+    },
+    "./Badge62": {
+      "import": "./Badge62.js",
+      "types": "./Badge62.d.ts"
+    },
+    "./FounderCard7": {
+      "import": "./FounderCard7.js",
+      "types": "./FounderCard7.d.ts"
+    },
+    "./PreTitle53": {
+      "import": "./PreTitle53.js",
+      "types": "./PreTitle53.d.ts"
+    },
+    "./ButtonIcon37": {
+      "import": "./ButtonIcon37.js",
+      "types": "./ButtonIcon37.d.ts"
+    },
+    "./IntegrationIcon33": {
+      "import": "./IntegrationIcon33.js",
+      "types": "./IntegrationIcon33.d.ts"
+    },
+    "./IntegrationIcon34": {
+      "import": "./IntegrationIcon34.js",
+      "types": "./IntegrationIcon34.d.ts"
+    },
+    "./IntegrationIcon35": {
+      "import": "./IntegrationIcon35.js",
+      "types": "./IntegrationIcon35.d.ts"
+    },
+    "./IntegrationIcon36": {
+      "import": "./IntegrationIcon36.js",
+      "types": "./IntegrationIcon36.d.ts"
+    },
+    "./IntegrationIcon37": {
+      "import": "./IntegrationIcon37.js",
+      "types": "./IntegrationIcon37.d.ts"
+    },
+    "./IntegrationIcon38": {
+      "import": "./IntegrationIcon38.js",
+      "types": "./IntegrationIcon38.d.ts"
+    },
+    "./IntegrationIcon39": {
+      "import": "./IntegrationIcon39.js",
+      "types": "./IntegrationIcon39.d.ts"
+    },
+    "./IntegrationIcon40": {
+      "import": "./IntegrationIcon40.js",
+      "types": "./IntegrationIcon40.d.ts"
+    },
+    "./IntegrationIcon41": {
+      "import": "./IntegrationIcon41.js",
+      "types": "./IntegrationIcon41.d.ts"
+    },
+    "./IntegrationIcon42": {
+      "import": "./IntegrationIcon42.js",
+      "types": "./IntegrationIcon42.d.ts"
+    },
+    "./IntegrationIcon43": {
+      "import": "./IntegrationIcon43.js",
+      "types": "./IntegrationIcon43.d.ts"
+    },
+    "./IntegrationIcon44": {
+      "import": "./IntegrationIcon44.js",
+      "types": "./IntegrationIcon44.d.ts"
+    },
+    "./IntegrationIcon45": {
+      "import": "./IntegrationIcon45.js",
+      "types": "./IntegrationIcon45.d.ts"
+    },
+    "./IntegrationIcon46": {
+      "import": "./IntegrationIcon46.js",
+      "types": "./IntegrationIcon46.d.ts"
+    },
+    "./IntegrationIcon47": {
+      "import": "./IntegrationIcon47.js",
+      "types": "./IntegrationIcon47.d.ts"
+    },
+    "./IntegrationIcon48": {
+      "import": "./IntegrationIcon48.js",
+      "types": "./IntegrationIcon48.d.ts"
+    },
+    "./PreTitle54": {
+      "import": "./PreTitle54.js",
+      "types": "./PreTitle54.d.ts"
+    },
+    "./ButtonIcon38": {
+      "import": "./ButtonIcon38.js",
+      "types": "./ButtonIcon38.d.ts"
+    },
+    "./IntegrationIcon49": {
+      "import": "./IntegrationIcon49.js",
+      "types": "./IntegrationIcon49.d.ts"
+    },
+    "./IntegrationIcon50": {
+      "import": "./IntegrationIcon50.js",
+      "types": "./IntegrationIcon50.d.ts"
+    },
+    "./IntegrationIcon51": {
+      "import": "./IntegrationIcon51.js",
+      "types": "./IntegrationIcon51.d.ts"
+    },
+    "./IntegrationIcon52": {
+      "import": "./IntegrationIcon52.js",
+      "types": "./IntegrationIcon52.d.ts"
+    },
+    "./IntegrationIcon53": {
+      "import": "./IntegrationIcon53.js",
+      "types": "./IntegrationIcon53.d.ts"
+    },
+    "./IntegrationIcon54": {
+      "import": "./IntegrationIcon54.js",
+      "types": "./IntegrationIcon54.d.ts"
+    },
+    "./IntegrationIcon55": {
+      "import": "./IntegrationIcon55.js",
+      "types": "./IntegrationIcon55.d.ts"
+    },
+    "./IntegrationIcon56": {
+      "import": "./IntegrationIcon56.js",
+      "types": "./IntegrationIcon56.d.ts"
+    },
+    "./IntegrationIcon57": {
+      "import": "./IntegrationIcon57.js",
+      "types": "./IntegrationIcon57.d.ts"
+    },
+    "./IntegrationIcon58": {
+      "import": "./IntegrationIcon58.js",
+      "types": "./IntegrationIcon58.d.ts"
+    },
+    "./IntegrationIcon59": {
+      "import": "./IntegrationIcon59.js",
+      "types": "./IntegrationIcon59.d.ts"
+    },
+    "./IntegrationIcon60": {
+      "import": "./IntegrationIcon60.js",
+      "types": "./IntegrationIcon60.d.ts"
+    },
+    "./IntegrationIcon61": {
+      "import": "./IntegrationIcon61.js",
+      "types": "./IntegrationIcon61.d.ts"
+    },
+    "./IntegrationIcon62": {
+      "import": "./IntegrationIcon62.js",
+      "types": "./IntegrationIcon62.d.ts"
+    },
+    "./IntegrationIcon63": {
+      "import": "./IntegrationIcon63.js",
+      "types": "./IntegrationIcon63.d.ts"
+    },
+    "./IntegrationIcon64": {
+      "import": "./IntegrationIcon64.js",
+      "types": "./IntegrationIcon64.d.ts"
+    },
+    "./PreTitle55": {
+      "import": "./PreTitle55.js",
+      "types": "./PreTitle55.d.ts"
+    },
+    "./ButtonIcon39": {
+      "import": "./ButtonIcon39.js",
+      "types": "./ButtonIcon39.d.ts"
+    },
+    "./IntegrationIcon65": {
+      "import": "./IntegrationIcon65.js",
+      "types": "./IntegrationIcon65.d.ts"
+    },
+    "./IntegrationIcon66": {
+      "import": "./IntegrationIcon66.js",
+      "types": "./IntegrationIcon66.d.ts"
+    },
+    "./IntegrationIcon67": {
+      "import": "./IntegrationIcon67.js",
+      "types": "./IntegrationIcon67.d.ts"
+    },
+    "./IntegrationIcon68": {
+      "import": "./IntegrationIcon68.js",
+      "types": "./IntegrationIcon68.d.ts"
+    },
+    "./IntegrationIcon69": {
+      "import": "./IntegrationIcon69.js",
+      "types": "./IntegrationIcon69.d.ts"
+    },
+    "./IntegrationIcon70": {
+      "import": "./IntegrationIcon70.js",
+      "types": "./IntegrationIcon70.d.ts"
+    },
+    "./IntegrationIcon71": {
+      "import": "./IntegrationIcon71.js",
+      "types": "./IntegrationIcon71.d.ts"
+    },
+    "./IntegrationIcon72": {
+      "import": "./IntegrationIcon72.js",
+      "types": "./IntegrationIcon72.d.ts"
+    },
+    "./IntegrationIcon73": {
+      "import": "./IntegrationIcon73.js",
+      "types": "./IntegrationIcon73.d.ts"
+    },
+    "./IntegrationIcon74": {
+      "import": "./IntegrationIcon74.js",
+      "types": "./IntegrationIcon74.d.ts"
+    },
+    "./IntegrationIcon75": {
+      "import": "./IntegrationIcon75.js",
+      "types": "./IntegrationIcon75.d.ts"
+    },
+    "./IntegrationIcon76": {
+      "import": "./IntegrationIcon76.js",
+      "types": "./IntegrationIcon76.d.ts"
+    },
+    "./IntegrationIcon77": {
+      "import": "./IntegrationIcon77.js",
+      "types": "./IntegrationIcon77.d.ts"
+    },
+    "./IntegrationIcon78": {
+      "import": "./IntegrationIcon78.js",
+      "types": "./IntegrationIcon78.d.ts"
+    },
+    "./IntegrationIcon79": {
+      "import": "./IntegrationIcon79.js",
+      "types": "./IntegrationIcon79.d.ts"
+    },
+    "./IntegrationIcon80": {
+      "import": "./IntegrationIcon80.js",
+      "types": "./IntegrationIcon80.d.ts"
+    },
+    "./PreTitle56": {
+      "import": "./PreTitle56.js",
+      "types": "./PreTitle56.d.ts"
+    },
+    "./ButtonIcon40": {
+      "import": "./ButtonIcon40.js",
+      "types": "./ButtonIcon40.d.ts"
+    },
+    "./PreTitle57": {
+      "import": "./PreTitle57.js",
+      "types": "./PreTitle57.d.ts"
+    },
+    "./PreTitle58": {
+      "import": "./PreTitle58.js",
+      "types": "./PreTitle58.d.ts"
+    },
+    "./ButtonIcon41": {
+      "import": "./ButtonIcon41.js",
+      "types": "./ButtonIcon41.d.ts"
+    },
+    "./IntegrationIcon81": {
+      "import": "./IntegrationIcon81.js",
+      "types": "./IntegrationIcon81.d.ts"
+    },
+    "./IntegrationIcon82": {
+      "import": "./IntegrationIcon82.js",
+      "types": "./IntegrationIcon82.d.ts"
+    },
+    "./IntegrationIcon83": {
+      "import": "./IntegrationIcon83.js",
+      "types": "./IntegrationIcon83.d.ts"
+    },
+    "./IntegrationIcon84": {
+      "import": "./IntegrationIcon84.js",
+      "types": "./IntegrationIcon84.d.ts"
+    },
+    "./IntegrationIcon85": {
+      "import": "./IntegrationIcon85.js",
+      "types": "./IntegrationIcon85.d.ts"
+    },
+    "./IntegrationIcon86": {
+      "import": "./IntegrationIcon86.js",
+      "types": "./IntegrationIcon86.d.ts"
+    },
+    "./IntegrationIcon87": {
+      "import": "./IntegrationIcon87.js",
+      "types": "./IntegrationIcon87.d.ts"
+    },
+    "./IntegrationIcon88": {
+      "import": "./IntegrationIcon88.js",
+      "types": "./IntegrationIcon88.d.ts"
+    },
+    "./IntegrationIcon89": {
+      "import": "./IntegrationIcon89.js",
+      "types": "./IntegrationIcon89.d.ts"
+    },
+    "./IntegrationIcon90": {
+      "import": "./IntegrationIcon90.js",
+      "types": "./IntegrationIcon90.d.ts"
+    },
+    "./IntegrationIcon91": {
+      "import": "./IntegrationIcon91.js",
+      "types": "./IntegrationIcon91.d.ts"
+    },
+    "./IntegrationIcon92": {
+      "import": "./IntegrationIcon92.js",
+      "types": "./IntegrationIcon92.d.ts"
+    },
+    "./IntegrationIcon93": {
+      "import": "./IntegrationIcon93.js",
+      "types": "./IntegrationIcon93.d.ts"
+    },
+    "./IntegrationIcon94": {
+      "import": "./IntegrationIcon94.js",
+      "types": "./IntegrationIcon94.d.ts"
+    },
+    "./IntegrationIcon95": {
+      "import": "./IntegrationIcon95.js",
+      "types": "./IntegrationIcon95.d.ts"
+    },
+    "./IntegrationIcon96": {
+      "import": "./IntegrationIcon96.js",
+      "types": "./IntegrationIcon96.d.ts"
+    },
+    "./IntegrationIcon97": {
+      "import": "./IntegrationIcon97.js",
+      "types": "./IntegrationIcon97.d.ts"
+    },
+    "./IntegrationIcon98": {
+      "import": "./IntegrationIcon98.js",
+      "types": "./IntegrationIcon98.d.ts"
+    },
+    "./IntegrationIcon99": {
+      "import": "./IntegrationIcon99.js",
+      "types": "./IntegrationIcon99.d.ts"
+    },
+    "./IntegrationIcon100": {
+      "import": "./IntegrationIcon100.js",
+      "types": "./IntegrationIcon100.d.ts"
+    },
+    "./IntegrationIcon101": {
+      "import": "./IntegrationIcon101.js",
+      "types": "./IntegrationIcon101.d.ts"
+    },
+    "./IntegrationIcon102": {
+      "import": "./IntegrationIcon102.js",
+      "types": "./IntegrationIcon102.d.ts"
+    },
+    "./IntegrationIcon103": {
+      "import": "./IntegrationIcon103.js",
+      "types": "./IntegrationIcon103.d.ts"
+    },
+    "./IntegrationIcon104": {
+      "import": "./IntegrationIcon104.js",
+      "types": "./IntegrationIcon104.d.ts"
+    },
+    "./IntegrationIcon105": {
+      "import": "./IntegrationIcon105.js",
+      "types": "./IntegrationIcon105.d.ts"
+    },
+    "./IntegrationIcon106": {
+      "import": "./IntegrationIcon106.js",
+      "types": "./IntegrationIcon106.d.ts"
+    },
+    "./IntegrationIcon107": {
+      "import": "./IntegrationIcon107.js",
+      "types": "./IntegrationIcon107.d.ts"
+    },
+    "./IntegrationIcon108": {
+      "import": "./IntegrationIcon108.js",
+      "types": "./IntegrationIcon108.d.ts"
+    },
+    "./IntegrationIcon109": {
+      "import": "./IntegrationIcon109.js",
+      "types": "./IntegrationIcon109.d.ts"
+    },
+    "./IntegrationIcon110": {
+      "import": "./IntegrationIcon110.js",
+      "types": "./IntegrationIcon110.d.ts"
+    },
+    "./IntegrationIcon111": {
+      "import": "./IntegrationIcon111.js",
+      "types": "./IntegrationIcon111.d.ts"
+    },
+    "./IntegrationIcon112": {
+      "import": "./IntegrationIcon112.js",
+      "types": "./IntegrationIcon112.d.ts"
+    },
+    "./IntegrationIcon113": {
+      "import": "./IntegrationIcon113.js",
+      "types": "./IntegrationIcon113.d.ts"
+    },
+    "./IntegrationIcon114": {
+      "import": "./IntegrationIcon114.js",
+      "types": "./IntegrationIcon114.d.ts"
+    },
+    "./IntegrationIcon115": {
+      "import": "./IntegrationIcon115.js",
+      "types": "./IntegrationIcon115.d.ts"
+    },
+    "./IntegrationIcon116": {
+      "import": "./IntegrationIcon116.js",
+      "types": "./IntegrationIcon116.d.ts"
+    },
+    "./IntegrationIcon117": {
+      "import": "./IntegrationIcon117.js",
+      "types": "./IntegrationIcon117.d.ts"
+    },
+    "./IntegrationIcon118": {
+      "import": "./IntegrationIcon118.js",
+      "types": "./IntegrationIcon118.d.ts"
+    },
+    "./IntegrationIcon119": {
+      "import": "./IntegrationIcon119.js",
+      "types": "./IntegrationIcon119.d.ts"
+    },
+    "./IntegrationIcon120": {
+      "import": "./IntegrationIcon120.js",
+      "types": "./IntegrationIcon120.d.ts"
+    },
+    "./IntegrationIcon121": {
+      "import": "./IntegrationIcon121.js",
+      "types": "./IntegrationIcon121.d.ts"
+    },
+    "./IntegrationIcon122": {
+      "import": "./IntegrationIcon122.js",
+      "types": "./IntegrationIcon122.d.ts"
+    },
+    "./IntegrationIcon123": {
+      "import": "./IntegrationIcon123.js",
+      "types": "./IntegrationIcon123.d.ts"
+    },
+    "./IntegrationIcon124": {
+      "import": "./IntegrationIcon124.js",
+      "types": "./IntegrationIcon124.d.ts"
+    },
+    "./IntegrationIcon125": {
+      "import": "./IntegrationIcon125.js",
+      "types": "./IntegrationIcon125.d.ts"
+    },
+    "./IntegrationIcon126": {
+      "import": "./IntegrationIcon126.js",
+      "types": "./IntegrationIcon126.d.ts"
+    },
+    "./IntegrationIcon127": {
+      "import": "./IntegrationIcon127.js",
+      "types": "./IntegrationIcon127.d.ts"
+    },
+    "./IntegrationIcon128": {
+      "import": "./IntegrationIcon128.js",
+      "types": "./IntegrationIcon128.d.ts"
+    },
+    "./IntegrationIcon129": {
+      "import": "./IntegrationIcon129.js",
+      "types": "./IntegrationIcon129.d.ts"
+    },
+    "./IntegrationIcon130": {
+      "import": "./IntegrationIcon130.js",
+      "types": "./IntegrationIcon130.d.ts"
+    },
+    "./IntegrationIcon131": {
+      "import": "./IntegrationIcon131.js",
+      "types": "./IntegrationIcon131.d.ts"
+    },
+    "./IntegrationIcon132": {
+      "import": "./IntegrationIcon132.js",
+      "types": "./IntegrationIcon132.d.ts"
+    },
+    "./IntegrationIcon133": {
+      "import": "./IntegrationIcon133.js",
+      "types": "./IntegrationIcon133.d.ts"
+    },
+    "./IntegrationIcon134": {
+      "import": "./IntegrationIcon134.js",
+      "types": "./IntegrationIcon134.d.ts"
+    },
+    "./IntegrationIcon135": {
+      "import": "./IntegrationIcon135.js",
+      "types": "./IntegrationIcon135.d.ts"
+    },
+    "./IntegrationIcon136": {
+      "import": "./IntegrationIcon136.js",
+      "types": "./IntegrationIcon136.d.ts"
+    },
+    "./IntegrationIcon137": {
+      "import": "./IntegrationIcon137.js",
+      "types": "./IntegrationIcon137.d.ts"
+    },
+    "./IntegrationIcon138": {
+      "import": "./IntegrationIcon138.js",
+      "types": "./IntegrationIcon138.d.ts"
+    },
+    "./IntegrationIcon139": {
+      "import": "./IntegrationIcon139.js",
+      "types": "./IntegrationIcon139.d.ts"
+    },
+    "./IntegrationIcon140": {
+      "import": "./IntegrationIcon140.js",
+      "types": "./IntegrationIcon140.d.ts"
+    },
+    "./IntegrationIcon141": {
+      "import": "./IntegrationIcon141.js",
+      "types": "./IntegrationIcon141.d.ts"
+    },
+    "./IntegrationIcon142": {
+      "import": "./IntegrationIcon142.js",
+      "types": "./IntegrationIcon142.d.ts"
+    },
+    "./IntegrationIcon143": {
+      "import": "./IntegrationIcon143.js",
+      "types": "./IntegrationIcon143.d.ts"
+    },
+    "./IntegrationIcon144": {
+      "import": "./IntegrationIcon144.js",
+      "types": "./IntegrationIcon144.d.ts"
+    },
+    "./PreTitle59": {
+      "import": "./PreTitle59.js",
+      "types": "./PreTitle59.d.ts"
+    },
+    "./StatLgCard11": {
+      "import": "./StatLgCard11.js",
+      "types": "./StatLgCard11.d.ts"
+    },
+    "./StatLgCard12": {
+      "import": "./StatLgCard12.js",
+      "types": "./StatLgCard12.d.ts"
+    },
+    "./StatLgCard13": {
+      "import": "./StatLgCard13.js",
+      "types": "./StatLgCard13.d.ts"
+    },
+    "./StatLgCard14": {
+      "import": "./StatLgCard14.js",
+      "types": "./StatLgCard14.d.ts"
+    },
+    "./StatLgCard15": {
+      "import": "./StatLgCard15.js",
+      "types": "./StatLgCard15.d.ts"
+    },
+    "./PreTitle60": {
+      "import": "./PreTitle60.js",
+      "types": "./PreTitle60.d.ts"
+    },
+    "./StatLgCard16": {
+      "import": "./StatLgCard16.js",
+      "types": "./StatLgCard16.d.ts"
+    },
+    "./StatLgCard17": {
+      "import": "./StatLgCard17.js",
+      "types": "./StatLgCard17.d.ts"
+    },
+    "./StatLgCard18": {
+      "import": "./StatLgCard18.js",
+      "types": "./StatLgCard18.d.ts"
+    },
+    "./StatLgCard19": {
+      "import": "./StatLgCard19.js",
+      "types": "./StatLgCard19.d.ts"
+    },
+    "./StatLgCard20": {
+      "import": "./StatLgCard20.js",
+      "types": "./StatLgCard20.d.ts"
+    },
+    "./PreTitle61": {
+      "import": "./PreTitle61.js",
+      "types": "./PreTitle61.d.ts"
+    },
+    "./StatLgCard21": {
+      "import": "./StatLgCard21.js",
+      "types": "./StatLgCard21.d.ts"
+    },
+    "./StatLgCard22": {
+      "import": "./StatLgCard22.js",
+      "types": "./StatLgCard22.d.ts"
+    },
+    "./StatLgCard23": {
+      "import": "./StatLgCard23.js",
+      "types": "./StatLgCard23.d.ts"
+    },
+    "./StatLgCard24": {
+      "import": "./StatLgCard24.js",
+      "types": "./StatLgCard24.d.ts"
+    },
+    "./StatLgCard25": {
+      "import": "./StatLgCard25.js",
+      "types": "./StatLgCard25.d.ts"
+    },
+    "./PreTitle62": {
+      "import": "./PreTitle62.js",
+      "types": "./PreTitle62.d.ts"
+    },
+    "./PreTitle63": {
+      "import": "./PreTitle63.js",
+      "types": "./PreTitle63.d.ts"
+    },
+    "./StatLgCard26": {
+      "import": "./StatLgCard26.js",
+      "types": "./StatLgCard26.d.ts"
+    },
+    "./StatLgCard27": {
+      "import": "./StatLgCard27.js",
+      "types": "./StatLgCard27.d.ts"
+    },
+    "./StatLgCard28": {
+      "import": "./StatLgCard28.js",
+      "types": "./StatLgCard28.d.ts"
+    },
+    "./StatLgCard29": {
+      "import": "./StatLgCard29.js",
+      "types": "./StatLgCard29.d.ts"
+    },
+    "./StatLgCard30": {
+      "import": "./StatLgCard30.js",
+      "types": "./StatLgCard30.d.ts"
+    },
+    "./StatLgCard31": {
+      "import": "./StatLgCard31.js",
+      "types": "./StatLgCard31.d.ts"
+    },
+    "./StatLgCard32": {
+      "import": "./StatLgCard32.js",
+      "types": "./StatLgCard32.d.ts"
+    },
+    "./StatLgCard33": {
+      "import": "./StatLgCard33.js",
+      "types": "./StatLgCard33.d.ts"
+    },
+    "./StatLgCard34": {
+      "import": "./StatLgCard34.js",
+      "types": "./StatLgCard34.d.ts"
+    },
+    "./StatLgCard35": {
+      "import": "./StatLgCard35.js",
+      "types": "./StatLgCard35.d.ts"
+    },
+    "./ListItem63": {
+      "import": "./ListItem63.js",
+      "types": "./ListItem63.d.ts"
+    },
+    "./ListItem64": {
+      "import": "./ListItem64.js",
+      "types": "./ListItem64.d.ts"
+    },
+    "./ListItem65": {
+      "import": "./ListItem65.js",
+      "types": "./ListItem65.d.ts"
+    },
+    "./ButtonIcon42": {
+      "import": "./ButtonIcon42.js",
+      "types": "./ButtonIcon42.d.ts"
+    },
+    "./TestimonialItem11": {
+      "import": "./TestimonialItem11.js",
+      "types": "./TestimonialItem11.d.ts"
+    },
+    "./TestimonialItem12": {
+      "import": "./TestimonialItem12.js",
+      "types": "./TestimonialItem12.d.ts"
+    },
+    "./TestimonialItem13": {
+      "import": "./TestimonialItem13.js",
+      "types": "./TestimonialItem13.d.ts"
+    },
+    "./TestimonialItem14": {
+      "import": "./TestimonialItem14.js",
+      "types": "./TestimonialItem14.d.ts"
+    },
+    "./TestimonialItem15": {
+      "import": "./TestimonialItem15.js",
+      "types": "./TestimonialItem15.d.ts"
+    },
+    "./ListItem66": {
+      "import": "./ListItem66.js",
+      "types": "./ListItem66.d.ts"
+    },
+    "./ListItem67": {
+      "import": "./ListItem67.js",
+      "types": "./ListItem67.d.ts"
+    },
+    "./ListItem68": {
+      "import": "./ListItem68.js",
+      "types": "./ListItem68.d.ts"
+    },
+    "./ButtonIcon43": {
+      "import": "./ButtonIcon43.js",
+      "types": "./ButtonIcon43.d.ts"
+    },
+    "./TestimonialItem16": {
+      "import": "./TestimonialItem16.js",
+      "types": "./TestimonialItem16.d.ts"
+    },
+    "./TestimonialItem17": {
+      "import": "./TestimonialItem17.js",
+      "types": "./TestimonialItem17.d.ts"
+    },
+    "./TestimonialItem18": {
+      "import": "./TestimonialItem18.js",
+      "types": "./TestimonialItem18.d.ts"
+    },
+    "./TestimonialItem19": {
+      "import": "./TestimonialItem19.js",
+      "types": "./TestimonialItem19.d.ts"
+    },
+    "./TestimonialItem20": {
+      "import": "./TestimonialItem20.js",
+      "types": "./TestimonialItem20.d.ts"
+    },
+    "./ListItem69": {
+      "import": "./ListItem69.js",
+      "types": "./ListItem69.d.ts"
+    },
+    "./ListItem70": {
+      "import": "./ListItem70.js",
+      "types": "./ListItem70.d.ts"
+    },
+    "./ListItem71": {
+      "import": "./ListItem71.js",
+      "types": "./ListItem71.d.ts"
+    },
+    "./ButtonIcon44": {
+      "import": "./ButtonIcon44.js",
+      "types": "./ButtonIcon44.d.ts"
+    },
+    "./TestimonialItem21": {
+      "import": "./TestimonialItem21.js",
+      "types": "./TestimonialItem21.d.ts"
+    },
+    "./TestimonialItem22": {
+      "import": "./TestimonialItem22.js",
+      "types": "./TestimonialItem22.d.ts"
+    },
+    "./TestimonialItem23": {
+      "import": "./TestimonialItem23.js",
+      "types": "./TestimonialItem23.d.ts"
+    },
+    "./TestimonialItem24": {
+      "import": "./TestimonialItem24.js",
+      "types": "./TestimonialItem24.d.ts"
+    },
+    "./TestimonialItem25": {
+      "import": "./TestimonialItem25.js",
+      "types": "./TestimonialItem25.d.ts"
+    },
+    "./ListItem72": {
+      "import": "./ListItem72.js",
+      "types": "./ListItem72.d.ts"
+    },
+    "./ListItem73": {
+      "import": "./ListItem73.js",
+      "types": "./ListItem73.d.ts"
+    },
+    "./ListItem74": {
+      "import": "./ListItem74.js",
+      "types": "./ListItem74.d.ts"
+    },
+    "./ButtonIcon45": {
+      "import": "./ButtonIcon45.js",
+      "types": "./ButtonIcon45.d.ts"
+    },
+    "./ListItem75": {
+      "import": "./ListItem75.js",
+      "types": "./ListItem75.d.ts"
+    },
+    "./ListItem76": {
+      "import": "./ListItem76.js",
+      "types": "./ListItem76.d.ts"
+    },
+    "./ListItem77": {
+      "import": "./ListItem77.js",
+      "types": "./ListItem77.d.ts"
+    },
+    "./ListItem78": {
+      "import": "./ListItem78.js",
+      "types": "./ListItem78.d.ts"
+    },
+    "./ListItem79": {
+      "import": "./ListItem79.js",
+      "types": "./ListItem79.d.ts"
+    },
+    "./ListItem80": {
+      "import": "./ListItem80.js",
+      "types": "./ListItem80.d.ts"
+    },
+    "./ListItem81": {
+      "import": "./ListItem81.js",
+      "types": "./ListItem81.d.ts"
+    },
+    "./ListItem82": {
+      "import": "./ListItem82.js",
+      "types": "./ListItem82.d.ts"
+    },
+    "./ListItem83": {
+      "import": "./ListItem83.js",
+      "types": "./ListItem83.d.ts"
+    },
+    "./ButtonIcon46": {
+      "import": "./ButtonIcon46.js",
+      "types": "./ButtonIcon46.d.ts"
+    },
+    "./ButtonIcon47": {
+      "import": "./ButtonIcon47.js",
+      "types": "./ButtonIcon47.d.ts"
+    },
+    "./TestimonialItem26": {
+      "import": "./TestimonialItem26.js",
+      "types": "./TestimonialItem26.d.ts"
+    },
+    "./TestimonialItem27": {
+      "import": "./TestimonialItem27.js",
+      "types": "./TestimonialItem27.d.ts"
+    },
+    "./TestimonialItem28": {
+      "import": "./TestimonialItem28.js",
+      "types": "./TestimonialItem28.d.ts"
+    },
+    "./TestimonialItem29": {
+      "import": "./TestimonialItem29.js",
+      "types": "./TestimonialItem29.d.ts"
+    },
+    "./TestimonialItem30": {
+      "import": "./TestimonialItem30.js",
+      "types": "./TestimonialItem30.d.ts"
+    },
+    "./TestimonialItem31": {
+      "import": "./TestimonialItem31.js",
+      "types": "./TestimonialItem31.d.ts"
+    },
+    "./TestimonialItem32": {
+      "import": "./TestimonialItem32.js",
+      "types": "./TestimonialItem32.d.ts"
+    },
+    "./TestimonialItem33": {
+      "import": "./TestimonialItem33.js",
+      "types": "./TestimonialItem33.d.ts"
+    },
+    "./PreTitle64": {
+      "import": "./PreTitle64.js",
+      "types": "./PreTitle64.d.ts"
+    },
+    "./PricingItem3": {
+      "import": "./PricingItem3.js",
+      "types": "./PricingItem3.d.ts"
+    },
+    "./PreTitle65": {
+      "import": "./PreTitle65.js",
+      "types": "./PreTitle65.d.ts"
+    },
+    "./PricingItem4": {
+      "import": "./PricingItem4.js",
+      "types": "./PricingItem4.d.ts"
+    },
+    "./PreTitle66": {
+      "import": "./PreTitle66.js",
+      "types": "./PreTitle66.d.ts"
+    },
+    "./PricingItem5": {
+      "import": "./PricingItem5.js",
+      "types": "./PricingItem5.d.ts"
+    },
+    "./PreTitle67": {
+      "import": "./PreTitle67.js",
+      "types": "./PreTitle67.d.ts"
+    },
+    "./PreTitle68": {
+      "import": "./PreTitle68.js",
+      "types": "./PreTitle68.d.ts"
+    },
+    "./PricingItem6": {
+      "import": "./PricingItem6.js",
+      "types": "./PricingItem6.d.ts"
+    },
+    "./FaqsCta5": {
+      "import": "./FaqsCta5.js",
+      "types": "./FaqsCta5.d.ts"
+    },
+    "./Accordion11": {
+      "import": "./Accordion11.js",
+      "types": "./Accordion11.d.ts"
+    },
+    "./Accordion12": {
+      "import": "./Accordion12.js",
+      "types": "./Accordion12.d.ts"
+    },
+    "./Accordion13": {
+      "import": "./Accordion13.js",
+      "types": "./Accordion13.d.ts"
+    },
+    "./Accordion14": {
+      "import": "./Accordion14.js",
+      "types": "./Accordion14.d.ts"
+    },
+    "./Accordion15": {
+      "import": "./Accordion15.js",
+      "types": "./Accordion15.d.ts"
+    },
+    "./FaqsCta6": {
+      "import": "./FaqsCta6.js",
+      "types": "./FaqsCta6.d.ts"
+    },
+    "./FaqsCta7": {
+      "import": "./FaqsCta7.js",
+      "types": "./FaqsCta7.d.ts"
+    },
+    "./Accordion16": {
+      "import": "./Accordion16.js",
+      "types": "./Accordion16.d.ts"
+    },
+    "./Accordion17": {
+      "import": "./Accordion17.js",
+      "types": "./Accordion17.d.ts"
+    },
+    "./Accordion18": {
+      "import": "./Accordion18.js",
+      "types": "./Accordion18.d.ts"
+    },
+    "./Accordion19": {
+      "import": "./Accordion19.js",
+      "types": "./Accordion19.d.ts"
+    },
+    "./Accordion20": {
+      "import": "./Accordion20.js",
+      "types": "./Accordion20.d.ts"
+    },
+    "./FaqsCta8": {
+      "import": "./FaqsCta8.js",
+      "types": "./FaqsCta8.d.ts"
+    },
+    "./FaqsCta9": {
+      "import": "./FaqsCta9.js",
+      "types": "./FaqsCta9.d.ts"
+    },
+    "./Accordion21": {
+      "import": "./Accordion21.js",
+      "types": "./Accordion21.d.ts"
+    },
+    "./Accordion22": {
+      "import": "./Accordion22.js",
+      "types": "./Accordion22.d.ts"
+    },
+    "./Accordion23": {
+      "import": "./Accordion23.js",
+      "types": "./Accordion23.d.ts"
+    },
+    "./Accordion24": {
+      "import": "./Accordion24.js",
+      "types": "./Accordion24.d.ts"
+    },
+    "./Accordion25": {
+      "import": "./Accordion25.js",
+      "types": "./Accordion25.d.ts"
+    },
+    "./FaqsCta10": {
+      "import": "./FaqsCta10.js",
+      "types": "./FaqsCta10.d.ts"
+    },
+    "./FaqsCta11": {
+      "import": "./FaqsCta11.js",
+      "types": "./FaqsCta11.d.ts"
+    },
+    "./FaqsCta12": {
+      "import": "./FaqsCta12.js",
+      "types": "./FaqsCta12.d.ts"
+    },
+    "./Accordion26": {
+      "import": "./Accordion26.js",
+      "types": "./Accordion26.d.ts"
+    },
+    "./Accordion27": {
+      "import": "./Accordion27.js",
+      "types": "./Accordion27.d.ts"
+    },
+    "./Accordion28": {
+      "import": "./Accordion28.js",
+      "types": "./Accordion28.d.ts"
+    },
+    "./Accordion29": {
+      "import": "./Accordion29.js",
+      "types": "./Accordion29.d.ts"
+    },
+    "./Accordion30": {
+      "import": "./Accordion30.js",
+      "types": "./Accordion30.d.ts"
+    },
+    "./Accordion31": {
+      "import": "./Accordion31.js",
+      "types": "./Accordion31.d.ts"
+    },
+    "./Accordion32": {
+      "import": "./Accordion32.js",
+      "types": "./Accordion32.d.ts"
+    },
+    "./Accordion33": {
+      "import": "./Accordion33.js",
+      "types": "./Accordion33.d.ts"
+    },
+    "./Accordion34": {
+      "import": "./Accordion34.js",
+      "types": "./Accordion34.d.ts"
+    },
+    "./Accordion35": {
+      "import": "./Accordion35.js",
+      "types": "./Accordion35.d.ts"
+    },
+    "./SmoothscrollProd3": {
+      "import": "./SmoothscrollProd3.js",
+      "types": "./SmoothscrollProd3.d.ts"
+    },
+    "./BlurgradientProd2": {
+      "import": "./BlurgradientProd2.js",
+      "types": "./BlurgradientProd2.d.ts"
+    }
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0",
+    "framer-motion": ">=10.0.0"
+  },
+  "keywords": [
+    "framer",
+    "react",
+    "components",
+    "exported"
+  ],
+  "license": "MIT"
+}

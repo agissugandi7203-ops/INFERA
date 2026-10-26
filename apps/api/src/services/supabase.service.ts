@@ -1,5 +1,6 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { env } from '../config/env.js';
+import { isTrustedOrigin } from '../config/origins.js';
 import { AppError } from '../utils/app-error.js';
 import type {
   ServiceHealth,
@@ -34,14 +35,15 @@ class SupabaseService {
   }
 
   /**
-   * Default client respects PostgreSQL Row Level Security (RLS)
+   * Default client respects PostgreSQL Row Level Security (RLS).
+   * Never falls back to adminClient to prevent accidental RLS bypass.
    */
   public getClient(): SupabaseClient | null {
-    return this.anonClient || this.adminClient;
+    return this.anonClient;
   }
 
   /**
-   * Admin client for internal background operations only
+   * Admin client for internal background / audit-logging operations only
    */
   public getAdminClient(): SupabaseClient | null {
     return this.adminClient || this.anonClient;
@@ -52,19 +54,18 @@ class SupabaseService {
   }
 
   /**
-   * Strict validation to prevent Open Redirect vulnerabilities
+   * Strict validation to prevent Open Redirect / token-leak vulnerabilities.
+   * Supabase appends access/refresh tokens to this URL, so it MUST be an origin we control.
    */
   public validateRedirectUrl(url?: string, defaultPath: string = '/reset-password'): string {
-    const fallback = `${env.CLIENT_URL.replace(/\/+$/, '')}${defaultPath.startsWith('/') ? defaultPath : `/${defaultPath}`}`;
+    const fallback = `${env.CLIENT_URL}${defaultPath.startsWith('/') ? defaultPath : `/${defaultPath}`}`;
     if (!url) return fallback;
 
     try {
       const parsed = new URL(url);
-      const allowedOrigin = new URL(env.CLIENT_URL).origin;
-      const localhostOrigin = 'http://localhost:5173';
-
-      if (parsed.origin === allowedOrigin || parsed.origin === localhostOrigin || parsed.origin.endsWith('.vercel.app')) {
-        return url;
+      if (parsed.username || parsed.password) return fallback;
+      if (isTrustedOrigin(parsed.origin)) {
+        return parsed.toString();
       }
       return fallback;
     } catch {
@@ -116,7 +117,7 @@ class SupabaseService {
       id: user.id,
       email: user.email ?? '',
       fullName: user.user_metadata?.full_name ?? user.user_metadata?.name ?? '',
-      role: user.role,
+      role: user.app_metadata?.role ?? user.user_metadata?.role ?? user.role ?? 'auditor',
       avatarUrl: user.user_metadata?.avatar_url,
       createdAt: user.created_at,
     };
@@ -134,7 +135,12 @@ class SupabaseService {
     });
 
     if (error || !data.user || !data.session) {
-      throw AppError.badRequest(error?.message || 'Failed to sign in');
+      const raw = (error?.message || '').toLowerCase();
+      if (raw.includes('email not confirmed')) {
+        throw AppError.badRequest('Email belum dikonfirmasi. Silakan cek kotak masuk email Anda.');
+      }
+      // Same message for unknown email & wrong password → no account enumeration
+      throw AppError.unauthorized('Email atau password salah');
     }
 
     return {
@@ -158,16 +164,24 @@ class SupabaseService {
         data: {
           full_name: fullName || '',
         },
+        emailRedirectTo: this.validateRedirectUrl(undefined, '/'),
       },
     });
 
     if (error || !data.user) {
-      throw AppError.badRequest(error?.message || 'Failed to create account');
+      const raw = (error?.message || '').toLowerCase();
+      if (raw.includes('password')) {
+        // Password-policy feedback is safe and useful to show
+        throw AppError.badRequest(error?.message || 'Password tidak memenuhi kebijakan keamanan');
+      }
+      throw AppError.badRequest(
+        'Registrasi tidak dapat diproses. Jika email sudah terdaftar, silakan login atau gunakan fitur lupa password.'
+      );
     }
 
     return {
       user: this.mapUser(data.user),
-      message: 'Account created successfully. Please check your email for confirmation if required.',
+      message: 'Akun berhasil dibuat. Silakan cek email Anda untuk konfirmasi bila diperlukan.',
     };
   }
 
@@ -183,11 +197,12 @@ class SupabaseService {
     });
 
     if (error) {
-      throw AppError.badRequest(error.message);
+      // Log only; responding differently would reveal whether the address is registered
+      console.warn('[SupabaseService] resetPasswordForEmail error:', error.message);
     }
 
     return {
-      message: 'Password reset link has been sent to your email address.',
+      message: 'Jika email terdaftar, tautan reset password telah dikirim ke alamat tersebut.',
     };
   }
 

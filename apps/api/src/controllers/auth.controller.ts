@@ -2,6 +2,7 @@ import type { Request, Response, NextFunction } from 'express';
 import { sendSuccess } from '../utils/response.js';
 import { AppError } from '../utils/app-error.js';
 import { supabaseService } from '../services/supabase.service.js';
+import { resolveUser } from '../middleware/auth.middleware.js';
 import type { LoginInput, RegisterInput, ForgotPasswordInput } from '../validators/auth.validator.js';
 
 export const getAuthStatus = async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -71,7 +72,7 @@ export const getCurrentUser = async (req: Request, res: Response, next: NextFunc
       throw AppError.unauthorized('Invalid authorization token format');
     }
 
-    const user = await supabaseService.getUserFromToken(token);
+    const user = await resolveUser(token);
     if (!user) {
       throw AppError.unauthorized('Invalid or expired authentication token');
     }

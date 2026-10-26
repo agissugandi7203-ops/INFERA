@@ -1,5 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import { participantRiskService } from '../services/participant-risk.service.js';
+import { cacheService } from '../services/cache.service.js';
 import { AppError } from '../utils/app-error.js';
 import type {
   ApiResponse,
@@ -29,7 +30,21 @@ export class ParticipantRiskController {
         );
       }
 
-      const result = participantRiskService.evaluateParticipant(profile);
+      const evalCacheKey = cacheService.hashKey('risk:eval', profile);
+      const result = await cacheService.getOrSet(
+        evalCacheKey,
+        async () => participantRiskService.evaluateParticipant(profile),
+        { ttlSeconds: 300, l1TtlSeconds: 120 }
+      );
+
+      participantRiskService.recordAuditLog({
+        userId: req.user?.id,
+        role: req.user?.role,
+        action: 'EVALUATE_PESERTA',
+        targetNoKartu: profile.noKartu,
+        ipAddress: req.ip,
+        userAgent: req.headers['user-agent'],
+      });
 
       return res.status(200).json({
         success: true,
@@ -65,6 +80,15 @@ export class ParticipantRiskController {
       }
 
       const results = await participantRiskService.searchParticipants(query);
+
+      participantRiskService.recordAuditLog({
+        userId: req.user?.id,
+        role: req.user?.role,
+        action: 'SEARCH_PESERTA',
+        targetNoKartu: results[0]?.noKartu,
+        ipAddress: req.ip,
+        userAgent: req.headers['user-agent'],
+      });
 
       return res.status(200).json({
         success: true,

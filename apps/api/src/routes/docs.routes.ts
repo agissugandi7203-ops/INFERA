@@ -4,9 +4,26 @@ import { swaggerSpec } from '../config/swagger.js';
 
 const router = Router();
 
+// Swagger UI needs inline styles + its own static scripts; scope that relaxation to docs only.
+router.use((_req, res, next) => {
+  res.setHeader(
+    'Content-Security-Policy',
+    [
+      "default-src 'self'",
+      "script-src 'self'",
+      "style-src 'self' 'unsafe-inline'",
+      "img-src 'self' data: https://upload.wikimedia.org",
+      "connect-src 'self'",
+      "frame-ancestors 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+    ].join('; ')
+  );
+  next();
+});
+
 // Endpoint for raw OpenAPI JSON specification
 router.get('/json', (_req, res) => {
-  res.setHeader('Content-Type', 'application/json');
   res.json(swaggerSpec);
 });
 
@@ -24,7 +41,7 @@ router.use(
       .swagger-ui .btn.authorize svg { fill: #fff; }
     `,
     swaggerOptions: {
-      persistAuthorization: true,
+      persistAuthorization: false,
       displayRequestDuration: true,
       docExpansion: 'list',
       filter: true,

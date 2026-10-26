@@ -196,8 +196,12 @@ export interface ParticipantRiskEvaluationResult {
 
 ---
 
-## 5. Standar Keamanan & Ketahanan Sistem
-1. **Masking NIK & Data Pribadi**: Sesuai UU No. 27 Tahun 2022 tentang Perlindungan Data Pribadi (UU PDP), NIK selalu disensor (`3374**********12`) pada seluruh response payload.
-2. **Rate Limiting**: Dibatasi maksimal 120 requests/menit per IP untuk endpoint evaluasi publik.
-3. **Resilient Dual-Tier**: Evaluasi analitik dijalankan secara in-memory deterministik tanpa dependensi eksternal yang lambat, menjamin waktu respons $< 30\text{ ms}$ per evaluasi transaksi.
-4. **Verifikasi Validitas Algoritma**: Diverifikasi lulus 100% pada script uji `scripts/test_participant_risk.ts`.
+## 5. Standar Keamanan, Multi-Tier Redis Caching & Ketahanan Sistem
+1. **Masking NIK & Data Pribadi**: Sesuai UU No. 27 Tahun 2022 tentang Perlindungan Data Pribadi (UU PDP), NIK selalu disensor (`3374**********12`) pada seluruh response payload dan setiap akses dicatat otomatis ke tabel `audit_access_logs`.
+2. **Distributed Rate Limiting**: Dibatasi maksimal 120 requests/menit per pengguna/IP untuk endpoint pencarian & evaluasi risiko peserta, 20 req/menit untuk AI Chat, 40 req/menit untuk Voice TTS/STT, dan 10 percobaan gagal/15 menit untuk autentikasi.
+3. **Arsitektur Multi-Tier Caching (`CacheService`) — Railway & Vercel Ready**:
+   - **Tier 1 (L1 Memory LRU + TTL)**: Penyimpanan in-memory cepat (maksimal 2.500 kunci) sebagai *hot cache* sekaligus *fallback* otomatis tanpa konfigurasi tambahan saat berjalan di lokal.
+   - **Tier 2A (Railway / Standard Redis TCP/TLS via `ioredis`)**: Aktif otomatis saat variabel `REDIS_URL` (`redis://` atau `rediss://`) tersedia di environment.
+   - **Tier 2B (Vercel KV / Upstash Serverless HTTP REST)**: Aktif otomatis saat variabel `UPSTASH_REDIS_REST_URL` & `UPSTASH_REDIS_REST_TOKEN` (atau `KV_REST_API_URL` & `KV_REST_API_TOKEN`) tersedia di environment serverless.
+   - Mencakup caching untuk verifikasi JWT (`auth:token:*`), hasil pencarian RAG (`rag:search:*`), vektor embedding OpenRouter (`rag:emb:*`), pencarian peserta (`risk:search:*`), evaluasi profil (`risk:eval:*`), dan penghitung Rate Limit terdistribusi (`rl:*`).
+4. **Verifikasi Validitas Algoritma**: Diverifikasi lulus 100% pada script uji `scripts/test_participant_risk.ts` dan `scripts/test_participant_risk_audit.ts`.

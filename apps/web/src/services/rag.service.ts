@@ -1,5 +1,6 @@
 import type { RegulationChunk, RagSearchResult, RagSearchRequest } from '@healthathon/shared';
 import { JKN_REGULATIONS_CHUNKS } from '../data/regulationsData';
+import { getAuthHeaders } from '../lib/supabase';
 
 const API_BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) || '/api/v1';
 
@@ -20,8 +21,9 @@ export class WebRagService {
       if (matchCount) url.searchParams.set('limit', String(matchCount));
       if (filterCategory) url.searchParams.set('category', filterCategory);
 
+      const authHeaders = await getAuthHeaders();
       const res = await fetch(url.toString(), {
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...authHeaders },
       });
 
       if (res.ok) {

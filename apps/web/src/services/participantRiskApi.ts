@@ -5,6 +5,7 @@ import type {
   PesertaProfile,
   ApiResponse,
 } from '@healthathon/shared';
+import { getAuthHeaders } from '../lib/supabase';
 
 const API_BASE = '/api/v1/participant-risk';
 
@@ -258,7 +259,8 @@ export const FALLBACK_CASES: ParticipantAuditCase[] = [
 export const participantRiskApi = {
   async getMetrics(): Promise<ParticipantRiskMetrics> {
     try {
-      const res = await fetch(`${API_BASE}/metrics`);
+      const authHeaders = await getAuthHeaders();
+      const res = await fetch(`${API_BASE}/metrics`, { headers: authHeaders });
       if (!res.ok) throw new Error(`HTTP error ${res.status}`);
       const json: ApiResponse<ParticipantRiskMetrics> = await res.json();
       if (json.success) return json.data;
@@ -270,7 +272,8 @@ export const participantRiskApi = {
 
   async getCaseStudies(): Promise<ParticipantAuditCase[]> {
     try {
-      const res = await fetch(`${API_BASE}/case-studies`);
+      const authHeaders = await getAuthHeaders();
+      const res = await fetch(`${API_BASE}/case-studies`, { headers: authHeaders });
       if (!res.ok) throw new Error(`HTTP error ${res.status}`);
       const json: ApiResponse<ParticipantAuditCase[]> = await res.json();
       if (json.success) return json.data;
@@ -282,7 +285,8 @@ export const participantRiskApi = {
 
   async getCaseStudyById(id: string): Promise<ParticipantAuditCase | undefined> {
     try {
-      const res = await fetch(`${API_BASE}/case-studies/${id}`);
+      const authHeaders = await getAuthHeaders();
+      const res = await fetch(`${API_BASE}/case-studies/${id}`, { headers: authHeaders });
       if (!res.ok) throw new Error(`HTTP error ${res.status}`);
       const json: ApiResponse<ParticipantAuditCase> = await res.json();
       if (json.success) return json.data;
@@ -294,9 +298,10 @@ export const participantRiskApi = {
 
   async evaluateParticipant(profile: PesertaProfile): Promise<ParticipantRiskEvaluationResult | null> {
     try {
+      const authHeaders = await getAuthHeaders();
       const res = await fetch(`${API_BASE}/evaluate`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...authHeaders },
         body: JSON.stringify(profile),
       });
       if (!res.ok) throw new Error(`HTTP error ${res.status}`);

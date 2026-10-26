@@ -2,6 +2,7 @@ import type { Request, Response, NextFunction } from 'express';
 import { sendSuccess } from '../utils/response.js';
 import { supabaseService } from '../services/supabase.service.js';
 import { openRouterService } from '../services/openrouter.service.js';
+import { cacheService } from '../services/cache.service.js';
 import { env } from '../config/env.js';
 import type { HealthStatus } from '@healthathon/shared';
 
@@ -9,9 +10,10 @@ const START_TIME = Date.now();
 
 export const getHealth = async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const [dbHealth, aiHealth] = await Promise.all([
+    const [dbHealth, aiHealth, cacheHealth] = await Promise.all([
       supabaseService.checkHealth(),
       openRouterService.checkHealth(),
+      cacheService.checkHealth(),
     ]);
 
     const uptimeSeconds = Math.floor((Date.now() - START_TIME) / 1000);
@@ -27,6 +29,7 @@ export const getHealth = async (_req: Request, res: Response, next: NextFunction
       services: {
         database: dbHealth,
         aiProvider: aiHealth,
+        cache: cacheHealth,
       },
     };
 

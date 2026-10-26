@@ -80,9 +80,11 @@ export function preprocessAiResponse(raw: string): {
   text = text.replace(/<i>([\s\S]*?)<\/i>/gi, '*$1*');
   text = text.replace(/<em>([\s\S]*?)<\/em>/gi, '*$1*');
 
-  // Strip dangerous tags (XSS guard)
+  // Strip dangerous tags & inline event handlers (XSS guard)
   text = text.replace(/<script[\s\S]*?<\/script>/gi, '');
   text = text.replace(/<iframe[\s\S]*?<\/iframe>/gi, '');
+  text = text.replace(/<\s*\/?\s*(?:script|iframe|object|embed|style|meta|link)\b[^>]*>/gi, '');
+  text = text.replace(/\son[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '');
 
   return { reasoning, cleanContent: text };
 }

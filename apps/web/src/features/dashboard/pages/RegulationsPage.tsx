@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Database } from 'lucide-react';
 import type { RagSearchResult } from '@healthathon/shared';
-import { supabase } from '../../../lib/supabase';
+import { supabase, getAuthHeaders } from '../../../lib/supabase';
 import { JKN_REGULATIONS_CHUNKS } from '../../../data/regulationsData';
 
 const INITIAL_REGULATIONS: RagSearchResult[] = JKN_REGULATIONS_CHUNKS.map((c) => ({
@@ -74,8 +74,10 @@ export const RegulationsPage: React.FC = () => {
 
     setIsSearching(true);
     try {
+      const authHeaders = await getAuthHeaders();
       const res = await fetch(
-        `/api/v1/rag/search?query=${encodeURIComponent(searchQuery)}&limit=5`
+        `/api/v1/rag/search?query=${encodeURIComponent(searchQuery)}&limit=5`,
+        { headers: authHeaders }
       );
       if (res.ok) {
         const json = await res.json();

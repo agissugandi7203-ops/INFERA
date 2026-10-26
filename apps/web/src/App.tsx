@@ -66,6 +66,12 @@ const AppContent: React.FC = () => {
   }, [navigate]);
 
   const handleLogout = async () => {
+    try {
+      localStorage.removeItem('healthathon_avatar_chat_history');
+      localStorage.removeItem('healthathon_openrouter_settings');
+    } catch {
+      // Ignore storage cleanup error
+    }
     if (supabase) {
       await supabase.auth.signOut();
     }

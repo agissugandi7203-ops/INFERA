@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vera 30s Video Frame Capture</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: #111;
+      color: #eee;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 100vh;
+    }
+    #info-box {
+      margin-top: 16px;
+      padding: 12px 24px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      text-align: center;
+      font-size: 14px;
+    }
+    #status {
+      font-weight: 600;
+      color: #60a5fa;
+      margin-bottom: 6px;
+    }
+    #progress {
+      font-family: monospace;
+      color: #34d399;
+    }
+    canvas {
+      margin-top: 16px;
+      border: 1px dashed rgba(255, 255, 255, 0.2);
+      background: repeating-conic-gradient(#1f2937 0% 25%, #111827 0% 50%) 50% / 20px 20px;
+    }
+  </style>
+</head>
+<body>
+  <div id="info-box">
+    <div id="status">Initializing...</div>
+    <div id="progress">Waiting for engine...</div>
+  </div>
+  <script type="module" src="/src/render-capture.ts"></script>
+</body>
+</html>

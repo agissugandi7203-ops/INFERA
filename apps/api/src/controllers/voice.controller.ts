@@ -1,25 +1,44 @@
 import type { Request, Response, NextFunction } from 'express';
 import { env } from '../config/env.js';
 import { AppError } from '../utils/app-error.js';
+import type { TtsInput, SttInput } from '../validators/voice.validator.js';
+
+const ELEVENLABS_BASE = 'https://api.elevenlabs.io/v1';
+const DEFAULT_VOICE_ID = '3bAVnCtF2Efx7MOj2bJ0';
+const UPSTREAM_TIMEOUT_MS = 30_000;
+
+const getApiKey = (): string => {
+  const apiKey = env.ELEVENLABS_API_KEY.trim();
+  if (apiKey.length < 5) {
+    throw new AppError('Layanan suara belum dikonfigurasi di server.', 503, 'SERVICE_UNAVAILABLE');
+  }
+  return apiKey;
+};
+
+const requestTts = (apiKey: string, voiceId: string, text: string, voiceSettings: Record<string, unknown>) =>
+  fetch(`${ELEVENLABS_BASE}/text-to-speech/${encodeURIComponent(voiceId)}`, {
+    method: 'POST',
+    headers: {
+      'xi-api-key': apiKey,
+      'Content-Type': 'application/json',
+      Accept: 'audio/mpeg',
+    },
+    body: JSON.stringify({
+      text,
+      model_id: 'eleven_multilingual_v2',
+      voice_settings: voiceSettings,
+    }),
+    signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
+  });
 
 export const generateTts = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const { text, voiceId = '3bAVnCtF2Efx7MOj2bJ0', voiceSettings } = req.body;
+    // Body already validated & normalised by ttsSchema (voiceId format, settings ranges, text ≤ 1000 chars)
+    const { text, voiceId, voiceSettings } = req.body as TtsInput;
+    const apiKey = getApiKey();
+    const targetVoiceId = voiceId || DEFAULT_VOICE_ID;
 
-    if (!text || typeof text !== 'string' || !text.trim()) {
-      throw AppError.badRequest('Field "text" wajib diisi dan berupa string.');
-    }
-
-    const apiKey = env.ELEVENLABS_API_KEY;
-    if (!apiKey || apiKey.trim().length < 5) {
-      throw AppError.internal('Kredensial ElevenLabs API Key belum dikonfigurasi di server backend.');
-    }
-
-    const targetVoiceId = voiceId && typeof voiceId === 'string' && voiceId.trim()
-      ? voiceId.trim()
-      : '3bAVnCtF2Efx7MOj2bJ0';
-
-    const defaultVoiceSettings = {
+    const settings = {
       stability: 0.62,
       similarity_boost: 0.78,
       style: 0.05,
@@ -27,48 +46,25 @@ export const generateTts = async (req: Request, res: Response, next: NextFunctio
       ...voiceSettings,
     };
 
-    let elevenLabsRes = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${targetVoiceId}`, {
-      method: 'POST',
-      headers: {
-        'xi-api-key': apiKey.trim(),
-        'Content-Type': 'application/json',
-        Accept: 'audio/mpeg',
-      },
-      body: JSON.stringify({
-        text: text.slice(0, 1000),
-        model_id: 'eleven_multilingual_v2',
-        voice_settings: defaultVoiceSettings,
-      }),
-    });
+    let elevenLabsRes = await requestTts(apiKey, targetVoiceId, text, settings);
 
-    if (!elevenLabsRes.ok && targetVoiceId !== '3bAVnCtF2Efx7MOj2bJ0') {
-      console.warn(`[VoiceController] Voice ${targetVoiceId} failed (${elevenLabsRes.status}), attempting fallback to default voice (3bAVnCtF2Efx7MOj2bJ0)`);
-      elevenLabsRes = await fetch('https://api.elevenlabs.io/v1/text-to-speech/3bAVnCtF2Efx7MOj2bJ0', {
-        method: 'POST',
-        headers: {
-          'xi-api-key': apiKey.trim(),
-          'Content-Type': 'application/json',
-          Accept: 'audio/mpeg',
-        },
-        body: JSON.stringify({
-          text: text.slice(0, 1000),
-          model_id: 'eleven_multilingual_v2',
-          voice_settings: defaultVoiceSettings,
-        }),
-      });
+    if (!elevenLabsRes.ok && targetVoiceId !== DEFAULT_VOICE_ID) {
+      console.warn(`[VoiceController] Voice ${targetVoiceId} failed (${elevenLabsRes.status}), falling back to default voice`);
+      elevenLabsRes = await requestTts(apiKey, DEFAULT_VOICE_ID, text, settings);
     }
 
     if (!elevenLabsRes.ok) {
-      const errText = await elevenLabsRes.text().catch(() => 'Unknown ElevenLabs error');
-      console.error(`[VoiceController] ElevenLabs API error (${elevenLabsRes.status}):`, errText);
-      throw AppError.internal(`ElevenLabs TTS error (${elevenLabsRes.status}): ${errText}`);
+      const errText = await elevenLabsRes.text().catch(() => '');
+      // Upstream detail is logged server-side only (masked for clients by the error handler in production)
+      throw AppError.internal(`ElevenLabs TTS error (${elevenLabsRes.status}): ${errText.slice(0, 500)}`);
     }
 
     const audioBuffer = await elevenLabsRes.arrayBuffer();
 
     res.setHeader('Content-Type', 'audio/mpeg');
     res.setHeader('Content-Length', audioBuffer.byteLength.toString());
-    res.setHeader('Cache-Control', 'public, max-age=86400');
+    // Spoken AI replies may contain personal data → never store in shared/browser caches
+    res.setHeader('Cache-Control', 'private, no-store');
     res.status(200).send(Buffer.from(audioBuffer));
   } catch (err) {
     next(err);
@@ -77,48 +73,44 @@ export const generateTts = async (req: Request, res: Response, next: NextFunctio
 
 export const transcribeStt = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const { audioBase64, mimeType = 'audio/webm' } = req.body;
-
-    if (!audioBase64 || typeof audioBase64 !== 'string') {
-      throw AppError.badRequest('Field "audioBase64" wajib diisi.');
-    }
-
-    const apiKey = env.ELEVENLABS_API_KEY;
-    if (!apiKey || apiKey.trim().length < 5) {
-      throw AppError.internal('Kredensial ElevenLabs API Key belum dikonfigurasi di server backend.');
-    }
+    const { audioBase64, mimeType } = req.body as SttInput;
+    const apiKey = getApiKey();
 
     const audioBuffer = Buffer.from(audioBase64, 'base64');
-    const boundary = '----Boundary' + Date.now().toString(16);
+    if (audioBuffer.length === 0) {
+      throw AppError.badRequest('Data audio kosong atau tidak valid.');
+    }
 
-    const ext = mimeType.includes('wav') ? 'wav' : mimeType.includes('mp4') ? 'mp4' : mimeType.includes('ogg') ? 'ogg' : 'webm';
-    const filename = `recording.${ext}`;
+    const baseMime = mimeType.split(';')[0]!.trim().toLowerCase();
+    const ext = baseMime.includes('wav')
+      ? 'wav'
+      : baseMime.includes('mp4') || baseMime.includes('m4a') || baseMime.includes('aac')
+        ? 'mp4'
+        : baseMime.includes('ogg')
+          ? 'ogg'
+          : baseMime.includes('mpeg')
+            ? 'mp3'
+            : 'webm';
 
-    const part1 = Buffer.from(
-      `--${boundary}\r\nContent-Disposition: form-data; name="model_id"\r\n\r\nscribe_v1\r\n` +
-      `--${boundary}\r\nContent-Disposition: form-data; name="language_code"\r\n\r\nid\r\n` +
-      `--${boundary}\r\nContent-Disposition: form-data; name="file"; filename="${filename}"\r\nContent-Type: ${mimeType}\r\n\r\n`
-    );
-    const part2 = Buffer.from(`\r\n--${boundary}--\r\n`);
-    const fullBody = Buffer.concat([part1, audioBuffer, part2]);
+    // Native FormData builds the multipart body safely (no hand-written headers → no CRLF injection)
+    const form = new FormData();
+    form.append('model_id', 'scribe_v1');
+    form.append('language_code', 'id');
+    form.append('file', new Blob([audioBuffer], { type: baseMime }), `recording.${ext}`);
 
-    const sttRes = await fetch('https://api.elevenlabs.io/v1/speech-to-text', {
+    const sttRes = await fetch(`${ELEVENLABS_BASE}/speech-to-text`, {
       method: 'POST',
-      headers: {
-        'xi-api-key': apiKey.trim(),
-        'Content-Type': 'multipart/form-data; boundary=' + boundary,
-        'Content-Length': fullBody.length.toString(),
-      },
-      body: fullBody,
+      headers: { 'xi-api-key': apiKey },
+      body: form,
+      signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
     });
 
     if (!sttRes.ok) {
       const errText = await sttRes.text().catch(() => '');
-      console.warn(`[VoiceController] ElevenLabs STT error (${sttRes.status}):`, errText);
-      throw AppError.internal(`ElevenLabs STT error (${sttRes.status}): ${errText}`);
+      throw AppError.internal(`ElevenLabs STT error (${sttRes.status}): ${errText.slice(0, 500)}`);
     }
 
-    const data = await sttRes.json() as { text?: string; language_code?: string };
+    const data = (await sttRes.json()) as { text?: string; language_code?: string };
     res.status(200).json({
       text: data.text || '',
       language_code: data.language_code || 'id',
@@ -127,4 +119,3 @@ export const transcribeStt = async (req: Request, res: Response, next: NextFunct
     next(err);
   }
 };
-

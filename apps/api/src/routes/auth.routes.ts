@@ -15,6 +15,7 @@ import {
   googleAuthQuerySchema,
 } from '../validators/auth.validator.js';
 import { authLimiter } from '../middleware/rate-limit.middleware.js';
+import { requireAuth } from '../middleware/auth.middleware.js';
 
 const router = Router();
 
@@ -22,7 +23,7 @@ router.get('/status', getAuthStatus);
 router.post('/login', authLimiter, validateBody(loginSchema), login);
 router.post('/register', authLimiter, validateBody(registerSchema), register);
 router.post('/reset-password', authLimiter, validateBody(forgotPasswordSchema), forgotPassword);
-router.get('/google-url', validateQuery(googleAuthQuerySchema), getGoogleAuthUrl);
-router.get('/me', getCurrentUser);
+router.get('/google-url', authLimiter, validateQuery(googleAuthQuerySchema), getGoogleAuthUrl);
+router.get('/me', requireAuth, getCurrentUser);
 
 export default router;

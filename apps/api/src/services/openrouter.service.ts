@@ -1,6 +1,7 @@
 import OpenAI from 'openai';
 import { env } from '../config/env.js';
 import { AppError } from '../utils/app-error.js';
+import { cacheService } from './cache.service.js';
 import type { ServiceHealth, AiChatRequest, AiChatResponse } from '@healthathon/shared';
 
 export const CHAT_FALLBACK_MODELS = [
@@ -14,6 +15,34 @@ export const VOICE_FALLBACK_MODELS = [
   'openai/gpt-4o-mini',
   'meta-llama/llama-3.1-8b-instruct',
 ];
+
+/**
+ * Models clients are allowed to request on the server's OpenRouter key.
+ * Anything else is silently replaced by the default model (cost-abuse protection).
+ * Extend via OPENROUTER_ALLOWED_MODELS (comma-separated).
+ */
+export const ALLOWED_MODELS: ReadonlySet<string> = new Set([
+  ...CHAT_FALLBACK_MODELS,
+  ...VOICE_FALLBACK_MODELS,
+  'google/gemini-2.0-flash-001',
+  env.OPENROUTER_DEFAULT_MODEL,
+  ...env.extraAllowedModels,
+]);
+
+const UPSTREAM_TIMEOUT_MS = 90_000;
+
+const pickModel = (requested: string | undefined, fallback: string): string =>
+  requested && ALLOWED_MODELS.has(requested) ? requested : fallback;
+
+const pickModelList = (requested: string[] | undefined, primary: string, fallbacks: string[]): string[] => {
+  const allowed = (requested || []).filter((m) => ALLOWED_MODELS.has(m));
+  const list = allowed.length > 0 ? allowed : [primary, ...fallbacks.filter((m) => m !== primary)];
+  return Array.from(new Set(list)).slice(0, 3);
+};
+
+/** Combine the caller's abort signal (client disconnect) with an upstream timeout. */
+const withTimeout = (signal?: AbortSignal): AbortSignal =>
+  signal ? AbortSignal.any([signal, AbortSignal.timeout(UPSTREAM_TIMEOUT_MS)]) : AbortSignal.timeout(UPSTREAM_TIMEOUT_MS);
 
 export interface StreamChunkResult {
   delta?: string;
@@ -67,7 +96,7 @@ class OpenRouterService {
   public async chat(request: AiChatRequest): Promise<AiChatResponse> {
     const isVoice = request.mode === 'voice';
     const fallbackList = isVoice ? VOICE_FALLBACK_MODELS : CHAT_FALLBACK_MODELS;
-    const model = request.model || env.OPENROUTER_DEFAULT_MODEL || 'openai/gpt-oss-120b:nitro';
+    const model = pickModel(request.model, env.OPENROUTER_DEFAULT_MODEL || 'openai/gpt-oss-120b:nitro');
     const maxTokens = request.maxTokens ?? (isVoice ? 220 : 2500);
     const temperature = request.temperature ?? (isVoice ? 0.7 : 0.5);
 
@@ -89,10 +118,7 @@ class OpenRouterService {
     }
 
     try {
-      const modelsToTry =
-        request.models && request.models.length > 0
-          ? request.models
-          : [model, ...fallbackList.filter((m) => m !== model)];
+      const modelsToTry = pickModelList(request.models, model, fallbackList);
 
       const hasPdfFile = request.messages.some(
         (m) =>
@@ -132,11 +158,12 @@ class OpenRouterService {
           'X-Title': 'INFERA BPJS AI System',
         },
         body: JSON.stringify(requestPayload),
+        signal: withTimeout(),
       });
 
       if (!response.ok) {
         const errorText = await response.text();
-        throw AppError.internal(`OpenRouter error (${response.status}): ${errorText}`);
+        throw AppError.internal(`OpenRouter error (${response.status}): ${errorText.slice(0, 500)}`);
       }
 
       const json = await response.json();
@@ -184,7 +211,9 @@ class OpenRouterService {
   ): AsyncGenerator<StreamChunkResult> {
     const isVoice = request.mode === 'voice';
     const fallbackList = isVoice ? VOICE_FALLBACK_MODELS : CHAT_FALLBACK_MODELS;
-    const model = isVoice ? 'meta-llama/llama-3.3-70b-instruct' : (request.model || env.OPENROUTER_DEFAULT_MODEL);
+    const model = isVoice
+      ? 'meta-llama/llama-3.3-70b-instruct'
+      : pickModel(request.model, env.OPENROUTER_DEFAULT_MODEL || 'openai/gpt-oss-120b:nitro');
     const maxTokens = request.maxTokens ?? (isVoice ? 220 : 2500);
     const temperature = request.temperature ?? (isVoice ? 0.7 : 0.5);
 
@@ -202,10 +231,7 @@ class OpenRouterService {
       return;
     }
 
-    const modelsToTry =
-      request.models && request.models.length > 0
-        ? request.models
-        : [model, ...fallbackList.filter((m) => m !== model)];
+    const modelsToTry = pickModelList(request.models, model, fallbackList);
 
     const hasPdfFile = request.messages.some(
       (m) =>
@@ -246,12 +272,12 @@ class OpenRouterService {
         'X-Title': 'INFERA BPJS AI System',
       },
       body: JSON.stringify(payload),
-      signal,
+      signal: withTimeout(signal),
     });
 
     if (!response.ok) {
       const errText = await response.text();
-      throw AppError.internal(`OpenRouter stream request failed (${response.status}): ${errText}`);
+      throw AppError.internal(`OpenRouter stream request failed (${response.status}): ${errText.slice(0, 500)}`);
     }
 
     if (!response.body) {
@@ -331,23 +357,32 @@ class OpenRouterService {
       throw AppError.internal('OpenRouter client is not configured');
     }
 
-    try {
-      const response = await this.client.embeddings.create({
-        model: 'text-embedding-3-small',
-        input: text,
-      });
+    const normalized = text.trim().toLowerCase().slice(0, 1000);
+    const cacheKey = cacheService.hashKey('rag:emb', normalized);
 
-      const firstItem = response.data?.[0];
-      if (!firstItem || !firstItem.embedding) {
-        throw AppError.internal('Received empty embedding from OpenRouter');
-      }
+    return cacheService.getOrSet<number[]>(
+      cacheKey,
+      async () => {
+        try {
+          const response = await this.client!.embeddings.create({
+            model: 'text-embedding-3-small',
+            input: text,
+          });
 
-      return firstItem.embedding;
-    } catch (err) {
-      if (err instanceof AppError) throw err;
-      const message = err instanceof Error ? err.message : 'Embedding error';
-      throw AppError.internal(`OpenRouter embedding error: ${message}`);
-    }
+          const firstItem = response.data?.[0];
+          if (!firstItem || !firstItem.embedding) {
+            throw AppError.internal('Received empty embedding from OpenRouter');
+          }
+
+          return firstItem.embedding;
+        } catch (err) {
+          if (err instanceof AppError) throw err;
+          const message = err instanceof Error ? err.message : 'Embedding error';
+          throw AppError.internal(`OpenRouter embedding error: ${message}`);
+        }
+      },
+      { ttlSeconds: 86_400, l1TtlSeconds: 3_600 }
+    );
   }
 }
 

@@ -3,11 +3,13 @@ import { getAiStatus, chatCompletion, chatStream } from '../controllers/ai.contr
 import { validateBody } from '../middleware/validate.middleware.js';
 import { aiChatSchema } from '../validators/ai.validator.js';
 import { aiChatLimiter } from '../middleware/rate-limit.middleware.js';
+import { requireAuth } from '../middleware/auth.middleware.js';
 
 const router = Router();
 
 router.get('/status', getAiStatus);
-router.post('/chat', aiChatLimiter, validateBody(aiChatSchema), chatCompletion);
-router.post('/chat/stream', aiChatLimiter, validateBody(aiChatSchema), chatStream);
+// AI calls are billed per token → only signed-in users, throttled per user
+router.post('/chat', requireAuth, aiChatLimiter, validateBody(aiChatSchema), chatCompletion);
+router.post('/chat/stream', requireAuth, aiChatLimiter, validateBody(aiChatSchema), chatStream);
 
 export default router;

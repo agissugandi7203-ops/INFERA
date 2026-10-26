@@ -7,6 +7,7 @@ import {
 import type { JknClaimRecord } from '@healthathon/shared';
 import { FALLBACK_CASES } from '../../../../services/participantRiskApi';
 import { webRagService } from '../../../../services/rag.service';
+import { getAuthHeaders } from '../../../../lib/supabase';
 
 export type UserRole = 'auditor' | 'analyst' | 'admin';
 
@@ -451,7 +452,10 @@ async function findParticipantData(query: string, context?: ToolExecutionContext
   // 3. Query Backend Supabase Search API dynamically (/api/v1/participant-risk/search)
   try {
     const API_BASE = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) || '/api/v1';
-    const res = await fetch(`${API_BASE}/participant-risk/search?query=${encodeURIComponent(cleanQ)}`);
+    const authHeaders = await getAuthHeaders();
+    const res = await fetch(`${API_BASE}/participant-risk/search?query=${encodeURIComponent(cleanQ)}`, {
+      headers: authHeaders,
+    });
     if (res.ok) {
       const json = await res.json();
       if (json.success && Array.isArray(json.data) && json.data.length > 0) {

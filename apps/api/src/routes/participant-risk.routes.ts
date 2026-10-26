@@ -9,9 +9,16 @@ import {
   evaluateProfileSchema,
   caseStudyParamSchema,
   getAnomaliesQuerySchema,
+  getCaseStudiesQuerySchema,
+  searchQuerySchema,
 } from '../validators/participant-risk.validator.js';
+import { requireAuth } from '../middleware/auth.middleware.js';
+import { sensitiveDataLimiter } from '../middleware/rate-limit.middleware.js';
 
 const router = Router();
+
+// Every participant-risk endpoint exposes personal/health data (UU PDP) → authentication required.
+router.use(requireAuth);
 
 router.post(
   '/evaluate',
@@ -21,11 +28,16 @@ router.post(
 router.get('/metrics', (req, res, next) =>
   participantRiskController.getMetrics(req, res, next)
 );
-router.get('/search', (req, res, next) =>
-  participantRiskController.search(req, res, next)
+router.get(
+  '/search',
+  sensitiveDataLimiter,
+  validateQuery(searchQuerySchema),
+  (req, res, next) => participantRiskController.search(req, res, next)
 );
-router.get('/case-studies', (req, res, next) =>
-  participantRiskController.getCaseStudies(req, res, next)
+router.get(
+  '/case-studies',
+  validateQuery(getCaseStudiesQuerySchema),
+  (req, res, next) => participantRiskController.getCaseStudies(req, res, next)
 );
 router.get(
   '/case-studies/:id',
@@ -39,4 +51,3 @@ router.get(
 );
 
 export default router;
-

@@ -3,86 +3,108 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import { env } from './config/env.js';
+import { isTrustedOrigin } from './config/origins.js';
 import { API_PREFIX } from '@healthathon/shared';
 import apiRouter from './routes/api.routes.js';
 import docsRouter from './routes/docs.routes.js';
 import { swaggerSpec } from './config/swagger.js';
 import { notFoundHandler, errorHandler } from './middleware/error.middleware.js';
 import { generalLimiter } from './middleware/rate-limit.middleware.js';
+import { requestId, noStore, requireJsonBody } from './middleware/security.middleware.js';
 
 export const createApp = (): Application => {
   const app = express();
 
-  // Trust reverse proxy for accurate IP identification & rate limiting
+  app.disable('x-powered-by');
+  // Trust exactly one reverse proxy hop (Vercel / Railway) for accurate client IPs & rate limiting
   app.set('trust proxy', 1);
 
-  // Rate limiting (General API protection against spam & DOS)
-  app.use(generalLimiter);
+  app.use(requestId);
 
-  // Security headers (Allow Swagger UI inline styles and scripts)
+  // Security headers — strict CSP for a JSON API (Swagger UI gets its own relaxed policy in docs.routes)
   app.use(
     helmet({
-      contentSecurityPolicy: false,
+      contentSecurityPolicy: {
+        useDefaults: false,
+        directives: {
+          defaultSrc: ["'none'"],
+          frameAncestors: ["'none'"],
+          baseUri: ["'none'"],
+          formAction: ["'none'"],
+        },
+      },
       crossOriginEmbedderPolicy: false,
+      strictTransportSecurity: { maxAge: 31536000, includeSubDomains: true, preload: true },
+      referrerPolicy: { policy: 'no-referrer' },
     })
   );
 
-  // CORS configuration (strictly whitelisted origins)
-  const allowedOrigins = [
-    env.CLIENT_URL,
-    'http://localhost:5173',
-    'http://localhost:3000',
-    'http://127.0.0.1:5173',
-  ].filter(Boolean);
-
+  // CORS — strict allowlist (no more `*.vercel.app` wildcard). Auth uses Bearer headers, not cookies,
+  // so credentials are not needed, which also removes cookie-based CSRF exposure.
   app.use(
     cors({
       origin: (origin, callback) => {
-        // Allow requests with no origin (curl, internal server calls) or whitelisted origins
-        if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
+        // Requests without Origin (curl, server-to-server, same-origin navigations) carry no ambient
+        // browser credentials; they still have to pass Bearer-token auth on protected routes.
+        if (!origin || isTrustedOrigin(origin)) {
           callback(null, true);
         } else {
-          callback(new Error(`Origin '${origin}' tidak diizinkan oleh kebijakan keamanan CORS.`));
+          callback(null, false);
         }
       },
-      credentials: true,
-      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+      credentials: false,
+      methods: ['GET', 'POST', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-Request-Id'],
+      exposedHeaders: ['X-Request-Id', 'RateLimit', 'RateLimit-Policy', 'Retry-After'],
       maxAge: 86400,
     })
   );
 
-  // Request logging
+  // Rate limiting (after CORS so 429 responses still carry CORS headers the browser can read)
+  app.use(generalLimiter);
+
+  // Request logging — log the path only: query strings may contain participant names / card numbers (PII)
   if (env.NODE_ENV !== 'test') {
-    app.use(morgan(env.NODE_ENV === 'production' ? 'combined' : 'dev'));
+    morgan.token('safe-url', (req) => (req as express.Request).path ?? '');
+    morgan.token('rid', (req) => (req as express.Request).requestId ?? '-');
+    app.use(
+      morgan(
+        env.isProduction
+          ? ':remote-addr [:date[iso]] ":method :safe-url HTTP/:http-version" :status :res[content-length] :response-time ms rid=:rid'
+          : ':method :safe-url :status :response-time ms rid=:rid'
+      )
+    );
   }
 
-  // Body parsers (Strict payload size limiting)
-  app.use(express.json({ limit: '2mb' }));
-  app.use(express.urlencoded({ extended: true, limit: '2mb' }));
+  // Body parsers — tight default limit; larger only where multimodal payloads are expected.
+  app.use(requireJsonBody);
+  app.use(`${API_PREFIX}/ai`, express.json({ limit: '12mb' })); // PDF/image attachments (base64)
+  app.use(`${API_PREFIX}/voice`, express.json({ limit: '4mb' })); // short audio clips for STT
+  app.use(express.json({ limit: '512kb', strict: true }));
 
-  // Swagger Documentation Routes
-  app.use('/docs', docsRouter);
-  app.use('/api-docs', docsRouter);
-  app.use(`${API_PREFIX}/docs`, docsRouter);
-  app.get('/api-docs.json', (_req, res) => {
-    res.setHeader('Content-Type', 'application/json');
-    res.json(swaggerSpec);
-  });
+  // Swagger documentation — disabled in production unless explicitly enabled
+  const docsEnabled = !env.isProduction || env.ENABLE_API_DOCS;
+  if (docsEnabled) {
+    app.use('/docs', docsRouter);
+    app.use('/api-docs', docsRouter);
+    app.use(`${API_PREFIX}/docs`, docsRouter);
+    app.get('/api-docs.json', (_req, res) => {
+      res.json(swaggerSpec);
+    });
+  }
 
   // Root welcome route
   app.get('/', (_req, res) => {
     res.json({
       name: 'INFERA API Service',
-      version: '1.0.0',
       status: 'online',
-      docs: '/docs',
       health: `${API_PREFIX}/health`,
+      ...(docsEnabled ? { docs: '/docs' } : {}),
     });
   });
 
-  // Mount API Router strictly under API_PREFIX (/api/v1)
-  app.use(API_PREFIX, apiRouter);
+  // Mount API Router strictly under API_PREFIX (/api/v1) — never cache API responses
+  app.use(API_PREFIX, noStore, apiRouter);
 
   // 404 and Global Error handling
   app.use(notFoundHandler);

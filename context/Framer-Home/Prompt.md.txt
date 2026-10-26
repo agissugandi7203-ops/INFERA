@@ -1,0 +1,4697 @@
+## Framer Component Integration
+
+I want to integrate 95 Framer components into my project.
+
+### Components
+
+### Button-Icon
+
+**Props:**
+```typescript
+export interface ButtonIconProps {
+  /**
+   * Variant
+   * Friendly names map to internal IDs:
+   *   "Dark - Phone" → n9A7jxl3z
+   *   "Default - Phone" → Rc5QmtPAI
+   *   "Nav Button - Phone" → peF_y0Ayx
+   *   "Nav Button" → DxQTVJgmU
+   *   "Right Icon - Phone" → nnGtB53cU
+   *   "Right Icon" → wkhxQl_QS
+   *   "Dark" → KVSDvWZoH
+   *   "Default" → Y5rxWmMw9
+   */
+  variant?: 'Dark - Phone' | 'Default - Phone' | 'Nav Button - Phone' | 'Nav Button' | 'Right Icon - Phone' | 'Right Icon' | 'Dark' | 'Default' | 'Y5rxWmMw9' | 'KVSDvWZoH' | 'DxQTVJgmU' | 'wkhxQl_QS' | 'Rc5QmtPAI' | 'n9A7jxl3z' | 'peF_y0Ayx' | 'nnGtB53cU';
+  /**
+   * Title — pass as `ziCnPH11n` not `title`.
+   * @default "Button Icon"
+   */
+  ziCnPH11n?: string;
+  onziCnPH11nChange?: string;
+  /**
+   * Icon — pass as `SjeXzLrTu` not `icon`.
+   */
+  SjeXzLrTu?: string;
+  /**
+   * Link — pass as `gayKxTIvB` not `link`.
+   */
+  gayKxTIvB?: string;
+  /**
+   * New Tab — pass as `uYcQ8rJi0` not `newTab`.
+   * @default false
+   */
+  uYcQ8rJi0?: boolean;
+  onuYcQ8rJi0Change?: string;
+  /**
+   * Click — pass as `uo_mEDBYl` not `click`.
+   */
+  uo_mEDBYl?: () => void;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/button-icon-1792927765205-dex1zu.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/button-icon-1792927765205-dex1zu.d.ts
+
+### Button
+
+**Props:**
+```typescript
+export interface ButtonProps {
+  /**
+   * Variant
+   * Friendly names map to internal IDs:
+   *   "Dark - Phone" → eFw1AVBfv
+   *   "Default - Phone" → OtPPGEvOS
+   *   "Dark" → u67hFJtfB
+   *   "Default" → CAzYV7KJv
+   *   "SM" → yMtQl_Ch0
+   */
+  variant?: 'Dark - Phone' | 'Default - Phone' | 'Dark' | 'Default' | 'SM' | 'CAzYV7KJv' | 'u67hFJtfB' | 'OtPPGEvOS' | 'eFw1AVBfv' | 'yMtQl_Ch0';
+  /**
+   * Title — pass as `ziCnPH11n` not `title`.
+   * @default "Button Title"
+   */
+  ziCnPH11n?: string;
+  onziCnPH11nChange?: string;
+  /**
+   * Link — pass as `gayKxTIvB` not `link`.
+   */
+  gayKxTIvB?: string;
+  /**
+   * New Tab — pass as `uYcQ8rJi0` not `newTab`.
+   * @default false
+   */
+  uYcQ8rJi0?: boolean;
+  onuYcQ8rJi0Change?: string;
+  /**
+   * Click — pass as `uo_mEDBYl` not `click`.
+   */
+  uo_mEDBYl?: () => void;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/button-1792927766178-4fn6ig.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/button-1792927766178-4fn6ig.d.ts
+
+### List-Item
+
+**Props:**
+```typescript
+export interface ListItemProps {
+  /**
+   * Variant
+   * Friendly names map to internal IDs:
+   *   "Default" → LWYwTVX6W
+   *   "Fit" → GLuZpuSO3
+   *   "LG" → rKahmK2tf
+   */
+  variant?: 'Default' | 'Fit' | 'LG' | 'LWYwTVX6W' | 'GLuZpuSO3' | 'rKahmK2tf';
+  /**
+   * Icon — pass as `XMCDOSojK` not `icon`.
+   */
+  XMCDOSojK?: string;
+  /**
+   * Title — pass as `GmSs_KKEi` not `title`.
+   * @default "What breaks in real teams"
+   */
+  GmSs_KKEi?: string;
+  onGmSs_KKEiChange?: string;
+  /**
+   * Color — pass as `uoP_rcx83` not `color`.
+   * @default "var(--token-5a0631e1-36c2-4c12-ac01-aa86958549ac, rgb(73, 77, 77))"
+   */
+  uoP_rcx83?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/list-item-1792927767344-8suxj5.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/list-item-1792927767344-8suxj5.d.ts
+
+### List-Item
+
+**Props:**
+```typescript
+export interface ListItemProps {
+  /**
+   * Variant
+   * Friendly names map to internal IDs:
+   *   "Default" → LWYwTVX6W
+   *   "Fit" → GLuZpuSO3
+   *   "LG" → rKahmK2tf
+   */
+  variant?: 'Default' | 'Fit' | 'LG' | 'LWYwTVX6W' | 'GLuZpuSO3' | 'rKahmK2tf';
+  /**
+   * Icon — pass as `XMCDOSojK` not `icon`.
+   */
+  XMCDOSojK?: string;
+  /**
+   * Title — pass as `GmSs_KKEi` not `title`.
+   * @default "What breaks in real teams"
+   */
+  GmSs_KKEi?: string;
+  onGmSs_KKEiChange?: string;
+  /**
+   * Color — pass as `uoP_rcx83` not `color`.
+   * @default "var(--token-5a0631e1-36c2-4c12-ac01-aa86958549ac, rgb(73, 77, 77))"
+   */
+  uoP_rcx83?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/list-item-1792927768306-cfcy5b.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/list-item-1792927768306-cfcy5b.d.ts
+
+### List-Item
+
+**Props:**
+```typescript
+export interface ListItemProps {
+  /**
+   * Variant
+   * Friendly names map to internal IDs:
+   *   "Default" → LWYwTVX6W
+   *   "Fit" → GLuZpuSO3
+   *   "LG" → rKahmK2tf
+   */
+  variant?: 'Default' | 'Fit' | 'LG' | 'LWYwTVX6W' | 'GLuZpuSO3' | 'rKahmK2tf';
+  /**
+   * Icon — pass as `XMCDOSojK` not `icon`.
+   */
+  XMCDOSojK?: string;
+  /**
+   * Title — pass as `GmSs_KKEi` not `title`.
+   * @default "What breaks in real teams"
+   */
+  GmSs_KKEi?: string;
+  onGmSs_KKEiChange?: string;
+  /**
+   * Color — pass as `uoP_rcx83` not `color`.
+   * @default "var(--token-5a0631e1-36c2-4c12-ac01-aa86958549ac, rgb(73, 77, 77))"
+   */
+  uoP_rcx83?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/list-item-1792927769223-6sc8x9.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/list-item-1792927769223-6sc8x9.d.ts
+
+### Pre-Title
+
+**Props:**
+```typescript
+export interface PreTitleProps {
+  /**
+   * Variant
+   * Friendly names map to internal IDs:
+   *   "Dark" → GyM4q7LNO
+   *   "Default" → dVqc43eR9
+   *   "White" → uyNLry1D8
+   */
+  variant?: 'Dark' | 'Default' | 'White' | 'dVqc43eR9' | 'uyNLry1D8' | 'GyM4q7LNO';
+  /**
+   * Title — pass as `BSyxhptbW` not `title`.
+   * @default "Subscription plans"
+   */
+  BSyxhptbW?: string;
+  onBSyxhptbWChange?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/pre-title-1792927770006-kl28ln.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/pre-title-1792927770006-kl28ln.d.ts
+
+### Client-Logo
+
+**Props:**
+```typescript
+export interface ClientLogoProps {
+  /**
+   * Image — pass as `zDJH8fw1b` not `image`.
+   */
+  zDJH8fw1b?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/client-logo-1792927770862-jvaphc.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/client-logo-1792927770862-jvaphc.d.ts
+
+### Client-Logo
+
+**Props:**
+```typescript
+export interface ClientLogoProps {
+  /**
+   * Image — pass as `zDJH8fw1b` not `image`.
+   */
+  zDJH8fw1b?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/client-logo-1792927771609-32i0ik.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/client-logo-1792927771609-32i0ik.d.ts
+
+### Client-Logo
+
+**Props:**
+```typescript
+export interface ClientLogoProps {
+  /**
+   * Image — pass as `zDJH8fw1b` not `image`.
+   */
+  zDJH8fw1b?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/client-logo-1792927772360-5bzga2.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/client-logo-1792927772360-5bzga2.d.ts
+
+### Client-Logo
+
+**Props:**
+```typescript
+export interface ClientLogoProps {
+  /**
+   * Image — pass as `zDJH8fw1b` not `image`.
+   */
+  zDJH8fw1b?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/client-logo-1792927773122-3bn3lt.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/client-logo-1792927773122-3bn3lt.d.ts
+
+### Client-Logo
+
+**Props:**
+```typescript
+export interface ClientLogoProps {
+  /**
+   * Image — pass as `zDJH8fw1b` not `image`.
+   */
+  zDJH8fw1b?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/client-logo-1792927773849-oyftuq.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/client-logo-1792927773849-oyftuq.d.ts
+
+### Client-Logo
+
+**Props:**
+```typescript
+export interface ClientLogoProps {
+  /**
+   * Image — pass as `zDJH8fw1b` not `image`.
+   */
+  zDJH8fw1b?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/client-logo-1792927774557-7fuvqg.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/client-logo-1792927774557-7fuvqg.d.ts
+
+### Client-Logo
+
+**Props:**
+```typescript
+export interface ClientLogoProps {
+  /**
+   * Image — pass as `zDJH8fw1b` not `image`.
+   */
+  zDJH8fw1b?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/client-logo-1792927775281-ddqjje.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/client-logo-1792927775281-ddqjje.d.ts
+
+### Client-Logo
+
+**Props:**
+```typescript
+export interface ClientLogoProps {
+  /**
+   * Image — pass as `zDJH8fw1b` not `image`.
+   */
+  zDJH8fw1b?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/client-logo-1792927776037-5r0r66.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/client-logo-1792927776037-5r0r66.d.ts
+
+### Client-Logo
+
+**Props:**
+```typescript
+export interface ClientLogoProps {
+  /**
+   * Image — pass as `zDJH8fw1b` not `image`.
+   */
+  zDJH8fw1b?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/client-logo-1792927776904-f4hhtx.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/client-logo-1792927776904-f4hhtx.d.ts
+
+### Client-Logo
+
+**Props:**
+```typescript
+export interface ClientLogoProps {
+  /**
+   * Image — pass as `zDJH8fw1b` not `image`.
+   */
+  zDJH8fw1b?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/client-logo-1792927777705-bhj8kw.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/client-logo-1792927777705-bhj8kw.d.ts
+
+### Client-Logo
+
+**Props:**
+```typescript
+export interface ClientLogoProps {
+  /**
+   * Image — pass as `zDJH8fw1b` not `image`.
+   */
+  zDJH8fw1b?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/client-logo-1792927778459-3oprmf.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/client-logo-1792927778459-3oprmf.d.ts
+
+### Before-After
+
+**Props:**
+```typescript
+export interface BeforeAfterProps {
+  /**
+   * Variant
+   * Friendly names map to internal IDs:
+   *   "After - Phone" → k0AZZXdz2
+   *   "Before - Phone" → c3cl2ti1X
+   *   "After" → Gx64mbwEU
+   *   "Before" → ajKQH7XfN
+   */
+  variant?: 'After - Phone' | 'Before - Phone' | 'After' | 'Before' | 'ajKQH7XfN' | 'Gx64mbwEU' | 'c3cl2ti1X' | 'k0AZZXdz2';
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/before-after-1792927779190-b7dpyj.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/before-after-1792927779190-b7dpyj.d.ts
+
+### Pre-Title
+
+**Props:**
+```typescript
+export interface PreTitleProps {
+  /**
+   * Variant
+   * Friendly names map to internal IDs:
+   *   "Dark" → GyM4q7LNO
+   *   "Default" → dVqc43eR9
+   *   "White" → uyNLry1D8
+   */
+  variant?: 'Dark' | 'Default' | 'White' | 'dVqc43eR9' | 'uyNLry1D8' | 'GyM4q7LNO';
+  /**
+   * Title — pass as `BSyxhptbW` not `title`.
+   * @default "Subscription plans"
+   */
+  BSyxhptbW?: string;
+  onBSyxhptbWChange?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/pre-title-1792927780109-xpbdc8.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/pre-title-1792927780109-xpbdc8.d.ts
+
+### Button-Icon
+
+**Props:**
+```typescript
+export interface ButtonIconProps {
+  /**
+   * Variant
+   * Friendly names map to internal IDs:
+   *   "Dark - Phone" → n9A7jxl3z
+   *   "Default - Phone" → Rc5QmtPAI
+   *   "Nav Button - Phone" → peF_y0Ayx
+   *   "Nav Button" → DxQTVJgmU
+   *   "Right Icon - Phone" → nnGtB53cU
+   *   "Right Icon" → wkhxQl_QS
+   *   "Dark" → KVSDvWZoH
+   *   "Default" → Y5rxWmMw9
+   */
+  variant?: 'Dark - Phone' | 'Default - Phone' | 'Nav Button - Phone' | 'Nav Button' | 'Right Icon - Phone' | 'Right Icon' | 'Dark' | 'Default' | 'Y5rxWmMw9' | 'KVSDvWZoH' | 'DxQTVJgmU' | 'wkhxQl_QS' | 'Rc5QmtPAI' | 'n9A7jxl3z' | 'peF_y0Ayx' | 'nnGtB53cU';
+  /**
+   * Title — pass as `ziCnPH11n` not `title`.
+   * @default "Button Icon"
+   */
+  ziCnPH11n?: string;
+  onziCnPH11nChange?: string;
+  /**
+   * Icon — pass as `SjeXzLrTu` not `icon`.
+   */
+  SjeXzLrTu?: string;
+  /**
+   * Link — pass as `gayKxTIvB` not `link`.
+   */
+  gayKxTIvB?: string;
+  /**
+   * New Tab — pass as `uYcQ8rJi0` not `newTab`.
+   * @default false
+   */
+  uYcQ8rJi0?: boolean;
+  onuYcQ8rJi0Change?: string;
+  /**
+   * Click — pass as `uo_mEDBYl` not `click`.
+   */
+  uo_mEDBYl?: () => void;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/button-icon-1792927780849-ztadf3.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/button-icon-1792927780849-ztadf3.d.ts
+
+### Badge
+
+**Props:**
+```typescript
+export interface BadgeProps {
+  /**
+   * Variant
+   * Friendly names map to internal IDs:
+   *   "Default" → igdoTFQMz
+   *   "SM" → Ql_t47bi3
+   *   "White" → oBYzv67yH
+   */
+  variant?: 'Default' | 'SM' | 'White' | 'igdoTFQMz' | 'oBYzv67yH' | 'Ql_t47bi3';
+  /**
+   * Title — pass as `h3thwb3uh` not `title`.
+   * @default "Badge Title"
+   */
+  h3thwb3uh?: string;
+  onh3thwb3uhChange?: string;
+  /**
+   * Title Color — pass as `rhGiDGRBu` not `titleColor`.
+   * @default "var(--token-b923e1cb-cf6e-406c-a3d3-6c79738c4b54, rgb(77, 88, 95))"
+   */
+  rhGiDGRBu?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/badge-1792927781688-2akkyx.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/badge-1792927781688-2akkyx.d.ts
+
+### Badge
+
+**Props:**
+```typescript
+export interface BadgeProps {
+  /**
+   * Variant
+   * Friendly names map to internal IDs:
+   *   "Default" → igdoTFQMz
+   *   "SM" → Ql_t47bi3
+   *   "White" → oBYzv67yH
+   */
+  variant?: 'Default' | 'SM' | 'White' | 'igdoTFQMz' | 'oBYzv67yH' | 'Ql_t47bi3';
+  /**
+   * Title — pass as `h3thwb3uh` not `title`.
+   * @default "Badge Title"
+   */
+  h3thwb3uh?: string;
+  onh3thwb3uhChange?: string;
+  /**
+   * Title Color — pass as `rhGiDGRBu` not `titleColor`.
+   * @default "var(--token-b923e1cb-cf6e-406c-a3d3-6c79738c4b54, rgb(77, 88, 95))"
+   */
+  rhGiDGRBu?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/badge-1792927782394-spobil.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/badge-1792927782394-spobil.d.ts
+
+### Badge
+
+**Props:**
+```typescript
+export interface BadgeProps {
+  /**
+   * Variant
+   * Friendly names map to internal IDs:
+   *   "Default" → igdoTFQMz
+   *   "SM" → Ql_t47bi3
+   *   "White" → oBYzv67yH
+   */
+  variant?: 'Default' | 'SM' | 'White' | 'igdoTFQMz' | 'oBYzv67yH' | 'Ql_t47bi3';
+  /**
+   * Title — pass as `h3thwb3uh` not `title`.
+   * @default "Badge Title"
+   */
+  h3thwb3uh?: string;
+  onh3thwb3uhChange?: string;
+  /**
+   * Title Color — pass as `rhGiDGRBu` not `titleColor`.
+   * @default "var(--token-b923e1cb-cf6e-406c-a3d3-6c79738c4b54, rgb(77, 88, 95))"
+   */
+  rhGiDGRBu?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/badge-1792927783130-u3iptw.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/badge-1792927783130-u3iptw.d.ts
+
+### Feature-Box-Title
+
+**Props:**
+```typescript
+export interface FeatureBoxTitleProps {
+  /**
+   * Variant
+   * Friendly names map to internal IDs:
+   *   "01" → wz6TxFwg7
+   *   "02" → euvUjF5C3
+   *   "03" → NX_5sjqee
+   */
+  variant?: '01' | '02' | '03' | 'wz6TxFwg7' | 'euvUjF5C3' | 'NX_5sjqee';
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/feature-box-title-1792927783870-cy4i79.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/feature-box-title-1792927783870-cy4i79.d.ts
+
+### Alert-Card
+
+**Props:**
+```typescript
+export interface AlertCardProps {
+  /**
+   * Variant
+   * Friendly names map to internal IDs:
+   *   "01" → cQ4sOwQSF
+   *   "02" → mi5BBpoBa
+   *   "03" → jGENgE00C
+   */
+  variant?: '01' | '02' | '03' | 'cQ4sOwQSF' | 'mi5BBpoBa' | 'jGENgE00C';
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/alert-card-1792927784635-6gcnt2.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/alert-card-1792927784635-6gcnt2.d.ts
+
+### Pre-Title
+
+**Props:**
+```typescript
+export interface PreTitleProps {
+  /**
+   * Variant
+   * Friendly names map to internal IDs:
+   *   "Dark" → GyM4q7LNO
+   *   "Default" → dVqc43eR9
+   *   "White" → uyNLry1D8
+   */
+  variant?: 'Dark' | 'Default' | 'White' | 'dVqc43eR9' | 'uyNLry1D8' | 'GyM4q7LNO';
+  /**
+   * Title — pass as `BSyxhptbW` not `title`.
+   * @default "Subscription plans"
+   */
+  BSyxhptbW?: string;
+  onBSyxhptbWChange?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/pre-title-1792927785360-5e79tt.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/pre-title-1792927785360-5e79tt.d.ts
+
+### Button-Icon
+
+**Props:**
+```typescript
+export interface ButtonIconProps {
+  /**
+   * Variant
+   * Friendly names map to internal IDs:
+   *   "Dark - Phone" → n9A7jxl3z
+   *   "Default - Phone" → Rc5QmtPAI
+   *   "Nav Button - Phone" → peF_y0Ayx
+   *   "Nav Button" → DxQTVJgmU
+   *   "Right Icon - Phone" → nnGtB53cU
+   *   "Right Icon" → wkhxQl_QS
+   *   "Dark" → KVSDvWZoH
+   *   "Default" → Y5rxWmMw9
+   */
+  variant?: 'Dark - Phone' | 'Default - Phone' | 'Nav Button - Phone' | 'Nav Button' | 'Right Icon - Phone' | 'Right Icon' | 'Dark' | 'Default' | 'Y5rxWmMw9' | 'KVSDvWZoH' | 'DxQTVJgmU' | 'wkhxQl_QS' | 'Rc5QmtPAI' | 'n9A7jxl3z' | 'peF_y0Ayx' | 'nnGtB53cU';
+  /**
+   * Title — pass as `ziCnPH11n` not `title`.
+   * @default "Button Icon"
+   */
+  ziCnPH11n?: string;
+  onziCnPH11nChange?: string;
+  /**
+   * Icon — pass as `SjeXzLrTu` not `icon`.
+   */
+  SjeXzLrTu?: string;
+  /**
+   * Link — pass as `gayKxTIvB` not `link`.
+   */
+  gayKxTIvB?: string;
+  /**
+   * New Tab — pass as `uYcQ8rJi0` not `newTab`.
+   * @default false
+   */
+  uYcQ8rJi0?: boolean;
+  onuYcQ8rJi0Change?: string;
+  /**
+   * Click — pass as `uo_mEDBYl` not `click`.
+   */
+  uo_mEDBYl?: () => void;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/button-icon-1792927786161-tx20q5.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/button-icon-1792927786161-tx20q5.d.ts
+
+### Button
+
+**Props:**
+```typescript
+export interface ButtonProps {
+  /**
+   * Variant
+   * Friendly names map to internal IDs:
+   *   "Dark - Phone" → eFw1AVBfv
+   *   "Default - Phone" → OtPPGEvOS
+   *   "Dark" → u67hFJtfB
+   *   "Default" → CAzYV7KJv
+   *   "SM" → yMtQl_Ch0
+   */
+  variant?: 'Dark - Phone' | 'Default - Phone' | 'Dark' | 'Default' | 'SM' | 'CAzYV7KJv' | 'u67hFJtfB' | 'OtPPGEvOS' | 'eFw1AVBfv' | 'yMtQl_Ch0';
+  /**
+   * Title — pass as `ziCnPH11n` not `title`.
+   * @default "Button Title"
+   */
+  ziCnPH11n?: string;
+  onziCnPH11nChange?: string;
+  /**
+   * Link — pass as `gayKxTIvB` not `link`.
+   */
+  gayKxTIvB?: string;
+  /**
+   * New Tab — pass as `uYcQ8rJi0` not `newTab`.
+   * @default false
+   */
+  uYcQ8rJi0?: boolean;
+  onuYcQ8rJi0Change?: string;
+  /**
+   * Click — pass as `uo_mEDBYl` not `click`.
+   */
+  uo_mEDBYl?: () => void;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/button-1792927786969-ziw7jo.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/button-1792927786969-ziw7jo.d.ts
+
+### Overview-Card
+
+**Props:**
+```typescript
+export interface OverviewCardProps {
+  /**
+   * Variant
+   * Friendly names map to internal IDs:
+   *   "Desktop" → oQ7_KK9Ry
+   *   "Phone" → S7K6hgRTk
+   *   "Tablet" → KLt0rpAcj
+   */
+  variant?: 'Desktop' | 'Phone' | 'Tablet' | 'oQ7_KK9Ry' | 'KLt0rpAcj' | 'S7K6hgRTk';
+  /**
+   * Icon — pass as `EzLGQv3FE` not `icon`.
+   */
+  EzLGQv3FE?: string;
+  /**
+   * Content — pass as `RRYAQG22b` not `content`.
+   * @default "All Your Data in One Place Bring all your accounts, assets, and insights together in one clear, unified view."
+   */
+  RRYAQG22b?: string;
+  onRRYAQG22bChange?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/overview-card-1792927787722-cf2f9l.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/overview-card-1792927787722-cf2f9l.d.ts
+
+### Overview-Card
+
+**Props:**
+```typescript
+export interface OverviewCardProps {
+  /**
+   * Variant
+   * Friendly names map to internal IDs:
+   *   "Desktop" → oQ7_KK9Ry
+   *   "Phone" → S7K6hgRTk
+   *   "Tablet" → KLt0rpAcj
+   */
+  variant?: 'Desktop' | 'Phone' | 'Tablet' | 'oQ7_KK9Ry' | 'KLt0rpAcj' | 'S7K6hgRTk';
+  /**
+   * Icon — pass as `EzLGQv3FE` not `icon`.
+   */
+  EzLGQv3FE?: string;
+  /**
+   * Content — pass as `RRYAQG22b` not `content`.
+   * @default "All Your Data in One Place Bring all your accounts, assets, and insights together in one clear, unified view."
+   */
+  RRYAQG22b?: string;
+  onRRYAQG22bChange?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/overview-card-1792927788563-3z8a5j.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/overview-card-1792927788563-3z8a5j.d.ts
+
+### Overview-Card
+
+**Props:**
+```typescript
+export interface OverviewCardProps {
+  /**
+   * Variant
+   * Friendly names map to internal IDs:
+   *   "Desktop" → oQ7_KK9Ry
+   *   "Phone" → S7K6hgRTk
+   *   "Tablet" → KLt0rpAcj
+   */
+  variant?: 'Desktop' | 'Phone' | 'Tablet' | 'oQ7_KK9Ry' | 'KLt0rpAcj' | 'S7K6hgRTk';
+  /**
+   * Icon — pass as `EzLGQv3FE` not `icon`.
+   */
+  EzLGQv3FE?: string;
+  /**
+   * Content — pass as `RRYAQG22b` not `content`.
+   * @default "All Your Data in One Place Bring all your accounts, assets, and insights together in one clear, unified view."
+   */
+  RRYAQG22b?: string;
+  onRRYAQG22bChange?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/overview-card-1792927789295-50aal6.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/overview-card-1792927789295-50aal6.d.ts
+
+### Pre-Title
+
+**Props:**
+```typescript
+export interface PreTitleProps {
+  /**
+   * Variant
+   * Friendly names map to internal IDs:
+   *   "Dark" → GyM4q7LNO
+   *   "Default" → dVqc43eR9
+   *   "White" → uyNLry1D8
+   */
+  variant?: 'Dark' | 'Default' | 'White' | 'dVqc43eR9' | 'uyNLry1D8' | 'GyM4q7LNO';
+  /**
+   * Title — pass as `BSyxhptbW` not `title`.
+   * @default "Subscription plans"
+   */
+  BSyxhptbW?: string;
+  onBSyxhptbWChange?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/pre-title-1792927790029-bwq1yr.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/pre-title-1792927790029-bwq1yr.d.ts
+
+### Stat-Item
+
+**Props:**
+```typescript
+export interface StatItemProps {
+  /**
+   * Variant
+   * Friendly names map to internal IDs:
+   *   "Default" → FqPx1kICC
+   *   "SM" → Jdu9Ol4Vu
+   */
+  variant?: 'Default' | 'SM' | 'FqPx1kICC' | 'Jdu9Ol4Vu';
+  /**
+   * Title — pass as `E3Uhffy5v` not `title`.
+   * @default "100%"
+   */
+  E3Uhffy5v?: string;
+  onE3Uhffy5vChange?: string;
+  /**
+   * Title Color — pass as `dISwWaRCD` not `titleColor`.
+   * @default "var(--token-0edc2e6a-5fd1-47c5-a905-c3de9f07cea3, rgb(29, 29, 29))"
+   */
+  dISwWaRCD?: string;
+  /**
+   * Description — pass as `MhtrAXupB` not `description`.
+   * @default "Secure encrypted data protection"
+   */
+  MhtrAXupB?: string;
+  onMhtrAXupBChange?: string;
+  /**
+   * Description Color — pass as `JJcauvw8J` not `descriptionColor`.
+   * @default "var(--token-b923e1cb-cf6e-406c-a3d3-6c79738c4b54, rgb(77, 88, 95))"
+   */
+  JJcauvw8J?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/stat-item-1792927790863-imoyw1.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/stat-item-1792927790863-imoyw1.d.ts
+
+### Stat-Item
+
+**Props:**
+```typescript
+export interface StatItemProps {
+  /**
+   * Variant
+   * Friendly names map to internal IDs:
+   *   "Default" → FqPx1kICC
+   *   "SM" → Jdu9Ol4Vu
+   */
+  variant?: 'Default' | 'SM' | 'FqPx1kICC' | 'Jdu9Ol4Vu';
+  /**
+   * Title — pass as `E3Uhffy5v` not `title`.
+   * @default "100%"
+   */
+  E3Uhffy5v?: string;
+  onE3Uhffy5vChange?: string;
+  /**
+   * Title Color — pass as `dISwWaRCD` not `titleColor`.
+   * @default "var(--token-0edc2e6a-5fd1-47c5-a905-c3de9f07cea3, rgb(29, 29, 29))"
+   */
+  dISwWaRCD?: string;
+  /**
+   * Description — pass as `MhtrAXupB` not `description`.
+   * @default "Secure encrypted data protection"
+   */
+  MhtrAXupB?: string;
+  onMhtrAXupBChange?: string;
+  /**
+   * Description Color — pass as `JJcauvw8J` not `descriptionColor`.
+   * @default "var(--token-b923e1cb-cf6e-406c-a3d3-6c79738c4b54, rgb(77, 88, 95))"
+   */
+  JJcauvw8J?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/stat-item-1792927791631-s9yxbf.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/stat-item-1792927791631-s9yxbf.d.ts
+
+### Workflow-Steps
+
+**Props:**
+```typescript
+export interface WorkflowStepsProps {
+  /**
+   * Variant
+   * Friendly names map to internal IDs:
+   *   "01 - Phone" → S9bo55EwG
+   *   "01" → MOl2VMXXe
+   *   "02 - Phone" → HAeavZZvX
+   *   "02" → ss6ZomSqu
+   *   "03 - Phone" → ZCARy_qTS
+   *   "03" → sJ8Z8UD0A
+   */
+  variant?: '01 - Phone' | '01' | '02 - Phone' | '02' | '03 - Phone' | '03' | 'MOl2VMXXe' | 'ss6ZomSqu' | 'sJ8Z8UD0A' | 'S9bo55EwG' | 'HAeavZZvX' | 'ZCARy_qTS';
+  /**
+   * 01 Image — pass as `uBpkNBsH_` not `01Image`.
+   */
+  uBpkNBsH_?: string;
+  /**
+   * 01 Title — pass as `ZQ4sDRdMd` not `01Title`.
+   * @default "Connect your accounts"
+   */
+  ZQ4sDRdMd?: string;
+  onZQ4sDRdMdChange?: string;
+  /**
+   * 01 Description — pass as `EISrLVa3P` not `01Description`.
+   * @default "Securely link your bank, trading, and investment accounts."
+   */
+  EISrLVa3P?: string;
+  onEISrLVa3PChange?: string;
+  /**
+   * 02 Image — pass as `R3JTbJYVh` not `02Image`.
+   */
+  R3JTbJYVh?: string;
+  /**
+   * 02 Title — pass as `R7vsr7Eeu` not `02Title`.
+   * @default "Analyze your data"
+   */
+  R7vsr7Eeu?: string;
+  onR7vsr7EeuChange?: string;
+  /**
+   * 02 Description — pass as `MY8r9rZB6` not `02Description`.
+   * @default "AI processes your data to generate clear insights."
+   */
+  MY8r9rZB6?: string;
+  onMY8r9rZB6Change?: string;
+  /**
+   * 03 Image — pass as `gLEnwvWoT` not `03Image`.
+   */
+  gLEnwvWoT?: string;
+  /**
+   * 03 Title — pass as `BvPCACdvF` not `03Title`.
+   * @default "Get smart insights"
+   */
+  BvPCACdvF?: string;
+  onBvPCACdvFChange?: string;
+  /**
+   * 03 Description — pass as `r5DkSureW` not `03Description`.
+   * @default "Receive real-time recommendations to optimize your portfolio."
+   */
+  r5DkSureW?: string;
+  onr5DkSureWChange?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/workflow-steps-1792927792395-qdewkj.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/workflow-steps-1792927792395-qdewkj.d.ts
+
+### Pre-Title
+
+**Props:**
+```typescript
+export interface PreTitleProps {
+  /**
+   * Variant
+   * Friendly names map to internal IDs:
+   *   "Dark" → GyM4q7LNO
+   *   "Default" → dVqc43eR9
+   *   "White" → uyNLry1D8
+   */
+  variant?: 'Dark' | 'Default' | 'White' | 'dVqc43eR9' | 'uyNLry1D8' | 'GyM4q7LNO';
+  /**
+   * Title — pass as `BSyxhptbW` not `title`.
+   * @default "Subscription plans"
+   */
+  BSyxhptbW?: string;
+  onBSyxhptbWChange?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/pre-title-1792927793249-jv0uxp.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/pre-title-1792927793249-jv0uxp.d.ts
+
+### Button-Icon
+
+**Props:**
+```typescript
+export interface ButtonIconProps {
+  /**
+   * Variant
+   * Friendly names map to internal IDs:
+   *   "Dark - Phone" → n9A7jxl3z
+   *   "Default - Phone" → Rc5QmtPAI
+   *   "Nav Button - Phone" → peF_y0Ayx
+   *   "Nav Button" → DxQTVJgmU
+   *   "Right Icon - Phone" → nnGtB53cU
+   *   "Right Icon" → wkhxQl_QS
+   *   "Dark" → KVSDvWZoH
+   *   "Default" → Y5rxWmMw9
+   */
+  variant?: 'Dark - Phone' | 'Default - Phone' | 'Nav Button - Phone' | 'Nav Button' | 'Right Icon - Phone' | 'Right Icon' | 'Dark' | 'Default' | 'Y5rxWmMw9' | 'KVSDvWZoH' | 'DxQTVJgmU' | 'wkhxQl_QS' | 'Rc5QmtPAI' | 'n9A7jxl3z' | 'peF_y0Ayx' | 'nnGtB53cU';
+  /**
+   * Title — pass as `ziCnPH11n` not `title`.
+   * @default "Button Icon"
+   */
+  ziCnPH11n?: string;
+  onziCnPH11nChange?: string;
+  /**
+   * Icon — pass as `SjeXzLrTu` not `icon`.
+   */
+  SjeXzLrTu?: string;
+  /**
+   * Link — pass as `gayKxTIvB` not `link`.
+   */
+  gayKxTIvB?: string;
+  /**
+   * New Tab — pass as `uYcQ8rJi0` not `newTab`.
+   * @default false
+   */
+  uYcQ8rJi0?: boolean;
+  onuYcQ8rJi0Change?: string;
+  /**
+   * Click — pass as `uo_mEDBYl` not `click`.
+   */
+  uo_mEDBYl?: () => void;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/button-icon-1792927793951-vcaqj9.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/button-icon-1792927793951-vcaqj9.d.ts
+
+### List-Item
+
+**Props:**
+```typescript
+export interface ListItemProps {
+  /**
+   * Variant
+   * Friendly names map to internal IDs:
+   *   "Default" → LWYwTVX6W
+   *   "Fit" → GLuZpuSO3
+   *   "LG" → rKahmK2tf
+   */
+  variant?: 'Default' | 'Fit' | 'LG' | 'LWYwTVX6W' | 'GLuZpuSO3' | 'rKahmK2tf';
+  /**
+   * Icon — pass as `XMCDOSojK` not `icon`.
+   */
+  XMCDOSojK?: string;
+  /**
+   * Title — pass as `GmSs_KKEi` not `title`.
+   * @default "What breaks in real teams"
+   */
+  GmSs_KKEi?: string;
+  onGmSs_KKEiChange?: string;
+  /**
+   * Color — pass as `uoP_rcx83` not `color`.
+   * @default "var(--token-5a0631e1-36c2-4c12-ac01-aa86958549ac, rgb(73, 77, 77))"
+   */
+  uoP_rcx83?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/list-item-1792927794682-8aarzf.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/list-item-1792927794682-8aarzf.d.ts
+
+### List-Item
+
+**Props:**
+```typescript
+export interface ListItemProps {
+  /**
+   * Variant
+   * Friendly names map to internal IDs:
+   *   "Default" → LWYwTVX6W
+   *   "Fit" → GLuZpuSO3
+   *   "LG" → rKahmK2tf
+   */
+  variant?: 'Default' | 'Fit' | 'LG' | 'LWYwTVX6W' | 'GLuZpuSO3' | 'rKahmK2tf';
+  /**
+   * Icon — pass as `XMCDOSojK` not `icon`.
+   */
+  XMCDOSojK?: string;
+  /**
+   * Title — pass as `GmSs_KKEi` not `title`.
+   * @default "What breaks in real teams"
+   */
+  GmSs_KKEi?: string;
+  onGmSs_KKEiChange?: string;
+  /**
+   * Color — pass as `uoP_rcx83` not `color`.
+   * @default "var(--token-5a0631e1-36c2-4c12-ac01-aa86958549ac, rgb(73, 77, 77))"
+   */
+  uoP_rcx83?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/list-item-1792927795431-1h7fy1.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/list-item-1792927795431-1h7fy1.d.ts
+
+### List-Item
+
+**Props:**
+```typescript
+export interface ListItemProps {
+  /**
+   * Variant
+   * Friendly names map to internal IDs:
+   *   "Default" → LWYwTVX6W
+   *   "Fit" → GLuZpuSO3
+   *   "LG" → rKahmK2tf
+   */
+  variant?: 'Default' | 'Fit' | 'LG' | 'LWYwTVX6W' | 'GLuZpuSO3' | 'rKahmK2tf';
+  /**
+   * Icon — pass as `XMCDOSojK` not `icon`.
+   */
+  XMCDOSojK?: string;
+  /**
+   * Title — pass as `GmSs_KKEi` not `title`.
+   * @default "What breaks in real teams"
+   */
+  GmSs_KKEi?: string;
+  onGmSs_KKEiChange?: string;
+  /**
+   * Color — pass as `uoP_rcx83` not `color`.
+   * @default "var(--token-5a0631e1-36c2-4c12-ac01-aa86958549ac, rgb(73, 77, 77))"
+   */
+  uoP_rcx83?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/list-item-1792927796158-1bqni7.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/list-item-1792927796158-1bqni7.d.ts
+
+### List-Item
+
+**Props:**
+```typescript
+export interface ListItemProps {
+  /**
+   * Variant
+   * Friendly names map to internal IDs:
+   *   "Default" → LWYwTVX6W
+   *   "Fit" → GLuZpuSO3
+   *   "LG" → rKahmK2tf
+   */
+  variant?: 'Default' | 'Fit' | 'LG' | 'LWYwTVX6W' | 'GLuZpuSO3' | 'rKahmK2tf';
+  /**
+   * Icon — pass as `XMCDOSojK` not `icon`.
+   */
+  XMCDOSojK?: string;
+  /**
+   * Title — pass as `GmSs_KKEi` not `title`.
+   * @default "What breaks in real teams"
+   */
+  GmSs_KKEi?: string;
+  onGmSs_KKEiChange?: string;
+  /**
+   * Color — pass as `uoP_rcx83` not `color`.
+   * @default "var(--token-5a0631e1-36c2-4c12-ac01-aa86958549ac, rgb(73, 77, 77))"
+   */
+  uoP_rcx83?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/list-item-1792927796875-72hssr.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/list-item-1792927796875-72hssr.d.ts
+
+### Pre-Title
+
+**Props:**
+```typescript
+export interface PreTitleProps {
+  /**
+   * Variant
+   * Friendly names map to internal IDs:
+   *   "Dark" → GyM4q7LNO
+   *   "Default" → dVqc43eR9
+   *   "White" → uyNLry1D8
+   */
+  variant?: 'Dark' | 'Default' | 'White' | 'dVqc43eR9' | 'uyNLry1D8' | 'GyM4q7LNO';
+  /**
+   * Title — pass as `BSyxhptbW` not `title`.
+   * @default "Subscription plans"
+   */
+  BSyxhptbW?: string;
+  onBSyxhptbWChange?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/pre-title-1792927797616-rowufj.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/pre-title-1792927797616-rowufj.d.ts
+
+### Use-Case-Card
+
+**Props:**
+```typescript
+export interface UseCaseCardProps {
+  /**
+   * Variant
+   * Friendly names map to internal IDs:
+   *   "Desktop" → Fc8g8ozL6
+   *   "Phone" → qWwjlyOdb
+   */
+  variant?: 'Desktop' | 'Phone' | 'Fc8g8ozL6' | 'qWwjlyOdb';
+  /**
+   * Title — pass as `i8U_p183z` not `title`.
+   * @default "Individual investors"
+   */
+  i8U_p183z?: string;
+  oni8U_p183zChange?: string;
+  /**
+   * Description — pass as `goAKBmqwK` not `description`.
+   * @default "Track your portfolio, get AI insights, and make smarter investment decisions without relying on guesswork."
+   */
+  goAKBmqwK?: string;
+  ongoAKBmqwKChange?: string;
+  /**
+   * Stats Title — pass as `srxxxv2SK` not `statsTitle`.
+   * @default "+32% Faster"
+   */
+  srxxxv2SK?: string;
+  onsrxxxv2SKChange?: string;
+  /**
+   * Stats Description — pass as `pef4eIOYP` not `statsDescription`.
+   * @default "Decision-making with AI insights"
+   */
+  pef4eIOYP?: string;
+  onpef4eIOYPChange?: string;
+  /**
+   * BG Image — pass as `yZD2OHuAO` not `bgImage`.
+   */
+  yZD2OHuAO?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/use-case-card-1792927798307-nm8os5.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/use-case-card-1792927798307-nm8os5.d.ts
+
+### Use-Case-Card
+
+**Props:**
+```typescript
+export interface UseCaseCardProps {
+  /**
+   * Variant
+   * Friendly names map to internal IDs:
+   *   "Desktop" → Fc8g8ozL6
+   *   "Phone" → qWwjlyOdb
+   */
+  variant?: 'Desktop' | 'Phone' | 'Fc8g8ozL6' | 'qWwjlyOdb';
+  /**
+   * Title — pass as `i8U_p183z` not `title`.
+   * @default "Individual investors"
+   */
+  i8U_p183z?: string;
+  oni8U_p183zChange?: string;
+  /**
+   * Description — pass as `goAKBmqwK` not `description`.
+   * @default "Track your portfolio, get AI insights, and make smarter investment decisions without relying on guesswork."
+   */
+  goAKBmqwK?: string;
+  ongoAKBmqwKChange?: string;
+  /**
+   * Stats Title — pass as `srxxxv2SK` not `statsTitle`.
+   * @default "+32% Faster"
+   */
+  srxxxv2SK?: string;
+  onsrxxxv2SKChange?: string;
+  /**
+   * Stats Description — pass as `pef4eIOYP` not `statsDescription`.
+   * @default "Decision-making with AI insights"
+   */
+  pef4eIOYP?: string;
+  onpef4eIOYPChange?: string;
+  /**
+   * BG Image — pass as `yZD2OHuAO` not `bgImage`.
+   */
+  yZD2OHuAO?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/use-case-card-1792927799103-jymcs4.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/use-case-card-1792927799103-jymcs4.d.ts
+
+### Use-Case-Card
+
+**Props:**
+```typescript
+export interface UseCaseCardProps {
+  /**
+   * Variant
+   * Friendly names map to internal IDs:
+   *   "Desktop" → Fc8g8ozL6
+   *   "Phone" → qWwjlyOdb
+   */
+  variant?: 'Desktop' | 'Phone' | 'Fc8g8ozL6' | 'qWwjlyOdb';
+  /**
+   * Title — pass as `i8U_p183z` not `title`.
+   * @default "Individual investors"
+   */
+  i8U_p183z?: string;
+  oni8U_p183zChange?: string;
+  /**
+   * Description — pass as `goAKBmqwK` not `description`.
+   * @default "Track your portfolio, get AI insights, and make smarter investment decisions without relying on guesswork."
+   */
+  goAKBmqwK?: string;
+  ongoAKBmqwKChange?: string;
+  /**
+   * Stats Title — pass as `srxxxv2SK` not `statsTitle`.
+   * @default "+32% Faster"
+   */
+  srxxxv2SK?: string;
+  onsrxxxv2SKChange?: string;
+  /**
+   * Stats Description — pass as `pef4eIOYP` not `statsDescription`.
+   * @default "Decision-making with AI insights"
+   */
+  pef4eIOYP?: string;
+  onpef4eIOYPChange?: string;
+  /**
+   * BG Image — pass as `yZD2OHuAO` not `bgImage`.
+   */
+  yZD2OHuAO?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/use-case-card-1792927799825-055g6l.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/use-case-card-1792927799825-055g6l.d.ts
+
+### Use-Case-Card
+
+**Props:**
+```typescript
+export interface UseCaseCardProps {
+  /**
+   * Variant
+   * Friendly names map to internal IDs:
+   *   "Desktop" → Fc8g8ozL6
+   *   "Phone" → qWwjlyOdb
+   */
+  variant?: 'Desktop' | 'Phone' | 'Fc8g8ozL6' | 'qWwjlyOdb';
+  /**
+   * Title — pass as `i8U_p183z` not `title`.
+   * @default "Individual investors"
+   */
+  i8U_p183z?: string;
+  oni8U_p183zChange?: string;
+  /**
+   * Description — pass as `goAKBmqwK` not `description`.
+   * @default "Track your portfolio, get AI insights, and make smarter investment decisions without relying on guesswork."
+   */
+  goAKBmqwK?: string;
+  ongoAKBmqwKChange?: string;
+  /**
+   * Stats Title — pass as `srxxxv2SK` not `statsTitle`.
+   * @default "+32% Faster"
+   */
+  srxxxv2SK?: string;
+  onsrxxxv2SKChange?: string;
+  /**
+   * Stats Description — pass as `pef4eIOYP` not `statsDescription`.
+   * @default "Decision-making with AI insights"
+   */
+  pef4eIOYP?: string;
+  onpef4eIOYPChange?: string;
+  /**
+   * BG Image — pass as `yZD2OHuAO` not `bgImage`.
+   */
+  yZD2OHuAO?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/use-case-card-1792927800715-pljow5.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/use-case-card-1792927800715-pljow5.d.ts
+
+### Badge
+
+**Props:**
+```typescript
+export interface BadgeProps {
+  /**
+   * Variant
+   * Friendly names map to internal IDs:
+   *   "Default" → igdoTFQMz
+   *   "SM" → Ql_t47bi3
+   *   "White" → oBYzv67yH
+   */
+  variant?: 'Default' | 'SM' | 'White' | 'igdoTFQMz' | 'oBYzv67yH' | 'Ql_t47bi3';
+  /**
+   * Title — pass as `h3thwb3uh` not `title`.
+   * @default "Badge Title"
+   */
+  h3thwb3uh?: string;
+  onh3thwb3uhChange?: string;
+  /**
+   * Title Color — pass as `rhGiDGRBu` not `titleColor`.
+   * @default "var(--token-b923e1cb-cf6e-406c-a3d3-6c79738c4b54, rgb(77, 88, 95))"
+   */
+  rhGiDGRBu?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/badge-1792927801513-wrc3ae.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/badge-1792927801513-wrc3ae.d.ts
+
+### Badge
+
+**Props:**
+```typescript
+export interface BadgeProps {
+  /**
+   * Variant
+   * Friendly names map to internal IDs:
+   *   "Default" → igdoTFQMz
+   *   "SM" → Ql_t47bi3
+   *   "White" → oBYzv67yH
+   */
+  variant?: 'Default' | 'SM' | 'White' | 'igdoTFQMz' | 'oBYzv67yH' | 'Ql_t47bi3';
+  /**
+   * Title — pass as `h3thwb3uh` not `title`.
+   * @default "Badge Title"
+   */
+  h3thwb3uh?: string;
+  onh3thwb3uhChange?: string;
+  /**
+   * Title Color — pass as `rhGiDGRBu` not `titleColor`.
+   * @default "var(--token-b923e1cb-cf6e-406c-a3d3-6c79738c4b54, rgb(77, 88, 95))"
+   */
+  rhGiDGRBu?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/badge-1792927802257-xeyrph.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/badge-1792927802257-xeyrph.d.ts
+
+### Badge
+
+**Props:**
+```typescript
+export interface BadgeProps {
+  /**
+   * Variant
+   * Friendly names map to internal IDs:
+   *   "Default" → igdoTFQMz
+   *   "SM" → Ql_t47bi3
+   *   "White" → oBYzv67yH
+   */
+  variant?: 'Default' | 'SM' | 'White' | 'igdoTFQMz' | 'oBYzv67yH' | 'Ql_t47bi3';
+  /**
+   * Title — pass as `h3thwb3uh` not `title`.
+   * @default "Badge Title"
+   */
+  h3thwb3uh?: string;
+  onh3thwb3uhChange?: string;
+  /**
+   * Title Color — pass as `rhGiDGRBu` not `titleColor`.
+   * @default "var(--token-b923e1cb-cf6e-406c-a3d3-6c79738c4b54, rgb(77, 88, 95))"
+   */
+  rhGiDGRBu?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/badge-1792927803016-toldlb.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/badge-1792927803016-toldlb.d.ts
+
+### Badge
+
+**Props:**
+```typescript
+export interface BadgeProps {
+  /**
+   * Variant
+   * Friendly names map to internal IDs:
+   *   "Default" → igdoTFQMz
+   *   "SM" → Ql_t47bi3
+   *   "White" → oBYzv67yH
+   */
+  variant?: 'Default' | 'SM' | 'White' | 'igdoTFQMz' | 'oBYzv67yH' | 'Ql_t47bi3';
+  /**
+   * Title — pass as `h3thwb3uh` not `title`.
+   * @default "Badge Title"
+   */
+  h3thwb3uh?: string;
+  onh3thwb3uhChange?: string;
+  /**
+   * Title Color — pass as `rhGiDGRBu` not `titleColor`.
+   * @default "var(--token-b923e1cb-cf6e-406c-a3d3-6c79738c4b54, rgb(77, 88, 95))"
+   */
+  rhGiDGRBu?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/badge-1792927803811-e691yy.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/badge-1792927803811-e691yy.d.ts
+
+### Founder-Card
+
+**Props:**
+```typescript
+export interface FounderCardProps {
+  /**
+   * Content — pass as `vnUC1BXtk` not `content`.
+   * @default ""We built this platform to remove the guesswork from investing and give people clear, data-driven insights.""
+   */
+  vnUC1BXtk?: string;
+  onvnUC1BXtkChange?: string;
+  /**
+   * Avatar — pass as `mpFsFmNXl` not `avatar`.
+   */
+  mpFsFmNXl?: string;
+  /**
+   * Job Title — pass as `CMopBckjJ` not `jobTitle`.
+   * @default " Founder & CEO"
+   */
+  CMopBckjJ?: string;
+  onCMopBckjJChange?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/founder-card-1792927804563-kupjpi.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/founder-card-1792927804563-kupjpi.d.ts
+
+### Pre-Title
+
+**Props:**
+```typescript
+export interface PreTitleProps {
+  /**
+   * Variant
+   * Friendly names map to internal IDs:
+   *   "Dark" → GyM4q7LNO
+   *   "Default" → dVqc43eR9
+   *   "White" → uyNLry1D8
+   */
+  variant?: 'Dark' | 'Default' | 'White' | 'dVqc43eR9' | 'uyNLry1D8' | 'GyM4q7LNO';
+  /**
+   * Title — pass as `BSyxhptbW` not `title`.
+   * @default "Subscription plans"
+   */
+  BSyxhptbW?: string;
+  onBSyxhptbWChange?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/pre-title-1792927805312-kj7rjv.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/pre-title-1792927805312-kj7rjv.d.ts
+
+### Button-Icon
+
+**Props:**
+```typescript
+export interface ButtonIconProps {
+  /**
+   * Variant
+   * Friendly names map to internal IDs:
+   *   "Dark - Phone" → n9A7jxl3z
+   *   "Default - Phone" → Rc5QmtPAI
+   *   "Nav Button - Phone" → peF_y0Ayx
+   *   "Nav Button" → DxQTVJgmU
+   *   "Right Icon - Phone" → nnGtB53cU
+   *   "Right Icon" → wkhxQl_QS
+   *   "Dark" → KVSDvWZoH
+   *   "Default" → Y5rxWmMw9
+   */
+  variant?: 'Dark - Phone' | 'Default - Phone' | 'Nav Button - Phone' | 'Nav Button' | 'Right Icon - Phone' | 'Right Icon' | 'Dark' | 'Default' | 'Y5rxWmMw9' | 'KVSDvWZoH' | 'DxQTVJgmU' | 'wkhxQl_QS' | 'Rc5QmtPAI' | 'n9A7jxl3z' | 'peF_y0Ayx' | 'nnGtB53cU';
+  /**
+   * Title — pass as `ziCnPH11n` not `title`.
+   * @default "Button Icon"
+   */
+  ziCnPH11n?: string;
+  onziCnPH11nChange?: string;
+  /**
+   * Icon — pass as `SjeXzLrTu` not `icon`.
+   */
+  SjeXzLrTu?: string;
+  /**
+   * Link — pass as `gayKxTIvB` not `link`.
+   */
+  gayKxTIvB?: string;
+  /**
+   * New Tab — pass as `uYcQ8rJi0` not `newTab`.
+   * @default false
+   */
+  uYcQ8rJi0?: boolean;
+  onuYcQ8rJi0Change?: string;
+  /**
+   * Click — pass as `uo_mEDBYl` not `click`.
+   */
+  uo_mEDBYl?: () => void;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/button-icon-1792927806214-45i7k9.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/button-icon-1792927806214-45i7k9.d.ts
+
+### Integration-Icon
+
+**Props:**
+```typescript
+export interface IntegrationIconProps {
+  /**
+   * Icon — pass as `z6AwEa6gl` not `icon`.
+   */
+  z6AwEa6gl?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/integration-icon-1792927806954-p21sya.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/integration-icon-1792927806954-p21sya.d.ts
+
+### Integration-Icon
+
+**Props:**
+```typescript
+export interface IntegrationIconProps {
+  /**
+   * Icon — pass as `z6AwEa6gl` not `icon`.
+   */
+  z6AwEa6gl?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/integration-icon-1792927807814-glqod6.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/integration-icon-1792927807814-glqod6.d.ts
+
+### Integration-Icon
+
+**Props:**
+```typescript
+export interface IntegrationIconProps {
+  /**
+   * Icon — pass as `z6AwEa6gl` not `icon`.
+   */
+  z6AwEa6gl?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/integration-icon-1792927808532-rk070o.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/integration-icon-1792927808532-rk070o.d.ts
+
+### Integration-Icon
+
+**Props:**
+```typescript
+export interface IntegrationIconProps {
+  /**
+   * Icon — pass as `z6AwEa6gl` not `icon`.
+   */
+  z6AwEa6gl?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/integration-icon-1792927809483-n9anwc.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/integration-icon-1792927809483-n9anwc.d.ts
+
+### Integration-Icon
+
+**Props:**
+```typescript
+export interface IntegrationIconProps {
+  /**
+   * Icon — pass as `z6AwEa6gl` not `icon`.
+   */
+  z6AwEa6gl?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/integration-icon-1792927810160-r18cin.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/integration-icon-1792927810160-r18cin.d.ts
+
+### Integration-Icon
+
+**Props:**
+```typescript
+export interface IntegrationIconProps {
+  /**
+   * Icon — pass as `z6AwEa6gl` not `icon`.
+   */
+  z6AwEa6gl?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/integration-icon-1792927810912-3zqda0.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/integration-icon-1792927810912-3zqda0.d.ts
+
+### Integration-Icon
+
+**Props:**
+```typescript
+export interface IntegrationIconProps {
+  /**
+   * Icon — pass as `z6AwEa6gl` not `icon`.
+   */
+  z6AwEa6gl?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/integration-icon-1792927811660-rvzzwv.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/integration-icon-1792927811660-rvzzwv.d.ts
+
+### Integration-Icon
+
+**Props:**
+```typescript
+export interface IntegrationIconProps {
+  /**
+   * Icon — pass as `z6AwEa6gl` not `icon`.
+   */
+  z6AwEa6gl?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/integration-icon-1792927812350-kcnh3r.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/integration-icon-1792927812350-kcnh3r.d.ts
+
+### Integration-Icon
+
+**Props:**
+```typescript
+export interface IntegrationIconProps {
+  /**
+   * Icon — pass as `z6AwEa6gl` not `icon`.
+   */
+  z6AwEa6gl?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/integration-icon-1792927813108-h6phce.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/integration-icon-1792927813108-h6phce.d.ts
+
+### Integration-Icon
+
+**Props:**
+```typescript
+export interface IntegrationIconProps {
+  /**
+   * Icon — pass as `z6AwEa6gl` not `icon`.
+   */
+  z6AwEa6gl?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/integration-icon-1792927813762-zjexiv.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/integration-icon-1792927813762-zjexiv.d.ts
+
+### Integration-Icon
+
+**Props:**
+```typescript
+export interface IntegrationIconProps {
+  /**
+   * Icon — pass as `z6AwEa6gl` not `icon`.
+   */
+  z6AwEa6gl?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/integration-icon-1792927814455-oztrqo.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/integration-icon-1792927814455-oztrqo.d.ts
+
+### Integration-Icon
+
+**Props:**
+```typescript
+export interface IntegrationIconProps {
+  /**
+   * Icon — pass as `z6AwEa6gl` not `icon`.
+   */
+  z6AwEa6gl?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/integration-icon-1792927815864-ez2o71.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/integration-icon-1792927815864-ez2o71.d.ts
+
+### Integration-Icon
+
+**Props:**
+```typescript
+export interface IntegrationIconProps {
+  /**
+   * Icon — pass as `z6AwEa6gl` not `icon`.
+   */
+  z6AwEa6gl?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/integration-icon-1792927816978-loymt1.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/integration-icon-1792927816978-loymt1.d.ts
+
+### Integration-Icon
+
+**Props:**
+```typescript
+export interface IntegrationIconProps {
+  /**
+   * Icon — pass as `z6AwEa6gl` not `icon`.
+   */
+  z6AwEa6gl?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/integration-icon-1792927817682-2uhhfe.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/integration-icon-1792927817682-2uhhfe.d.ts
+
+### Integration-Icon
+
+**Props:**
+```typescript
+export interface IntegrationIconProps {
+  /**
+   * Icon — pass as `z6AwEa6gl` not `icon`.
+   */
+  z6AwEa6gl?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/integration-icon-1792927818462-pzhrn3.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/integration-icon-1792927818462-pzhrn3.d.ts
+
+### Integration-Icon
+
+**Props:**
+```typescript
+export interface IntegrationIconProps {
+  /**
+   * Icon — pass as `z6AwEa6gl` not `icon`.
+   */
+  z6AwEa6gl?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/integration-icon-1792927819546-h9qlwy.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/integration-icon-1792927819546-h9qlwy.d.ts
+
+### Pre-Title
+
+**Props:**
+```typescript
+export interface PreTitleProps {
+  /**
+   * Variant
+   * Friendly names map to internal IDs:
+   *   "Dark" → GyM4q7LNO
+   *   "Default" → dVqc43eR9
+   *   "White" → uyNLry1D8
+   */
+  variant?: 'Dark' | 'Default' | 'White' | 'dVqc43eR9' | 'uyNLry1D8' | 'GyM4q7LNO';
+  /**
+   * Title — pass as `BSyxhptbW` not `title`.
+   * @default "Subscription plans"
+   */
+  BSyxhptbW?: string;
+  onBSyxhptbWChange?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/pre-title-1792927820223-ne2t1h.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/pre-title-1792927820223-ne2t1h.d.ts
+
+### Stat-LG-Card
+
+**Props:**
+```typescript
+export interface StatLGCardProps {
+  /**
+   * Variant
+   * Friendly names map to internal IDs:
+   *   "Dark - Phone" → E2kjGBypG
+   *   "Default - Phone " → ovN7hMSC0
+   *   "Primary - Phone" → fdFmWW5Sj
+   *   "White - Phone" → WR8MzyEPU
+   *   "Dark" → qxuYd46p_
+   *   "Default" → j9hJSBouZ
+   *   "Primary" → LAVyIFDuD
+   *   "White" → dD9vhUivF
+   */
+  variant?: 'Dark - Phone' | 'Default - Phone ' | 'Primary - Phone' | 'White - Phone' | 'Dark' | 'Default' | 'Primary' | 'White' | 'j9hJSBouZ' | 'qxuYd46p_' | 'LAVyIFDuD' | 'dD9vhUivF' | 'ovN7hMSC0' | 'E2kjGBypG' | 'fdFmWW5Sj' | 'WR8MzyEPU';
+  /**
+   * Pre Title — pass as `V1x3EoHFX` not `preTitle`.
+   * @default "Active investors"
+   */
+  V1x3EoHFX?: string;
+  onV1x3EoHFXChange?: string;
+  /**
+   * Icon — pass as `XZfwo1a6Z` not `icon`.
+   */
+  XZfwo1a6Z?: string;
+  /**
+   * Title — pass as `NDcYsg5oi` not `title`.
+   * @default "10,000+"
+   */
+  NDcYsg5oi?: string;
+  onNDcYsg5oiChange?: string;
+  /**
+   * Description — pass as `t_H7Fx64z` not `description`.
+   * @default "Users managing portfolios with AI insights."
+   */
+  t_H7Fx64z?: string;
+  ont_H7Fx64zChange?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/stat-lg-card-1792927820929-pi19me.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/stat-lg-card-1792927820929-pi19me.d.ts
+
+### Stat-LG-Card
+
+**Props:**
+```typescript
+export interface StatLGCardProps {
+  /**
+   * Variant
+   * Friendly names map to internal IDs:
+   *   "Dark - Phone" → E2kjGBypG
+   *   "Default - Phone " → ovN7hMSC0
+   *   "Primary - Phone" → fdFmWW5Sj
+   *   "White - Phone" → WR8MzyEPU
+   *   "Dark" → qxuYd46p_
+   *   "Default" → j9hJSBouZ
+   *   "Primary" → LAVyIFDuD
+   *   "White" → dD9vhUivF
+   */
+  variant?: 'Dark - Phone' | 'Default - Phone ' | 'Primary - Phone' | 'White - Phone' | 'Dark' | 'Default' | 'Primary' | 'White' | 'j9hJSBouZ' | 'qxuYd46p_' | 'LAVyIFDuD' | 'dD9vhUivF' | 'ovN7hMSC0' | 'E2kjGBypG' | 'fdFmWW5Sj' | 'WR8MzyEPU';
+  /**
+   * Pre Title — pass as `V1x3EoHFX` not `preTitle`.
+   * @default "Active investors"
+   */
+  V1x3EoHFX?: string;
+  onV1x3EoHFXChange?: string;
+  /**
+   * Icon — pass as `XZfwo1a6Z` not `icon`.
+   */
+  XZfwo1a6Z?: string;
+  /**
+   * Title — pass as `NDcYsg5oi` not `title`.
+   * @default "10,000+"
+   */
+  NDcYsg5oi?: string;
+  onNDcYsg5oiChange?: string;
+  /**
+   * Description — pass as `t_H7Fx64z` not `description`.
+   * @default "Users managing portfolios with AI insights."
+   */
+  t_H7Fx64z?: string;
+  ont_H7Fx64zChange?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/stat-lg-card-1792927821633-qgebrx.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/stat-lg-card-1792927821633-qgebrx.d.ts
+
+### Stat-LG-Card
+
+**Props:**
+```typescript
+export interface StatLGCardProps {
+  /**
+   * Variant
+   * Friendly names map to internal IDs:
+   *   "Dark - Phone" → E2kjGBypG
+   *   "Default - Phone " → ovN7hMSC0
+   *   "Primary - Phone" → fdFmWW5Sj
+   *   "White - Phone" → WR8MzyEPU
+   *   "Dark" → qxuYd46p_
+   *   "Default" → j9hJSBouZ
+   *   "Primary" → LAVyIFDuD
+   *   "White" → dD9vhUivF
+   */
+  variant?: 'Dark - Phone' | 'Default - Phone ' | 'Primary - Phone' | 'White - Phone' | 'Dark' | 'Default' | 'Primary' | 'White' | 'j9hJSBouZ' | 'qxuYd46p_' | 'LAVyIFDuD' | 'dD9vhUivF' | 'ovN7hMSC0' | 'E2kjGBypG' | 'fdFmWW5Sj' | 'WR8MzyEPU';
+  /**
+   * Pre Title — pass as `V1x3EoHFX` not `preTitle`.
+   * @default "Active investors"
+   */
+  V1x3EoHFX?: string;
+  onV1x3EoHFXChange?: string;
+  /**
+   * Icon — pass as `XZfwo1a6Z` not `icon`.
+   */
+  XZfwo1a6Z?: string;
+  /**
+   * Title — pass as `NDcYsg5oi` not `title`.
+   * @default "10,000+"
+   */
+  NDcYsg5oi?: string;
+  onNDcYsg5oiChange?: string;
+  /**
+   * Description — pass as `t_H7Fx64z` not `description`.
+   * @default "Users managing portfolios with AI insights."
+   */
+  t_H7Fx64z?: string;
+  ont_H7Fx64zChange?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/stat-lg-card-1792927822375-evlfwt.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/stat-lg-card-1792927822375-evlfwt.d.ts
+
+### Stat-LG-Card
+
+**Props:**
+```typescript
+export interface StatLGCardProps {
+  /**
+   * Variant
+   * Friendly names map to internal IDs:
+   *   "Dark - Phone" → E2kjGBypG
+   *   "Default - Phone " → ovN7hMSC0
+   *   "Primary - Phone" → fdFmWW5Sj
+   *   "White - Phone" → WR8MzyEPU
+   *   "Dark" → qxuYd46p_
+   *   "Default" → j9hJSBouZ
+   *   "Primary" → LAVyIFDuD
+   *   "White" → dD9vhUivF
+   */
+  variant?: 'Dark - Phone' | 'Default - Phone ' | 'Primary - Phone' | 'White - Phone' | 'Dark' | 'Default' | 'Primary' | 'White' | 'j9hJSBouZ' | 'qxuYd46p_' | 'LAVyIFDuD' | 'dD9vhUivF' | 'ovN7hMSC0' | 'E2kjGBypG' | 'fdFmWW5Sj' | 'WR8MzyEPU';
+  /**
+   * Pre Title — pass as `V1x3EoHFX` not `preTitle`.
+   * @default "Active investors"
+   */
+  V1x3EoHFX?: string;
+  onV1x3EoHFXChange?: string;
+  /**
+   * Icon — pass as `XZfwo1a6Z` not `icon`.
+   */
+  XZfwo1a6Z?: string;
+  /**
+   * Title — pass as `NDcYsg5oi` not `title`.
+   * @default "10,000+"
+   */
+  NDcYsg5oi?: string;
+  onNDcYsg5oiChange?: string;
+  /**
+   * Description — pass as `t_H7Fx64z` not `description`.
+   * @default "Users managing portfolios with AI insights."
+   */
+  t_H7Fx64z?: string;
+  ont_H7Fx64zChange?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/stat-lg-card-1792927823145-l5a5wh.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/stat-lg-card-1792927823145-l5a5wh.d.ts
+
+### Stat-LG-Card
+
+**Props:**
+```typescript
+export interface StatLGCardProps {
+  /**
+   * Variant
+   * Friendly names map to internal IDs:
+   *   "Dark - Phone" → E2kjGBypG
+   *   "Default - Phone " → ovN7hMSC0
+   *   "Primary - Phone" → fdFmWW5Sj
+   *   "White - Phone" → WR8MzyEPU
+   *   "Dark" → qxuYd46p_
+   *   "Default" → j9hJSBouZ
+   *   "Primary" → LAVyIFDuD
+   *   "White" → dD9vhUivF
+   */
+  variant?: 'Dark - Phone' | 'Default - Phone ' | 'Primary - Phone' | 'White - Phone' | 'Dark' | 'Default' | 'Primary' | 'White' | 'j9hJSBouZ' | 'qxuYd46p_' | 'LAVyIFDuD' | 'dD9vhUivF' | 'ovN7hMSC0' | 'E2kjGBypG' | 'fdFmWW5Sj' | 'WR8MzyEPU';
+  /**
+   * Pre Title — pass as `V1x3EoHFX` not `preTitle`.
+   * @default "Active investors"
+   */
+  V1x3EoHFX?: string;
+  onV1x3EoHFXChange?: string;
+  /**
+   * Icon — pass as `XZfwo1a6Z` not `icon`.
+   */
+  XZfwo1a6Z?: string;
+  /**
+   * Title — pass as `NDcYsg5oi` not `title`.
+   * @default "10,000+"
+   */
+  NDcYsg5oi?: string;
+  onNDcYsg5oiChange?: string;
+  /**
+   * Description — pass as `t_H7Fx64z` not `description`.
+   * @default "Users managing portfolios with AI insights."
+   */
+  t_H7Fx64z?: string;
+  ont_H7Fx64zChange?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/stat-lg-card-1792927823921-aqhjxw.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/stat-lg-card-1792927823921-aqhjxw.d.ts
+
+### List-Item
+
+**Props:**
+```typescript
+export interface ListItemProps {
+  /**
+   * Variant
+   * Friendly names map to internal IDs:
+   *   "Default" → LWYwTVX6W
+   *   "Fit" → GLuZpuSO3
+   *   "LG" → rKahmK2tf
+   */
+  variant?: 'Default' | 'Fit' | 'LG' | 'LWYwTVX6W' | 'GLuZpuSO3' | 'rKahmK2tf';
+  /**
+   * Icon — pass as `XMCDOSojK` not `icon`.
+   */
+  XMCDOSojK?: string;
+  /**
+   * Title — pass as `GmSs_KKEi` not `title`.
+   * @default "What breaks in real teams"
+   */
+  GmSs_KKEi?: string;
+  onGmSs_KKEiChange?: string;
+  /**
+   * Color — pass as `uoP_rcx83` not `color`.
+   * @default "var(--token-5a0631e1-36c2-4c12-ac01-aa86958549ac, rgb(73, 77, 77))"
+   */
+  uoP_rcx83?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/list-item-1792927824673-0o9254.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/list-item-1792927824673-0o9254.d.ts
+
+### List-Item
+
+**Props:**
+```typescript
+export interface ListItemProps {
+  /**
+   * Variant
+   * Friendly names map to internal IDs:
+   *   "Default" → LWYwTVX6W
+   *   "Fit" → GLuZpuSO3
+   *   "LG" → rKahmK2tf
+   */
+  variant?: 'Default' | 'Fit' | 'LG' | 'LWYwTVX6W' | 'GLuZpuSO3' | 'rKahmK2tf';
+  /**
+   * Icon — pass as `XMCDOSojK` not `icon`.
+   */
+  XMCDOSojK?: string;
+  /**
+   * Title — pass as `GmSs_KKEi` not `title`.
+   * @default "What breaks in real teams"
+   */
+  GmSs_KKEi?: string;
+  onGmSs_KKEiChange?: string;
+  /**
+   * Color — pass as `uoP_rcx83` not `color`.
+   * @default "var(--token-5a0631e1-36c2-4c12-ac01-aa86958549ac, rgb(73, 77, 77))"
+   */
+  uoP_rcx83?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/list-item-1792927825454-pprszn.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/list-item-1792927825454-pprszn.d.ts
+
+### List-Item
+
+**Props:**
+```typescript
+export interface ListItemProps {
+  /**
+   * Variant
+   * Friendly names map to internal IDs:
+   *   "Default" → LWYwTVX6W
+   *   "Fit" → GLuZpuSO3
+   *   "LG" → rKahmK2tf
+   */
+  variant?: 'Default' | 'Fit' | 'LG' | 'LWYwTVX6W' | 'GLuZpuSO3' | 'rKahmK2tf';
+  /**
+   * Icon — pass as `XMCDOSojK` not `icon`.
+   */
+  XMCDOSojK?: string;
+  /**
+   * Title — pass as `GmSs_KKEi` not `title`.
+   * @default "What breaks in real teams"
+   */
+  GmSs_KKEi?: string;
+  onGmSs_KKEiChange?: string;
+  /**
+   * Color — pass as `uoP_rcx83` not `color`.
+   * @default "var(--token-5a0631e1-36c2-4c12-ac01-aa86958549ac, rgb(73, 77, 77))"
+   */
+  uoP_rcx83?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/list-item-1792927826309-63tcdx.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/list-item-1792927826309-63tcdx.d.ts
+
+### Button-Icon
+
+**Props:**
+```typescript
+export interface ButtonIconProps {
+  /**
+   * Variant
+   * Friendly names map to internal IDs:
+   *   "Dark - Phone" → n9A7jxl3z
+   *   "Default - Phone" → Rc5QmtPAI
+   *   "Nav Button - Phone" → peF_y0Ayx
+   *   "Nav Button" → DxQTVJgmU
+   *   "Right Icon - Phone" → nnGtB53cU
+   *   "Right Icon" → wkhxQl_QS
+   *   "Dark" → KVSDvWZoH
+   *   "Default" → Y5rxWmMw9
+   */
+  variant?: 'Dark - Phone' | 'Default - Phone' | 'Nav Button - Phone' | 'Nav Button' | 'Right Icon - Phone' | 'Right Icon' | 'Dark' | 'Default' | 'Y5rxWmMw9' | 'KVSDvWZoH' | 'DxQTVJgmU' | 'wkhxQl_QS' | 'Rc5QmtPAI' | 'n9A7jxl3z' | 'peF_y0Ayx' | 'nnGtB53cU';
+  /**
+   * Title — pass as `ziCnPH11n` not `title`.
+   * @default "Button Icon"
+   */
+  ziCnPH11n?: string;
+  onziCnPH11nChange?: string;
+  /**
+   * Icon — pass as `SjeXzLrTu` not `icon`.
+   */
+  SjeXzLrTu?: string;
+  /**
+   * Link — pass as `gayKxTIvB` not `link`.
+   */
+  gayKxTIvB?: string;
+  /**
+   * New Tab — pass as `uYcQ8rJi0` not `newTab`.
+   * @default false
+   */
+  uYcQ8rJi0?: boolean;
+  onuYcQ8rJi0Change?: string;
+  /**
+   * Click — pass as `uo_mEDBYl` not `click`.
+   */
+  uo_mEDBYl?: () => void;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/button-icon-1792927827062-0oj577.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/button-icon-1792927827062-0oj577.d.ts
+
+### Testimonial-Item
+
+**Props:**
+```typescript
+export interface TestimonialItemProps {
+  /**
+   * Variant
+   * Friendly names map to internal IDs:
+   *   "Desktop" → Vf9ggY25D
+   *   "Phone" → qtUc6Oe2H
+   */
+  variant?: 'Desktop' | 'Phone' | 'Vf9ggY25D' | 'qtUc6Oe2H';
+  /**
+   * Star — pass as `G8YyrnVaW` not `star`.
+   */
+  G8YyrnVaW?: string;
+  /**
+   * Content — pass as `njvQGMtNX` not `content`.
+   * @default "This platform helped me understand my portfolio in ways I couldn’t before. The insights are clear and actually useful."
+   */
+  njvQGMtNX?: string;
+  onnjvQGMtNXChange?: string;
+  /**
+   * Avatar — pass as `c_6S1GWN5` not `avatar`.
+   */
+  c_6S1GWN5?: string;
+  /**
+   * Name — pass as `ltvSVWkDz` not `name`.
+   * @default "David Miller"
+   */
+  ltvSVWkDz?: string;
+  onltvSVWkDzChange?: string;
+  /**
+   * Job Title — pass as `vG_YeqZ3L` not `jobTitle`.
+   * @default "Individual Investor"
+   */
+  vG_YeqZ3L?: string;
+  onvG_YeqZ3LChange?: string;
+  /**
+   * Padding — pass as `lP_2UgiNa` not `padding`.
+   * @default "40px"
+   */
+  lP_2UgiNa?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/testimonial-item-1792927827883-7ua7dq.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/testimonial-item-1792927827883-7ua7dq.d.ts
+
+### Testimonial-Item
+
+**Props:**
+```typescript
+export interface TestimonialItemProps {
+  /**
+   * Variant
+   * Friendly names map to internal IDs:
+   *   "Desktop" → Vf9ggY25D
+   *   "Phone" → qtUc6Oe2H
+   */
+  variant?: 'Desktop' | 'Phone' | 'Vf9ggY25D' | 'qtUc6Oe2H';
+  /**
+   * Star — pass as `G8YyrnVaW` not `star`.
+   */
+  G8YyrnVaW?: string;
+  /**
+   * Content — pass as `njvQGMtNX` not `content`.
+   * @default "This platform helped me understand my portfolio in ways I couldn’t before. The insights are clear and actually useful."
+   */
+  njvQGMtNX?: string;
+  onnjvQGMtNXChange?: string;
+  /**
+   * Avatar — pass as `c_6S1GWN5` not `avatar`.
+   */
+  c_6S1GWN5?: string;
+  /**
+   * Name — pass as `ltvSVWkDz` not `name`.
+   * @default "David Miller"
+   */
+  ltvSVWkDz?: string;
+  onltvSVWkDzChange?: string;
+  /**
+   * Job Title — pass as `vG_YeqZ3L` not `jobTitle`.
+   * @default "Individual Investor"
+   */
+  vG_YeqZ3L?: string;
+  onvG_YeqZ3LChange?: string;
+  /**
+   * Padding — pass as `lP_2UgiNa` not `padding`.
+   * @default "40px"
+   */
+  lP_2UgiNa?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/testimonial-item-1792927828848-hrougo.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/testimonial-item-1792927828848-hrougo.d.ts
+
+### Testimonial-Item
+
+**Props:**
+```typescript
+export interface TestimonialItemProps {
+  /**
+   * Variant
+   * Friendly names map to internal IDs:
+   *   "Desktop" → Vf9ggY25D
+   *   "Phone" → qtUc6Oe2H
+   */
+  variant?: 'Desktop' | 'Phone' | 'Vf9ggY25D' | 'qtUc6Oe2H';
+  /**
+   * Star — pass as `G8YyrnVaW` not `star`.
+   */
+  G8YyrnVaW?: string;
+  /**
+   * Content — pass as `njvQGMtNX` not `content`.
+   * @default "This platform helped me understand my portfolio in ways I couldn’t before. The insights are clear and actually useful."
+   */
+  njvQGMtNX?: string;
+  onnjvQGMtNXChange?: string;
+  /**
+   * Avatar — pass as `c_6S1GWN5` not `avatar`.
+   */
+  c_6S1GWN5?: string;
+  /**
+   * Name — pass as `ltvSVWkDz` not `name`.
+   * @default "David Miller"
+   */
+  ltvSVWkDz?: string;
+  onltvSVWkDzChange?: string;
+  /**
+   * Job Title — pass as `vG_YeqZ3L` not `jobTitle`.
+   * @default "Individual Investor"
+   */
+  vG_YeqZ3L?: string;
+  onvG_YeqZ3LChange?: string;
+  /**
+   * Padding — pass as `lP_2UgiNa` not `padding`.
+   * @default "40px"
+   */
+  lP_2UgiNa?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/testimonial-item-1792927829609-h7qfsc.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/testimonial-item-1792927829609-h7qfsc.d.ts
+
+### Testimonial-Item
+
+**Props:**
+```typescript
+export interface TestimonialItemProps {
+  /**
+   * Variant
+   * Friendly names map to internal IDs:
+   *   "Desktop" → Vf9ggY25D
+   *   "Phone" → qtUc6Oe2H
+   */
+  variant?: 'Desktop' | 'Phone' | 'Vf9ggY25D' | 'qtUc6Oe2H';
+  /**
+   * Star — pass as `G8YyrnVaW` not `star`.
+   */
+  G8YyrnVaW?: string;
+  /**
+   * Content — pass as `njvQGMtNX` not `content`.
+   * @default "This platform helped me understand my portfolio in ways I couldn’t before. The insights are clear and actually useful."
+   */
+  njvQGMtNX?: string;
+  onnjvQGMtNXChange?: string;
+  /**
+   * Avatar — pass as `c_6S1GWN5` not `avatar`.
+   */
+  c_6S1GWN5?: string;
+  /**
+   * Name — pass as `ltvSVWkDz` not `name`.
+   * @default "David Miller"
+   */
+  ltvSVWkDz?: string;
+  onltvSVWkDzChange?: string;
+  /**
+   * Job Title — pass as `vG_YeqZ3L` not `jobTitle`.
+   * @default "Individual Investor"
+   */
+  vG_YeqZ3L?: string;
+  onvG_YeqZ3LChange?: string;
+  /**
+   * Padding — pass as `lP_2UgiNa` not `padding`.
+   * @default "40px"
+   */
+  lP_2UgiNa?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/testimonial-item-1792927830394-ysqw3n.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/testimonial-item-1792927830394-ysqw3n.d.ts
+
+### Testimonial-Item
+
+**Props:**
+```typescript
+export interface TestimonialItemProps {
+  /**
+   * Variant
+   * Friendly names map to internal IDs:
+   *   "Desktop" → Vf9ggY25D
+   *   "Phone" → qtUc6Oe2H
+   */
+  variant?: 'Desktop' | 'Phone' | 'Vf9ggY25D' | 'qtUc6Oe2H';
+  /**
+   * Star — pass as `G8YyrnVaW` not `star`.
+   */
+  G8YyrnVaW?: string;
+  /**
+   * Content — pass as `njvQGMtNX` not `content`.
+   * @default "This platform helped me understand my portfolio in ways I couldn’t before. The insights are clear and actually useful."
+   */
+  njvQGMtNX?: string;
+  onnjvQGMtNXChange?: string;
+  /**
+   * Avatar — pass as `c_6S1GWN5` not `avatar`.
+   */
+  c_6S1GWN5?: string;
+  /**
+   * Name — pass as `ltvSVWkDz` not `name`.
+   * @default "David Miller"
+   */
+  ltvSVWkDz?: string;
+  onltvSVWkDzChange?: string;
+  /**
+   * Job Title — pass as `vG_YeqZ3L` not `jobTitle`.
+   * @default "Individual Investor"
+   */
+  vG_YeqZ3L?: string;
+  onvG_YeqZ3LChange?: string;
+  /**
+   * Padding — pass as `lP_2UgiNa` not `padding`.
+   * @default "40px"
+   */
+  lP_2UgiNa?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/testimonial-item-1792927831172-yzgtky.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/testimonial-item-1792927831172-yzgtky.d.ts
+
+### Pre-Title
+
+**Props:**
+```typescript
+export interface PreTitleProps {
+  /**
+   * Variant
+   * Friendly names map to internal IDs:
+   *   "Dark" → GyM4q7LNO
+   *   "Default" → dVqc43eR9
+   *   "White" → uyNLry1D8
+   */
+  variant?: 'Dark' | 'Default' | 'White' | 'dVqc43eR9' | 'uyNLry1D8' | 'GyM4q7LNO';
+  /**
+   * Title — pass as `BSyxhptbW` not `title`.
+   * @default "Subscription plans"
+   */
+  BSyxhptbW?: string;
+  onBSyxhptbWChange?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/pre-title-1792927831917-datilm.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/pre-title-1792927831917-datilm.d.ts
+
+### Pricing-Item
+
+**Props:**
+```typescript
+export interface PricingItemProps {
+  /**
+   * Variant
+   * Friendly names map to internal IDs:
+   *   "Default - Phone" → T4SQdc4EG
+   *   "Default - Tablet" → GgMHH0p4y
+   *   "Yearly - Phone" → GaJvMD00i
+   *   "Yearly - Tablet" → l4w6JBWzZ
+   *   "Default" → UH10pDOG6
+   *   "Yearly" → X9g1sBecs
+   */
+  variant?: 'Default - Phone' | 'Default - Tablet' | 'Yearly - Phone' | 'Yearly - Tablet' | 'Default' | 'Yearly' | 'UH10pDOG6' | 'X9g1sBecs' | 'GgMHH0p4y' | 'l4w6JBWzZ' | 'T4SQdc4EG' | 'GaJvMD00i';
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/pricing-item-1792927832718-8z0ttz.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/pricing-item-1792927832718-8z0ttz.d.ts
+
+### FAQs-CTA
+
+**Props:**
+```typescript
+export interface FAQsCTAProps {
+  /**
+   * Variant
+   * Friendly names map to internal IDs:
+   *   "Desktop" → iHfsxmz6E
+   *   "Phone" → U8Y65vmDF
+   */
+  variant?: 'Desktop' | 'Phone' | 'iHfsxmz6E' | 'U8Y65vmDF';
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/faqs-cta-1792927833755-enihcf.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/faqs-cta-1792927833755-enihcf.d.ts
+
+### Accordion
+
+**Props:**
+```typescript
+export interface AccordionProps {
+  /**
+   * Variant
+   * Friendly names map to internal IDs:
+   *   "Close - Phone" → ciPb55D8c
+   *   "Open - Phone" → I6yIM5iJA
+   *   "White Close - Phone" → irH83JwdM
+   *   "White Close" → gY6mqXOpW
+   *   "White Open- Phone" → CPe0_evTA
+   *   "White Open" → X4L6HtqcM
+   *   "Close" → Z3V2APvoq
+   *   "Open" → zSlT2gi2H
+   */
+  variant?: 'Close - Phone' | 'Open - Phone' | 'White Close - Phone' | 'White Close' | 'White Open- Phone' | 'White Open' | 'Close' | 'Open' | 'Z3V2APvoq' | 'zSlT2gi2H' | 'gY6mqXOpW' | 'X4L6HtqcM' | 'ciPb55D8c' | 'I6yIM5iJA' | 'irH83JwdM' | 'CPe0_evTA';
+  /**
+   * Question — pass as `Cem09IVM0` not `question`.
+   * @default "How many habits can I track?"
+   */
+  Cem09IVM0?: string;
+  onCem09IVM0Change?: string;
+  /**
+   * Answer — pass as `NV3c2dGIv` not `answer`.
+   * @default "You can track as many as you want, but most users keep 5–8 habits for better consistency."
+   */
+  NV3c2dGIv?: string;
+  onNV3c2dGIvChange?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/accordion-1792927834664-z73gqf.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/accordion-1792927834664-z73gqf.d.ts
+
+### Accordion
+
+**Props:**
+```typescript
+export interface AccordionProps {
+  /**
+   * Variant
+   * Friendly names map to internal IDs:
+   *   "Close - Phone" → ciPb55D8c
+   *   "Open - Phone" → I6yIM5iJA
+   *   "White Close - Phone" → irH83JwdM
+   *   "White Close" → gY6mqXOpW
+   *   "White Open- Phone" → CPe0_evTA
+   *   "White Open" → X4L6HtqcM
+   *   "Close" → Z3V2APvoq
+   *   "Open" → zSlT2gi2H
+   */
+  variant?: 'Close - Phone' | 'Open - Phone' | 'White Close - Phone' | 'White Close' | 'White Open- Phone' | 'White Open' | 'Close' | 'Open' | 'Z3V2APvoq' | 'zSlT2gi2H' | 'gY6mqXOpW' | 'X4L6HtqcM' | 'ciPb55D8c' | 'I6yIM5iJA' | 'irH83JwdM' | 'CPe0_evTA';
+  /**
+   * Question — pass as `Cem09IVM0` not `question`.
+   * @default "How many habits can I track?"
+   */
+  Cem09IVM0?: string;
+  onCem09IVM0Change?: string;
+  /**
+   * Answer — pass as `NV3c2dGIv` not `answer`.
+   * @default "You can track as many as you want, but most users keep 5–8 habits for better consistency."
+   */
+  NV3c2dGIv?: string;
+  onNV3c2dGIvChange?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/accordion-1792927835435-9imm7t.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/accordion-1792927835435-9imm7t.d.ts
+
+### Accordion
+
+**Props:**
+```typescript
+export interface AccordionProps {
+  /**
+   * Variant
+   * Friendly names map to internal IDs:
+   *   "Close - Phone" → ciPb55D8c
+   *   "Open - Phone" → I6yIM5iJA
+   *   "White Close - Phone" → irH83JwdM
+   *   "White Close" → gY6mqXOpW
+   *   "White Open- Phone" → CPe0_evTA
+   *   "White Open" → X4L6HtqcM
+   *   "Close" → Z3V2APvoq
+   *   "Open" → zSlT2gi2H
+   */
+  variant?: 'Close - Phone' | 'Open - Phone' | 'White Close - Phone' | 'White Close' | 'White Open- Phone' | 'White Open' | 'Close' | 'Open' | 'Z3V2APvoq' | 'zSlT2gi2H' | 'gY6mqXOpW' | 'X4L6HtqcM' | 'ciPb55D8c' | 'I6yIM5iJA' | 'irH83JwdM' | 'CPe0_evTA';
+  /**
+   * Question — pass as `Cem09IVM0` not `question`.
+   * @default "How many habits can I track?"
+   */
+  Cem09IVM0?: string;
+  onCem09IVM0Change?: string;
+  /**
+   * Answer — pass as `NV3c2dGIv` not `answer`.
+   * @default "You can track as many as you want, but most users keep 5–8 habits for better consistency."
+   */
+  NV3c2dGIv?: string;
+  onNV3c2dGIvChange?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/accordion-1792927836146-wdy362.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/accordion-1792927836146-wdy362.d.ts
+
+### Accordion
+
+**Props:**
+```typescript
+export interface AccordionProps {
+  /**
+   * Variant
+   * Friendly names map to internal IDs:
+   *   "Close - Phone" → ciPb55D8c
+   *   "Open - Phone" → I6yIM5iJA
+   *   "White Close - Phone" → irH83JwdM
+   *   "White Close" → gY6mqXOpW
+   *   "White Open- Phone" → CPe0_evTA
+   *   "White Open" → X4L6HtqcM
+   *   "Close" → Z3V2APvoq
+   *   "Open" → zSlT2gi2H
+   */
+  variant?: 'Close - Phone' | 'Open - Phone' | 'White Close - Phone' | 'White Close' | 'White Open- Phone' | 'White Open' | 'Close' | 'Open' | 'Z3V2APvoq' | 'zSlT2gi2H' | 'gY6mqXOpW' | 'X4L6HtqcM' | 'ciPb55D8c' | 'I6yIM5iJA' | 'irH83JwdM' | 'CPe0_evTA';
+  /**
+   * Question — pass as `Cem09IVM0` not `question`.
+   * @default "How many habits can I track?"
+   */
+  Cem09IVM0?: string;
+  onCem09IVM0Change?: string;
+  /**
+   * Answer — pass as `NV3c2dGIv` not `answer`.
+   * @default "You can track as many as you want, but most users keep 5–8 habits for better consistency."
+   */
+  NV3c2dGIv?: string;
+  onNV3c2dGIvChange?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/accordion-1792927836939-y2dl7x.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/accordion-1792927836939-y2dl7x.d.ts
+
+### Accordion
+
+**Props:**
+```typescript
+export interface AccordionProps {
+  /**
+   * Variant
+   * Friendly names map to internal IDs:
+   *   "Close - Phone" → ciPb55D8c
+   *   "Open - Phone" → I6yIM5iJA
+   *   "White Close - Phone" → irH83JwdM
+   *   "White Close" → gY6mqXOpW
+   *   "White Open- Phone" → CPe0_evTA
+   *   "White Open" → X4L6HtqcM
+   *   "Close" → Z3V2APvoq
+   *   "Open" → zSlT2gi2H
+   */
+  variant?: 'Close - Phone' | 'Open - Phone' | 'White Close - Phone' | 'White Close' | 'White Open- Phone' | 'White Open' | 'Close' | 'Open' | 'Z3V2APvoq' | 'zSlT2gi2H' | 'gY6mqXOpW' | 'X4L6HtqcM' | 'ciPb55D8c' | 'I6yIM5iJA' | 'irH83JwdM' | 'CPe0_evTA';
+  /**
+   * Question — pass as `Cem09IVM0` not `question`.
+   * @default "How many habits can I track?"
+   */
+  Cem09IVM0?: string;
+  onCem09IVM0Change?: string;
+  /**
+   * Answer — pass as `NV3c2dGIv` not `answer`.
+   * @default "You can track as many as you want, but most users keep 5–8 habits for better consistency."
+   */
+  NV3c2dGIv?: string;
+  onNV3c2dGIvChange?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/accordion-1792927837959-pn6lz6.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/accordion-1792927837959-pn6lz6.d.ts
+
+### FAQs-CTA
+
+**Props:**
+```typescript
+export interface FAQsCTAProps {
+  /**
+   * Variant
+   * Friendly names map to internal IDs:
+   *   "Desktop" → iHfsxmz6E
+   *   "Phone" → U8Y65vmDF
+   */
+  variant?: 'Desktop' | 'Phone' | 'iHfsxmz6E' | 'U8Y65vmDF';
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/faqs-cta-1792927838665-pnpw63.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/faqs-cta-1792927838665-pnpw63.d.ts
+
+### SmoothScroll_Prod
+
+**Props:**
+```typescript
+export interface SmoothScrollProdProps {
+  /**
+   * Intensity
+   * Range: min: 0, max: 100, step: 1
+   * @default 50
+   */
+  intensity?: number;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/smoothscroll-prod-1792927839524-wq8iqa.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/smoothscroll-prod-1792927839524-wq8iqa.d.ts
+
+### BlurGradient_Prod
+
+**Props:**
+```typescript
+export interface BlurGradientProdProps {
+  /**
+   * Blur
+   * Range: min: 0, max: 100, step: 1
+   * @default 10
+   */
+  blur?: number;
+  /**
+   * Radius — pass as `borderRadius` not `radius`.
+   * @default "0px"
+   */
+  borderRadius?: string;
+  /**
+   * Direction
+   * Options: "toBottom" | "toTop" | "toLeft" | "toRight"
+   * @default "toBottom"
+   */
+  direction?: string;
+  /** Additional properties */
+  [key: string]: unknown;
+}
+```
+
+**Files:**
+- Code: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/blurgradient-prod-1792927840330-r6cov2.js
+- Types: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/blurgradient-prod-1792927840330-r6cov2.d.ts
+
+### Runtime
+
+The components require a Framer runtime file. Download it and save it as `_framer-runtime.js` in the **same directory** as the component files:
+- Runtime: https://rxqvfpcftlzylrvejamr.supabase.co/storage/v1/object/public/components/framer-runtime-1792927763029-3j5j1k.js
+
+### Project Theme (tokens.css)
+
+The exported components reference project-level CSS variables (`--token-<uuid>`)
+and fonts. Without these, components fall back to hardcoded defaults that may
+not match the original design (wrong CTA color, wrong font). Save this file as
+`src/tokens.css` and import it once in your app entry (e.g. `main.tsx` or
+`App.tsx`):
+
+```css
+/**
+ * Project design tokens extracted from the Framer canvas.
+ * Import this file once at the root of your app so the
+ * --token-<uuid> CSS variables referenced by exported components resolve.
+ */
+@font-face {
+  font-family: 'Inter Display';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/gazZKZuUEtvr9ULhdA4SprP0AZ0.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/pe8RoujoPxuTZhqoNzYqHX2MXA.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/teGhWnhH3bCqefKGsIsqFy3hK8.woff2') format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/qQHxgTnEk6Czu1yW4xS82HQWFOk.woff2') format('woff2');
+  unicode-range: U+0370-03FF;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/MJ3N6lfN4iP5Um8rJGqLYl03tE.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/PfdOpgzFf7N2Uye9JX7xRKYTgSc.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2070, U+2074-207E, U+2080-208E, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/0SEEmmWc3vovhaai4RlRQSWRrz0.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/DpPBYI0sL4fYLgAkX8KXOPVt7c.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/4RAEQdEOrcnDkhHiiCbJOw92Lk.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/1K3W8DizY3v4emK8Mb08YHxTbs.woff2') format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/tUSCtfYVM1I1IchuyCwz9gDdQ.woff2') format('woff2');
+  unicode-range: U+0370-03FF;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/VgYFWiwsAC5OYxAycRXXvhze58.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/syRNPWzAMIrcJ3wIlPIP43KjQs.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2070, U+2074-207E, U+2080-208E, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/GIryZETIX4IFypco5pYZONKhJIo.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/H89BbHkbHDzlxZzxi8uPzTsp90.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/u6gJwDuwB143kpNK1T1MDKDWkMc.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/43sJ6MfOPh1LCJt46OvyDuSbA6o.woff2') format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/wccHG0r4gBDAIRhfHiOlq6oEkqw.woff2') format('woff2');
+  unicode-range: U+0370-03FF;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/WZ367JPwf9bRW6LdTHN8rXgSjw.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/ia3uin3hQWqDrVloC1zEtYHWw.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2070, U+2074-207E, U+2080-208E, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/2A4Xx7CngadFGlVV4xrO06OBHY.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/CfMzU8w2e7tHgF4T4rATMPuWosA.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/867QObYax8ANsfX4TGEVU9YiCM.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/Oyn2ZbENFdnW7mt2Lzjk1h9Zb9k.woff2') format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/cdAe8hgZ1cMyLu9g005pAW3xMo.woff2') format('woff2');
+  unicode-range: U+0370-03FF;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/DOfvtmE1UplCq161m6Hj8CSQYg.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/pKRFNWFoZl77qYCAIp84lN1h944.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2070, U+2074-207E, U+2080-208E, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/tKtBcDnBMevsEEJKdNGhhkLzYo.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/5vvr9Vy74if2I6bQbJvbw7SY1pQ.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/EOr0mi4hNtlgWNn9if640EZzXCo.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/Y9k9QrlZAqio88Klkmbd8VoMQc.woff2') format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/OYrD2tBIBPvoJXiIHnLoOXnY9M.woff2') format('woff2');
+  unicode-range: U+0370-03FF;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/JeYwfuaPfZHQhEG8U5gtPDZ7WQ.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/GrgcKwrN6d3Uz8EwcLHZxwEfC4.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2070, U+2074-207E, U+2080-208E, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/b6Y37FthZeALduNqHicBT6FutY.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/ePuN3mCjzajIHnyCdvKBFiZkyY0.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/V3j1L0o5vPFKe26Sw4HcpXCfHo.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/F3kdpd2N0cToWV5huaZjjgM.woff2') format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/0iDmxkizU9goZoclqIqsV5rvETU.woff2') format('woff2');
+  unicode-range: U+0370-03FF;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/r0mv3NegmA0akcQsNFotG32Las.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/iwWTDc49ENF2tCHbqlNARXw6Ug.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2070, U+2074-207E, U+2080-208E, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/Ii21jnSJkulBKsHHXKlapi7fv9w.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/I11LrmuBDQZweplJ62KkVsklU5Y.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/UjFZPDy3qGuDktQM4q9CxhKfIa8.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/8exwVHJy2DhJ4N5prYlVMrEKmQ.woff2') format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/UTeedEK21hO5jDxEUldzdScUqpg.woff2') format('woff2');
+  unicode-range: U+0370-03FF;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/Ig8B8nzy11hzIWEIYnkg91sofjo.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/qITWJ2WdG0wrgQPDb8lvnYnTXDg.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2070, U+2074-207E, U+2080-208E, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/qctQFoJqJ9aIbRSIp0AhCQpFxn8.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/fXvVh2JeZlehNcEhKHpHH0frSl0.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/7pScaNeb6M7n2HF2jKemDqzCIr4.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/qS4UjQYyATcVV9rODk0Zx9KhkY8.woff2') format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/VfD2n20yM7v0hrUEBHEyafsmMBY.woff2') format('woff2');
+  unicode-range: U+0370-03FF;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/4oIO9fB59bn3cKFWz7piCj28z9s.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/MzumQQZJQBC6KM1omtmwOtsogtI.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2070, U+2074-207E, U+2080-208E, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/F5Lmfd3fCAu7TwiYbI4DLWw4ks.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: italic;
+  font-weight: 500;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/A5P4nkYCJlLQxGxaS1lzG8PNSc.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: italic;
+  font-weight: 500;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/vuPfygr1n1zYxscvWgGI8hRf3LE.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: italic;
+  font-weight: 500;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/jplzYzqFHXreyADwk9yrkQlWQ.woff2') format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: italic;
+  font-weight: 500;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/sSIKP2TfVPvfK7YVENPE5H87A.woff2') format('woff2');
+  unicode-range: U+0370-03FF;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: italic;
+  font-weight: 500;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/gawbeo7iEJSRZ4kcrh6YRrU8o.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: italic;
+  font-weight: 500;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/RkMAGv2iAm3rw7tZzs7FaZf0rM.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2070, U+2074-207E, U+2080-208E, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: italic;
+  font-weight: 500;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/8E92vrr3j1gDqzepmeSbD2u0JxA.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Bricolage Grotesque';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('https://fonts.gstatic.com/s/bricolagegrotesque/v9/3y9U6as8bTXq_nANBjzKo3IeZx8z6up5BeSl5jBNz_19PpbpMXuECpwUxJBOm_OJWiaaD30YfKfjZZoLvcXlyMgvs-wJDtw.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Bricolage Grotesque';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('https://fonts.gstatic.com/s/bricolagegrotesque/v9/3y9U6as8bTXq_nANBjzKo3IeZx8z6up5BeSl5jBNz_19PpbpMXuECpwUxJBOm_OJWiaaD30YfKfjZZoLvfzlyMgvs-wJDtw.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/EZSFVoaPWKnZ6GuVk5dlS5pk.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/TMYuLEOqLWgunxD5qCFeADEgk.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/EL4v8OG6t2XwHSJLO1YF25DNiDw.woff2') format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/vSoBOmgqFUd0rVCgogjwL7jQI.woff2') format('woff2');
+  unicode-range: U+0370-03FF;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/bIwBTbnyeAOa9wQIBagEdRDHXhE.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/x8eJ5VkmPMHVhVbF0E8JYFJmwc.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2070, U+2074-207E, U+2080-208E, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/fmXYBApyDC604dR7g2aaACGvCk.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: italic;
+  font-weight: 900;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/yHWoQPBZSEiCC3aW3JXtcoFby8o.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: italic;
+  font-weight: 900;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/UHqhq621TbUtspKtPKPA1Ne8qY.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: italic;
+  font-weight: 900;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/6dsy2CbviAWDcszGLlgyaLpRMk.woff2') format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: italic;
+  font-weight: 900;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/TQqnntSFYYGDv7XtyT3ZhfvDA.woff2') format('woff2');
+  unicode-range: U+0370-03FF;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: italic;
+  font-weight: 900;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/nE03Xxh2GngsU8hDpg6CRGxqfoM.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: italic;
+  font-weight: 900;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/U1kEiQQO1ar9PuYJyyRkclmq8o.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2070, U+2074-207E, U+2080-208E, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Inter Display';
+  font-style: italic;
+  font-weight: 900;
+  font-display: swap;
+  src: url('https://framerusercontent.com/assets/dWFiPjtJpfcxAIDV8RPyuCq04.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+1EA0-1EF9, U+20AB;
+}
+
+:root {
+  --token-b78e610c-391a-4120-aa0e-c0769ee3dfd0: rgb(64, 106, 228);
+  --token-bddc6f23-9f6b-430c-b28d-50ac8b0b25ba: rgb(59, 130, 246);
+  --token-0edc2e6a-5fd1-47c5-a905-c3de9f07cea3: rgb(29, 29, 29);
+  --token-b923e1cb-cf6e-406c-a3d3-6c79738c4b54: rgb(77, 88, 95);
+  --token-8a16c1e0-9178-435f-8361-d83efd74d213: rgb(237, 241, 244);
+  --token-60bca774-6ba3-4c34-a431-2fd8d1ea1b8a: rgb(50, 50, 50);
+  --token-a4ae1e21-2b71-445e-8792-31bd9220629a: rgb(0, 0, 0);
+  --token-51f94b53-bb42-43ec-9cc4-5f5eec0c08b0: rgb(186, 186, 186);
+  --token-3992e4b1-4934-4fc5-9122-067e1dd544fa: rgb(221, 229, 237);
+  --token-260f9222-11bc-40e3-a74c-4f1dae7b4ffa: rgb(255, 255, 255);
+  --token-1b8f888c-e7bb-4096-83cf-bc6a0a87c24d: rgba(255, 255, 255, 0);
+  --token-0a34df0a-701b-4bf9-bdf5-c1a9964dab0b: rgba(255, 255, 255, 0.3);
+  --token-0810840b-a17e-48e5-b9f0-8da453e4251d: rgba(255, 255, 255, 0.1);
+  --token-a6a29af8-9670-4cbf-81ec-cd0fd970b181: rgb(82, 144, 244);
+  --token-c2de9ec9-96e5-4565-81f0-1a5f789cc986: rgba(58, 119, 229, 0.5);
+  --token-3773b559-408e-44fa-b41c-14281b49a454: rgba(29, 29, 29, 0.5);
+  --token-08dc1709-8178-4e8a-935e-cbadce9f78a4: rgba(0, 0, 0, 0.1);
+  --token-fffc2df6-9817-4522-b0c0-6b2c412b44dc: rgb(226, 245, 255);
+  --token-22e76413-54a7-49e7-b94c-fb66f119d431: rgba(0, 0, 0, 0.2);
+  --token-1da6f336-7e27-4609-af93-da7817fb442b: rgba(0, 0, 0, 0.3);
+  --token-a545ebfd-5179-4ff0-bfb3-68703755a1be: rgba(255, 13, 13, 0.05);
+  --token-1b12818c-058c-4797-a04f-5ca5424b73cd: rgba(255, 13, 13, 0.3);
+  --token-da6f8224-04a5-4d90-b1b5-5b6af8cdf88d: rgba(16, 185, 129, 0.1);
+  --token-022f990a-67ab-4d66-bc58-1786ab5e6332: rgba(16, 185, 129, 0.3);
+  --token-f02a5c8a-b667-414e-a18b-3b00bb922668: rgba(0, 0, 0, 0.8);
+  --token-3434016c-2b1b-421d-a7a4-de1700e08024: rgba(221, 229, 237, 0.7);
+  --token-f56bc79b-27bf-46e1-9faa-c1587e0095c1: rgb(255, 139, 6);
+  --token-9ac3fcd6-eb33-41e6-91d9-0d196055ba91: rgb(253, 187, 110);
+  --token-014f2a3f-947b-4963-813b-cb48c53d14f1: rgb(245, 28, 35);
+  --token-5a4e4777-8abf-440c-b816-af317d987f6d: rgb(242, 135, 120);
+  --token-e16e43db-452f-46a8-b1c4-cc290f6b35d1: rgb(11, 207, 45);
+  --token-1d407f87-1145-4d70-b118-069910dbdacc: rgb(138, 227, 137);
+  --token-e266aeaf-00d6-433e-94f9-0ad61361974f: rgba(255, 255, 255, 0.5);
+  --token-7db4a30a-a581-42ea-9c56-7f9f4315db2b: rgb(16, 185, 129);
+  --token-7ef1bbb2-8b98-4e77-ae4e-208f206a737d: rgba(16, 185, 129, 0.2);
+  --token-456a706a-3175-452e-a8be-f8b4e2e708c1: rgba(255, 255, 255, 0.7);
+  --token-3d8d5b27-9a7a-42ff-88f5-3a7cb9b8c13b: rgba(0, 0, 0, 0.9);
+}
+
+.text-style-uf55qntp3 {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 72px;
+  line-height: 1.1em;
+  color: rgb(29, 29, 29);
+}
+.text-style-vxo9lP1tq {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 48px;
+  line-height: 1.2em;
+  color: rgb(29, 29, 29);
+}
+.text-style-TW0SdfaCW {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 32px;
+  line-height: 1.2em;
+  color: rgb(29, 29, 29);
+}
+.text-style-Ve6siI6CN {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 22px;
+  line-height: 1.2em;
+  color: rgb(29, 29, 29);
+}
+.text-style-CXQiiDSGW {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 200px;
+  line-height: 0.7em;
+  color: rgb(29, 29, 29);
+}
+.text-style-THVQgirlm {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 100px;
+  line-height: 1em;
+  color: rgb(29, 29, 29);
+}
+.text-style-G2h1PlZCb {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 40px;
+  line-height: 1.2em;
+  color: rgb(29, 29, 29);
+}
+.text-style-a9zsrKn04 {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 32px;
+  line-height: 1.2em;
+  color: rgb(29, 29, 29);
+}
+.text-style-eaSVQg4j4 {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 32px;
+  line-height: 1.2em;
+  color: rgb(29, 29, 29);
+}
+.text-style-vl_TM9PXW {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 30px;
+  line-height: 1.2em;
+  color: rgb(29, 29, 29);
+}
+.text-style-jUb4JLM3m {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 28px;
+  line-height: 1.2em;
+  color: rgb(29, 29, 29);
+}
+.text-style-k6zcj6FY_ {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 24px;
+  line-height: 1.2em;
+  color: rgb(29, 29, 29);
+}
+.text-style-EpfgTb3LW {
+  font-family: 'Inter Display', sans-serif;
+  font-size: 18px;
+  line-height: 1.3em;
+  color: rgb(77, 88, 95);
+}
+.text-style-KWh0MOVFb {
+  font-family: 'Inter Display', sans-serif;
+  font-size: 18px;
+  line-height: 1.3em;
+  color: rgb(77, 88, 95);
+}
+.text-style-wJJlHAuBp {
+  font-family: 'Inter Display', sans-serif;
+  font-size: 86px;
+  line-height: 0.72em;
+  color: rgb(255, 255, 255);
+}
+.text-style-OblTs8rtN {
+  font-family: 'Inter Display', sans-serif;
+  font-size: 16px;
+  line-height: 1.3em;
+  color: rgb(77, 88, 95);
+}
+.text-style-Lb6ff2C_Q {
+  font-family: 'Inter Display', sans-serif;
+  font-size: 16px;
+  line-height: 1.3em;
+  color: rgb(77, 88, 95);
+}
+.text-style-NwDqOD0lC {
+  font-family: 'Inter Display', sans-serif;
+  font-size: 20px;
+  line-height: 1.3em;
+  color: rgb(77, 88, 95);
+}
+.text-style-xDpw_VO59 {
+  font-family: 'Inter Display', sans-serif;
+  font-size: 18px;
+  line-height: 1.3em;
+  color: rgb(29, 29, 29);
+}
+.text-style-OKYo87J9J {
+  font-family: 'Inter Display', sans-serif;
+  font-size: 14px;
+  line-height: 1.3em;
+  color: rgb(77, 88, 95);
+}
+.text-style-roK1lt6bc {
+  font-family: 'Inter Display', sans-serif;
+  font-size: 14px;
+  line-height: 1.3em;
+  color: rgb(77, 88, 95);
+}
+```
+
+### Image Assets
+
+This export references **25 images** from Framer's CDN (`framerusercontent.com`). 5 of them use Framer's responsive srcset (multiple sizes per image). They render
+directly at runtime — no download step is required for the component to
+work. URLs are content-hashed and immutable.
+
+- https://framerusercontent.com/images/59eNALHIwT6GZ6JhLrrkTHE0f7Y.svg  (10×10)
+- https://framerusercontent.com/images/5qbimdlaVq6A7LLm15aiqqrGNMQ.svg  (7×10)
+- https://framerusercontent.com/images/622M5cyJBdKPIK1fPnBlo3qONk.jpg  (150×150)
+- https://framerusercontent.com/images/7Z2d6WeDiCpoz0B6ookMTPOFAU.jpg  (800×920)
+- https://framerusercontent.com/images/9TgPFzikB5iacM06fvtpGu10.svg  (21×20)
+- https://framerusercontent.com/images/BRYQbNFP21XSdbOpg2tEs4MO0aY.png  (1350×600) [responsive srcset]
+- https://framerusercontent.com/images/BepIwACX380EUEqBMK5sdcQgh3k.png  (390×480)
+- https://framerusercontent.com/images/DR5ESv57oR37TVFwEH7Mx1yI0.svg  (19×18)
+- https://framerusercontent.com/images/KVlQJuvBpDGKGjMPCFXDMbkUo.png  (390×480)
+- https://framerusercontent.com/images/KbVFR1CeRk5msFRW70lzRZLV8I.png  (897×355) [responsive srcset]
+- https://framerusercontent.com/images/KeTabRzcIFVfk1ymsNMeghVPnM.svg  (280×70)
+- https://framerusercontent.com/images/Ks3rxCrb5LDuCsoN57uNgnYXtc.svg  (182×30)
+- https://framerusercontent.com/images/Osh2UHQcarC8mZnL6oh6gwYnbA.jpg  (1920×1080) [responsive srcset]
+- https://framerusercontent.com/images/RXZaWpPO8xqy7UXViVlRYw1NH14.svg  (13×9)
+- https://framerusercontent.com/images/X0ECJ5xGgYrCVgHB8RYd3RABTQ.jpg  (150×150)
+- https://framerusercontent.com/images/cU6Yacp6C42TCWSRq8qtycxvNeY.svg  (12×9)
+- https://framerusercontent.com/images/e7N84L0vlZQpYYqGdndB2EPeKk.svg  (280×70)
+- https://framerusercontent.com/images/gDcaZH5xt6hqSU2VbK2snAw.jpg  (150×150)
+- https://framerusercontent.com/images/l4todGvJ7jL3WhxngE8F0mr2mks.jpg  (800×1000)
+- https://framerusercontent.com/images/nDs3OgbLpR77rcn1GvmpOSivzdI.png  (1350×600) [responsive srcset]
+- https://framerusercontent.com/images/q5j0wSdwMKoffsX85Ad5pRD16WY.svg  (20×19)
+- https://framerusercontent.com/images/qRR37bNghXttLizbZI0gYViJtDE.svg  (280×70)
+- https://framerusercontent.com/images/rvVsRZjAKkiA0nvOxWWVXzG9L6s.jpg  (120×120)
+- https://framerusercontent.com/images/ttAkZdMWSVdnEFWOMAGPd02naww.svg  (130×30)
+- https://framerusercontent.com/images/ykcQXfkRR4KTqMLXTbg0T9PB8zk.png  (1350×600) [responsive srcset]
+
+**Optional self-host:** if your project doesn't want to depend on
+`framerusercontent.com` at runtime (e.g., enterprise CDN policy,
+offline builds, or asset audits), download each URL and save to
+`public/framer-assets/`, then find-replace in the component code:
+
+```
+https://framerusercontent.com/images/  →  /framer-assets/
+```
+
+Otherwise just leave them — Framer's CDN has stable, immutable URLs
+and reliable uptime.
+
+### Workarounds Triggered for This Export
+
+This export triggers 9 runtime-side workarounds. Each
+is explained in detail in "Known Runtime Limitations & Workarounds" below —
+apply them as part of the integration:
+
+- #16.3a — Do not enable React.StrictMode (runtime double-mount throws)
+- #16.3b — If using Vite, exclude the bundle from Fast Refresh (stack overflow)
+- #16.2 — Import via `next/dynamic({ ssr: false })` (gesture/scroll/loop/appear runtime is SSR-unsafe)
+- #2 — `__withFX` warning is a diagnostic signal
+- #4 — Loop/Scroll/Appear animations dead (build `FramerEffects.tsx`)
+- #5 — Bundle var names are lexical, not semantic
+- #8 — Hover/gesture variants animate poorly
+- #9 — Variant style overrides don't propagate
+- #12 — Runtime re-writes inline styles, defeating author CSS
+
+### Known Runtime Limitations & Workarounds
+
+Some integration issues live in the upstream Framer runtime that ships
+with this export. Apply the workarounds below for any limitation that
+affects the component(s) you're integrating. Each only applies if the
+bundle actually triggers it (so all entries here are confirmed
+relevant for THIS export).
+
+**Do not wrap Framer exports in `React.StrictMode`.**
+
+The bundled framer-motion runtime stores init state in module-scope
+variables and is not idempotent across mounts. React.StrictMode in
+development double-invokes every mount (mount → unmount → mount). On
+the second mount, the runtime sees its state already populated and
+throws:
+
+```
+Error: mix Motion versions undefined with 11.18.2
+```
+
+Most modern React templates (Vite default, Next.js default, CRA)
+enable StrictMode at the root by default. If you copy a template
+verbatim, you'll hit this on first render with no obvious clue what
+caused it.
+
+Two ways to handle it:
+
+1. **Remove StrictMode entirely** for projects whose only purpose
+   is rendering Framer exports. Edit `main.tsx` / `layout.tsx`
+   and drop the wrapper.
+
+2. **Hoist StrictMode above the Framer route only.** If you want
+   StrictMode for the rest of your app, mount the Framer-bearing
+   route outside the StrictMode boundary — e.g. render
+   `<App />` inside StrictMode but render `<ButtonIconPage />`
+   outside it.
+
+This is production-safe either way (StrictMode is dev-only — it has
+no effect on the production bundle).
+
+---
+
+**If using Vite, exclude the Framer bundle from React Fast Refresh.**
+
+The Framer bundle is a single large file with mutual component
+references (`withFX(motion.div)`, variant maps referencing variant
+maps, etc.). On first save, Vite's Fast Refresh tries to fingerprint
+the changed module via `react-refresh`'s `computeFullKey` — which
+walks references recursively, never terminates on this shape, and
+overflows the call stack:
+
+```
+RangeError: Maximum call stack size exceeded
+  at computeFullKey ...
+```
+
+The exception is fatal to the dev server's HMR loop until the page
+is force-reloaded.
+
+Fix in `vite.config.ts`:
+
+```ts
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+
+export default defineConfig({
+  plugins: [
+    react({
+      exclude: [
+        /_framer-runtime\.js$/,
+        /\/components\/[A-Z][^/]*\.js$/, // any precompiled Framer bundle
+      ],
+    }),
+  ],
+});
+```
+
+Excluded files do a **full page reload** instead of in-place
+hot-swap on change. You'd never edit a vendor bundle anyway, so
+the trade-off is free.
+
+(Next.js consumers can ignore this section — Next.js uses its own
+HMR pipeline that doesn't hit this bug.)
+
+---
+
+**Component must be imported via `next/dynamic({ ssr: false })` (or framework equivalent).**
+
+This export depends on framer-motion's gesture / scroll / loop / appear
+runtime, which reads `window` / `document` / `matchMedia` /
+`IntersectionObserver` at module-init time. Importing it directly into
+a server-rendered route will fail at build with `ReferenceError: window
+is not defined`.
+
+**Important:** the Next.js `"use client"` directive alone does NOT fix
+this. `"use client"` marks a component as client-rendered after
+hydration, but Next.js still pre-renders Client Components during the
+initial SSR pass — that pre-render is where the throw happens. Only
+`next/dynamic({ ssr: false })` actually skips the pre-render.
+
+Next.js (App Router):
+
+```tsx
+import dynamic from 'next/dynamic';
+
+const ButtonIcon = dynamic(() => import('./components/ButtonIcon'), { ssr: false });
+
+export default function Page() {
+  return <ButtonIcon />;
+}
+```
+
+Other frameworks: use the equivalent client-only import wrapper
+(Remix `<ClientOnly>`, Astro `client:only`, vanilla React with a
+`useEffect` mount gate, etc.).
+
+Components in this export that do NOT trigger this requirement can be
+imported normally. Only the ones with hover/gesture, scroll, loop, or
+appear behavior need the dynamic wrapper.
+
+---
+
+**`__withFX` React warning is a diagnostic signal, not noise.**
+
+If the dev console emits `React does not recognize the __withFX prop`
+for a component, that component's runtime FX layer is a no-op. Loop /
+Scroll Transform / Appear animations on it will not run (see "Animations
+don't fire" below) and per-variant style overrides will not propagate
+(see "Variant styles don't switch"). Don't try to suppress the warning
+— use it to identify which components need the manual reimplementations
+below.
+
+---
+
+**Animations don't fire (Loop, Scroll Transform, Appear).**
+
+Bundled components carry every animation spec they need on `__framer__*`
+props but the runtime drops them on the floor. Build a centralized
+client component (e.g. `FramerEffects.tsx`) that mounts once at the
+page root and runs the animations the bundle declares but doesn't
+execute. Discovery loop per component:
+
+1. Grep the bundle for `__framer__loop`, `__framer__transformTrigger`,
+   `__framer__styleAppearEffectEnabled`, `__framer__presenceInitial`,
+   `__framer__animate`, `__framer__enter`.
+2. For each match, find the target's class name (the motion node it's
+   attached to) and the referenced transition/animation vars
+   (`transition2`, `animation`, `__framer__spring`, etc.).
+3. Extract the spec: physics spring (`stiffness/damping/mass`),
+   duration spring (`duration/bounce`), or bezier tween
+   (`duration/ease`).
+4. Add a `RevealSpec` / `LoopSpec` entry pointing at the selector
+   with the extracted spec.
+
+Execution rules that matter:
+
+- Use **WAAPI** (`element.animate(...)`). framer-motion writes `transform`
+  to inline style every frame and will clobber CSS keyframes/transitions
+  on the same property.
+- For springs, pre-sample to keyframes matching framer-motion's physics
+  — don't approximate with cubic-bezier. Long springs visibly differ.
+- For in-view triggers, `IntersectionObserver` with `threshold: 0`
+  and `rootMargin: "0px"` is the closest match to Framer's
+  "Layer in View". For appear-once, store a `Set<Element>` of fired
+  targets so reveals don't re-run on scroll-out.
+- For opacity reveals, always treat as fire-once even if the bundle
+  doesn't request it — scrolling past and back otherwise makes whole
+  sections vanish.
+- For loops with `__framer__loopPauseOffscreen: true`, gate
+  `play()/pause()` on an IntersectionObserver entry — rotating rings
+  off-screen burn battery.
+- Initialize each target at the from-state immediately (paused WAAPI
+  animation pinned at frame 0) before IO fires, otherwise there's a
+  one-frame flash at the natural rest position.
+
+---
+
+**Bundle variable names are lexical, not semantic.**
+
+When reimplementing effects (above), do NOT assume `transition1` is
+the variant transition because it's at the top of the file. Always
+follow the prop chain: find the `__framer__spring` / `__framer__transition`
+on the specific motion node, walk to the var it references, read the
+shape.
+
+When reading a spring spec:
+
+- Check `durationBasedSpring` first. If `false` (the common case),
+  only `stiffness` / `damping` / `mass` matter; ignore `duration` /
+  `bounce` even though they're present in the spec.
+- For duration-based springs, framer-motion's mapping is non-obvious —
+  read its source rather than approximating.
+
+Inline `transform: translateY(...)` shown in devtools is often stale
+— WAAPI updates pixels on a different layer. Trust pixels, not the
+inline style attribute.
+
+---
+
+**Hover/gesture variants animate poorly.**
+
+Rules of thumb when overriding hover behavior on exported components:
+
+1. **Key hover CSS on the variant class, never `data-framer-name`.**
+   For every `*-hover` gesture, the bundle emits
+   `addPropertyOverrides({ "X-hover": { "data-framer-name": void 0 } })`
+   — the attribute is removed mid-gesture. Use the variant class
+   (e.g. `.framer-v-12dzqzc`) which persists.
+2. **For mutually-exclusive variant elements that mount/unmount on
+   hover** (e.g. `isDisplayed1`-gated nodes), hide the export's
+   version with `display: none` and render persistent labels via
+   your own client wrapper. Mount/unmount on every cursor move kills
+   framerate.
+3. **For `backdrop-filter` tweens between values** — browsers don't
+   interpolate it cleanly. Set a single static value via CSS and let
+   opacity carry any visual change.
+4. **For width/flex deltas on hover that force layout reflow** — pin
+   the indicator's width via CSS to its rest value. The button's
+   color/border-radius transitions still play; only the layout-shift
+   dance is suppressed.
+
+---
+
+**Variant style overrides don't propagate to nested elements.**
+
+The bundle's per-variant config specifies different colors / opacity /
+positions for nested elements per variant, but the runtime applies
+none of them. Solid Black buttons render with default-dark text on a
+dark background (invisible). FAQ "Open" variant leaves the answer at
+`opacity: 0; position: absolute` from the closed state.
+
+For each broken per-variant style:
+
+1. Open the bundle, find the `variants: { variantId: { ...overrides } }`
+   block on the affected element. Note the intended value for each variant.
+2. Find every CSS variable in the inline style that the override touches
+   (e.g. `--extracted-r6o4lv`, `--framer-text-color`, plus the visible
+   `color`). Override **all of them**, not just the visible one —
+   `color` is computed from `var(--framer-text-color)` via chained
+   `var()` references, and the inline variable value wins if you only
+   set `color`.
+3. Key the selector on the variant class (`.framer-v-XXXX`), not
+   `data-framer-name`.
+4. Use `!important` on every override.
+
+Worked example for a "Solid Black" button label color:
+
+```css
+.framer-XXXXX.framer-v-12dzqzc .framer-1t3u5p4,
+.framer-XXXXX.framer-v-12dzqzc .framer-1t3u5p4 p {
+  color: rgb(255, 255, 255) !important;
+  --extracted-r6o4lv: rgb(255, 255, 255) !important;
+  --framer-text-color: rgb(255, 255, 255) !important;
+}
+```
+
+---
+
+**Runtime re-writes inline styles, defeating author CSS overrides.**
+
+If you write a CSS override with `!important` and it visibly applies
+for a frame then snaps back, the Framer runtime is re-writing the
+inline style on every render cycle. Properties commonly affected:
+`backdrop-filter`, `mask`, `background-color`, `overflow`,
+`will-change`, `--extracted-*` / `--framer-text-color` variables.
+
+Fix with a `MutationObserver` watching only the `style` attribute on
+the targeted element:
+
+```tsx
+useEffect(() => {
+  const el = document.querySelector<HTMLElement>(".framer-1a4zuki");
+  if (!el) return;
+  const strip = () => {
+    el.style.backdropFilter = "none";
+    el.style.webkitBackdropFilter = "none";
+    el.style.mask = "none";
+    el.style.background = "transparent";
+  };
+  strip();
+  const mo = new MutationObserver(strip);
+  mo.observe(el, { attributes: true, attributeFilter: ["style"] });
+  return () => mo.disconnect();
+}, []);
+```
+
+Use `attributeFilter: ["style"]` to keep the cost negligible. Tear
+down on unmount. This is the only reliable counter for properties the
+runtime claims ownership of. The `useStripFramerStyles` utility
+shipped with this export packages this pattern as a reusable hook.
+
+### Utility Files (save these to your project)
+
+These small helper files address specific runtime limitations
+documented in the "Known Runtime Limitations & Workarounds" section
+above. Save each as its own file at the indicated path; the
+workarounds reference them by name.
+
+**`utils/LayoutIsland.tsx`:**
+
+```tsx
+/**
+ * LayoutIsland
+ *
+ * Wraps any Framer-exported component (or group of them) in its own
+ * isolated framer-motion LayoutGroup so internal `layoutId` props
+ * cannot collide with siblings in another part of the tree.
+ *
+ * Why this is needed:
+ *   Bundled Framer components contain string-literal `layoutId` props
+ *   on motion nodes. The exporter prefixes those ids per-component
+ *   (so a Badge inside Stack and a Badge inside Center no longer
+ *   share `layoutId="eTnAKyjwo"`). But if the consumer mounts the
+ *   SAME component multiple times on one page — three Badges inside
+ *   a Stack, say — framer-motion's shared-layout machinery still
+ *   picks one as the "live" instance and animates the rest to ghost
+ *   positions with opacity: 0. The text disappears.
+ *
+ *   LayoutIsland blocks that by giving every wrap its own
+ *   LayoutGroup id (via React.useId()) and setting
+ *   `inherit={false}` so the inner group doesn't merge with any
+ *   outer LayoutGroup.
+ *
+ * IMPORTANT LIMIT — INNER-SIBLING COLLISIONS:
+ *   LayoutIsland isolates *across* component imports. It does NOT
+ *   solve collisions when a single exported component renders N
+ *   copies of an internal sub-component (e.g. `Stack` rendering
+ *   three internal `Badge` instances; `FAQ List` rendering six
+ *   internal items). Those N sub-components share the same prefixed
+ *   layoutId inside Stack's own internal LayoutGroup, so 1 stays
+ *   visible and the other N−1 ghost.
+ *
+ *   When you see this symptom — a Stack/List of N items where
+ *   only one renders its text — apply the CSS escape-hatch on the
+ *   ghosted nodes:
+ *
+ *     .ghosted-class {
+ *       opacity: 1 !important;
+ *       transform: none !important;
+ *       pointer-events: auto !important;
+ *     }
+ *
+ *   You can identify ghosted nodes in devtools: they have inline
+ *   `transform: translate3d(Xpx, Ypx, 0px) scale(...)` plus
+ *   `opacity: 0` on what should be visible text. This costs the
+ *   shared-layout animation between siblings (which was the point
+ *   of the inner LayoutGroup) but recovers the visible content
+ *   (which is what the user actually needs).
+ *
+ * Usage:
+ *
+ *   import LayoutIsland from "./utils/LayoutIsland";
+ *
+ *   <LayoutIsland>
+ *     <Stack />     {/* Stack renders 3 Badges internally — all isolated *​/}
+ *   </LayoutIsland>
+ *
+ *   <LayoutIsland>
+ *     <Center />    {/* separate island — Badge inside Center won't collide *​/}
+ *   </LayoutIsland>
+ */
+"use client";
+import { LayoutGroup } from "framer-motion";
+import { useId, type ReactNode } from "react";
+
+export default function LayoutIsland({ children }: { children: ReactNode }) {
+  const id = useId();
+  return (
+    <LayoutGroup id={id} inherit={false}>
+      {children}
+    </LayoutGroup>
+  );
+}
+```
+
+**`utils/useStripFramerStyles.ts`:**
+
+```ts
+/**
+ * useStripFramerStyles
+ *
+ * React hook that strips specified inline-style properties from a
+ * target element on mount and re-strips them whenever the Framer
+ * runtime re-applies them.
+ *
+ * Why this is needed:
+ *   The Framer runtime claims ownership of certain inline-style
+ *   properties (backdrop-filter, mask, background, overflow,
+ *   will-change, --extracted-* CSS variables) and re-writes them on
+ *   every render cycle — even without an active animation. Inline
+ *   `style="..."` always beats external `!important` in the CSS
+ *   cascade, so any author override applies for one frame then snaps
+ *   back. There is no CSS-only counter.
+ *
+ *   The MutationObserver below watches the target's `style` attribute
+ *   and re-strips the properties every time the runtime touches them.
+ *   `attributeFilter: ["style"]` keeps the observer cost negligible.
+ *
+ * Usage:
+ *
+ *   import useStripFramerStyles from "./utils/useStripFramerStyles";
+ *
+ *   function HeaderFix() {
+ *     useStripFramerStyles(".framer-1a4zuki", [
+ *       "backdropFilter",
+ *       "webkitBackdropFilter",
+ *       "mask",
+ *       "background",
+ *     ]);
+ *     return null;
+ *   }
+ *
+ *   // Then mount <HeaderFix /> once at the page root.
+ */
+"use client";
+import { useEffect } from "react";
+
+type StyleProperty = keyof CSSStyleDeclaration;
+
+/**
+ * Watch `selector`'s `style` attribute and clear each named property
+ * whenever the runtime sets it. Cleared properties are set to "none"
+ * (for filter/mask family) or "" (for color/background family) — the
+ * sensible neutral value for each.
+ *
+ * Tears down the observer on unmount.
+ */
+export default function useStripFramerStyles(
+  selector: string,
+  properties: string[],
+): void {
+  useEffect(() => {
+    const el = document.querySelector<HTMLElement>(selector);
+    if (!el) return;
+    const strip = () => {
+      for (const prop of properties) {
+        // For filter/mask family: explicit "none" defeats runtime values.
+        // For background family: "" lets CSS take over.
+        const neutral = /filter|mask|overflow|will/i.test(prop) ? "none" : "";
+        // @ts-expect-error — dynamic style key set.
+        el.style[prop as StyleProperty] = neutral;
+      }
+    };
+    strip();
+    const mo = new MutationObserver(strip);
+    mo.observe(el, { attributes: true, attributeFilter: ["style"] });
+    return () => mo.disconnect();
+  }, [selector, properties.join(",")]); // eslint-disable-line react-hooks/exhaustive-deps
+}
+```
+
+**`utils/FramerEffects.tsx`:**
+
+```tsx
+/**
+ * FramerEffects — auto-populated by the exporter
+ *
+ * The bundled Framer runtime's withFX HOC does NOT execute the
+ * `__framer__*` animation props it receives. This file
+ * reimplements those animations via WAAPI so the rendered
+ * components actually animate.
+ *
+ *
+ * NOTE: 5 effect targets were detected but not auto-populated below.
+ * You'll need to populate them manually following the discovery loop:
+ *   - .framer-styles-preset-1couuo6 (__framer__styleAppearEffectEnabled): transition is a spring — pre-sampling not auto-extracted (see Discovery Loop)
+ *   - .framer-styles-preset-1couuo6 (__framer__styleAppearEffectEnabled): transition is a spring — pre-sampling not auto-extracted (see Discovery Loop)
+ *   - .framer-styles-preset-1couuo6 (__framer__styleAppearEffectEnabled): transition is a spring — pre-sampling not auto-extracted (see Discovery Loop)
+ *   - .framer-styles-preset-1couuo6 (__framer__styleAppearEffectEnabled): transition is a spring — pre-sampling not auto-extracted (see Discovery Loop)
+ *   - .framer-styles-preset-1couuo6 (__framer__styleAppearEffectEnabled): transition is a spring — pre-sampling not auto-extracted (see Discovery Loop)
+
+ * Mount this component once at the page root.
+ */
+"use client";
+import { useEffect } from "react";
+
+interface RevealSpec {
+  selector: string;
+  keyframes: Keyframe[];
+  duration: number;
+  easing?: string;
+  threshold?: number;
+  once?: boolean;
+}
+
+interface LoopSpec {
+  selector: string;
+  keyframes: Keyframe[];
+  duration: number;
+  easing?: string;
+  pauseOffscreen?: boolean;
+}
+
+const REVEAL_SPECS: RevealSpec[] = [];
+
+const LOOP_SPECS: LoopSpec[] = [];
+
+export default function FramerEffects() {
+  useEffect(() => {
+    const cleanups: Array<() => void> = [];
+    const fired = new Set<Element>();
+
+    for (const spec of REVEAL_SPECS) {
+      const targets = document.querySelectorAll<HTMLElement>(spec.selector);
+      if (targets.length === 0) continue;
+      targets.forEach((el) => {
+        const initial = el.animate(spec.keyframes.slice(0, 1) as Keyframe[], { duration: 1, fill: "forwards" });
+        initial.pause();
+      });
+      const io = new IntersectionObserver((entries) => {
+        for (const e of entries) {
+          if (!e.isIntersecting) continue;
+          if (spec.once !== false && fired.has(e.target)) continue;
+          (e.target as HTMLElement).animate(spec.keyframes, {
+            duration: spec.duration,
+            easing: spec.easing,
+            fill: "forwards",
+          });
+          if (spec.once !== false) fired.add(e.target);
+        }
+      }, { threshold: spec.threshold ?? 0, rootMargin: "0px" });
+      targets.forEach((el) => io.observe(el));
+      cleanups.push(() => io.disconnect());
+    }
+
+    for (const spec of LOOP_SPECS) {
+      const targets = document.querySelectorAll<HTMLElement>(spec.selector);
+      const anims: Animation[] = [];
+      targets.forEach((el) => {
+        const anim = el.animate(spec.keyframes, {
+          duration: spec.duration,
+          easing: spec.easing,
+          iterations: Infinity,
+        });
+        anims.push(anim);
+      });
+      if (spec.pauseOffscreen) {
+        const io = new IntersectionObserver((entries) => {
+          for (const e of entries) {
+            const i = Array.from(targets).indexOf(e.target as HTMLElement);
+            if (i < 0) continue;
+            if (e.isIntersecting) anims[i]?.play();
+            else anims[i]?.pause();
+          }
+        }, { threshold: 0 });
+        targets.forEach((el) => io.observe(el));
+        cleanups.push(() => io.disconnect());
+      }
+      cleanups.push(() => anims.forEach((a) => a.cancel()));
+    }
+
+    return () => cleanups.forEach((fn) => fn());
+  }, []);
+
+  return null;
+}
+```
+
+**`utils/ResponsiveWrapper.tsx`:**
+
+```tsx
+/**
+ * ResponsiveWrapper
+ *
+ * Wraps a Framer-exported component with multi-variant support
+ * (Desktop / Tablet / Phone / etc.) and automatically picks the
+ * appropriate variant based on the viewport width.
+ *
+ * Why this is needed:
+ *   Framer-exported components render at their canvas-time width
+ *   (typically 1200px or 1920px) and don't auto-switch variants on
+ *   resize. The consumer has to wire viewport-based variant
+ *   selection by hand for every multi-variant component.
+ *
+ *   This wrapper takes a Component + variants map and watches
+ *   `window.matchMedia` for breakpoint changes, passing the right
+ *   `variant` prop down on each viewport.
+ *
+ * Usage:
+ *
+ *   import ResponsiveWrapper from "./utils/ResponsiveWrapper";
+ *   import Header from "./Header";
+ *
+ *   <ResponsiveWrapper
+ *     Component={Header}
+ *     variants={{
+ *       base: "Phone",     // 0+
+ *       md: "Tablet",      // 810+
+ *       lg: "Desktop",     // 1200+
+ *     }}
+ *   />
+ *
+ * Breakpoints follow the responsive-runtime defaults (Framer's own
+ * canvas breakpoints).
+ */
+"use client";
+import { useEffect, useState, type ComponentType } from "react";
+
+interface ResponsiveWrapperProps<P extends { variant?: string }> {
+  Component: ComponentType<P>;
+  variants: {
+    base?: string;
+    sm?: string;
+    md?: string;
+    lg?: string;
+    xl?: string;
+    "2xl"?: string;
+  };
+  // Any other props get forwarded as-is.
+  [key: string]: unknown;
+}
+
+const BREAKPOINTS = {
+  base: 0,
+  sm: 390,
+  md: 810,
+  lg: 1200,
+  xl: 1440,
+  "2xl": 1920,
+} as const;
+
+function pickVariant(
+  width: number,
+  variants: ResponsiveWrapperProps<{ variant?: string }>["variants"],
+): string | undefined {
+  const order: Array<keyof typeof BREAKPOINTS> = ["2xl", "xl", "lg", "md", "sm", "base"];
+  for (const bp of order) {
+    if (width >= BREAKPOINTS[bp] && variants[bp]) {
+      return variants[bp];
+    }
+  }
+  return variants.base;
+}
+
+export default function ResponsiveWrapper<P extends { variant?: string }>({
+  Component,
+  variants,
+  ...rest
+}: ResponsiveWrapperProps<P>) {
+  const [variant, setVariant] = useState<string | undefined>(() => {
+    if (typeof window === "undefined") return variants.lg ?? variants.base;
+    return pickVariant(window.innerWidth, variants);
+  });
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const onResize = () => setVariant(pickVariant(window.innerWidth, variants));
+    onResize();
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, [variants]);
+
+  return <Component {...(rest as unknown as P)} variant={variant} />;
+}
+```
+
+### Setup Verification
+
+After integrating each component, run this checklist before declaring
+done. Silent partial failure is the worst outcome — these checks
+catch the common ones.
+
+1. Confirm every custom font in this export is loaded. In devtools
+   console, each of the following must return `true`:
+     - `document.fonts.check('14px "Inter Display"')`
+     - `document.fonts.check('14px "Inter"')`
+     - `document.fonts.check('14px "Bricolage Grotesque"')`
+   If any return false, the font didn't load — re-check tokens.css is
+   imported once at app root.
+2. Computed `font-family` in devtools on visible text shows the real
+   family at the **start** of the stack — not "Placeholder" /
+   `sans-serif`.
+3. Component renders at the consumer's actual container width without
+   overflow (test 1200px, 810px, 375px).
+4. No `__withFX` React warnings in console **for the new component
+   specifically** — if there are, the runtime workarounds above apply.
+5. Every variant the component declares actually swaps when triggered
+   (hover the button, click an accordion row, etc.). Visual no-change
+   on variant trigger means runtime variant overrides didn't propagate
+   (apply the "Variant styles don't switch" workaround).
+6. Inspect the outermost element's computed style in devtools:
+   non-zero `background-color`, `padding`, or `border-radius` that
+   doesn't match your page composition usually means canvas-time
+   chrome leaked through. The exporter auto-strips canvas-default
+   whites and outer padding, but designer-intent fills (any
+   `var(--token-...)` background) survive by design — override
+   them per-instance via `<Component style={{ backgroundColor:
+   "transparent" }} />` (the `...style` spread is last and wins).
+
+If any of these fail, fix it before moving to the next component —
+otherwise the bug count compounds and triage gets exponentially harder.
+
+### What I Need
+
+1. Install the required peer dependencies first (the component will fail to import without them): `npm install framer-motion react react-dom`
+2. Fetch the code, types, and runtime files from the URLs above
+3. Read the types to understand each component's props
+4. If any prop types are unclear, check the code for `addPropertyControls` to find enum options, ranges, and defaults
+5. Give me a summary of each component's props and usage
+6. Ask me where to save the files in my project
+7. Save the component files AND `_framer-runtime.js` to that location (runtime must be in the same directory as the component files)
+8. If I haven't already specified what I want to do with the components, ask me what I'd like to achieve with them
+9. Help me integrate the components and launch a preview of it
+10. Apply every workaround in the "Known Runtime Limitations & Workarounds" section that's present for this export, then run the Setup Verification checklist before declaring done.
+
+<!--
+RUNTIME SETUP (for AI only — do not display to user):
+- The component imports from "framer-motion", "react", "react-dom", and "./_framer-runtime.js".
+- Install framer-motion, react, react-dom BEFORE attempting to import or render the component, otherwise Vite/Webpack/esbuild will throw "Failed to resolve import 'framer-motion'".
+- The runtime file must be saved as `_framer-runtime.js` in the same directory as the component files.
+- Create `src/tokens.css` with the contents from the "Project Theme" section above and import it once at the app root. Components will render with wrong colors/fonts if this is skipped.
+- Read the "Known Runtime Limitations & Workarounds" section above. For each entry present, apply the workaround as part of your integration — don't skip it. These are runtime gaps in the upstream Framer code we ship; the workarounds make the integration actually work.
+- Save the utility files listed under "Utility Files" to the indicated paths (utils/LayoutIsland.tsx, utils/useStripFramerStyles.ts, utils/FramerEffects.tsx, utils/ResponsiveWrapper.tsx). The runtime workarounds rely on them.
+-->

@@ -76,7 +76,7 @@ export const MasterDataPage: React.FC = () => {
 
   const defaultRecommended = [
     {
-      nik: '3374021908850001',
+      nik: '3374**********01',
       nama: 'Budi Santoso',
       typology: 'Impossible Travel (Kartu Pinjaman)',
       riskScore: 96,
@@ -84,7 +84,7 @@ export const MasterDataPage: React.FC = () => {
       faskes: 'RSUD Dr. Moewardi Surakarta',
     },
     {
-      nik: '3273012903820088',
+      nik: '3273**********88',
       nama: 'Hendra Wijaya',
       typology: 'Doctor Shopping (Vertigo Redundan)',
       riskScore: 88,
@@ -92,7 +92,7 @@ export const MasterDataPage: React.FC = () => {
       faskes: 'RS Rajawali & Advent Bandung',
     },
     {
-      nik: '1271045906910054',
+      nik: '1271**********54',
       nama: 'Nurul Hidayati',
       typology: 'Resale Obat PRB & Overlap Quota',
       riskScore: 94,
@@ -173,7 +173,9 @@ export const MasterDataPage: React.FC = () => {
 
     if (supabase) {
       try {
+        const { data: { session } } = await supabase.auth.getSession();
         await supabase.from('audit_access_logs').insert({
+          accessed_by_user_id: session?.user?.id ?? null,
           auditor_role: 'AUDITOR_SENIOR',
           action_performed: 'SUSPEND_PESERTA',
           target_no_kartu: nikInput.slice(0, 13),
@@ -207,7 +209,9 @@ export const MasterDataPage: React.FC = () => {
 
     if (supabase) {
       try {
+        const { data: { session } } = await supabase.auth.getSession();
         await supabase.from('audit_access_logs').insert({
+          accessed_by_user_id: session?.user?.id ?? null,
           auditor_role: 'AUDITOR_SENIOR',
           action_performed: 'SEND_WARNING_LETTER',
           target_no_kartu: nikInput.slice(0, 13),

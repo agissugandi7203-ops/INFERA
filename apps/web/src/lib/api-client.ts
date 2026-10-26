@@ -1,4 +1,5 @@
 import type { ApiResponse } from '@healthathon/shared';
+import { getAuthHeaders } from './supabase';
 
 const BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) || '/api/v1';
 
@@ -16,13 +17,12 @@ export class ApiClientError extends Error {
 
 export const apiClient = {
   async request<T>(endpoint: string, options: RequestInit = {}, token?: string): Promise<T> {
+    const authHeaders = token ? { Authorization: `Bearer ${token}` } : await getAuthHeaders();
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
+      ...authHeaders,
       ...((options.headers as Record<string, string>) || {}),
     };
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
 
     const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
     const cleanBase = BASE_URL.replace(/\/+$/, '');
