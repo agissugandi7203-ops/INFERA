@@ -24,6 +24,7 @@ const envSchema = z.object({
   SUPABASE_SERVICE_ROLE_KEY: z.string().optional().default(''),
   OPENROUTER_API_KEY: z.string().optional().default(''),
   OPENROUTER_DEFAULT_MODEL: z.string().default('openai/gpt-oss-120b:nitro'),
+  OPENAI_API_KEY: z.string().optional().default(''),
   ELEVENLABS_API_KEY: z.string().optional().default(''),
 
   // ---- Redis / Distributed Cache (Railway Redis TCP & Vercel Upstash REST) ----
@@ -98,6 +99,7 @@ const base = parsedEnv.success
       SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY || '',
       OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY || '',
       OPENROUTER_DEFAULT_MODEL: 'openai/gpt-oss-120b:nitro',
+      OPENAI_API_KEY: process.env.OPENAI_API_KEY || '',
       ELEVENLABS_API_KEY: process.env.ELEVENLABS_API_KEY || '',
       REDIS_URL: rawEnv.REDIS_URL || '',
       UPSTASH_REDIS_REST_URL: rawEnv.UPSTASH_REDIS_REST_URL || '',

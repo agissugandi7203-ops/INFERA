@@ -1,0 +1,6 @@
+# Robots.txt for INFERA (https://infera.web.id)
+User-agent: *
+Allow: /
+Disallow: /api/
+
+Sitemap: https://infera.web.id/sitemap.xml

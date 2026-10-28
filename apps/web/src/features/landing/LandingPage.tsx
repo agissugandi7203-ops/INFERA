@@ -4,7 +4,6 @@ import {
   Button,
   ButtonIcon,
   Badge,
-  BlurgradientProd,
   SmoothscrollProd,
   FramerEffects,
 } from './framer-ui/components';
@@ -45,9 +44,19 @@ export const LandingPage: React.FC<LandingPageProps> = ({ userEmail, onOpenAuth 
   }, [userEmail, navigate, onOpenAuth]);
 
   const handleScrollToSection = useCallback((selector: string) => {
+    if (selector === '#top') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
     const el = document.querySelector(selector);
     if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      const navOffset = 90;
+      const elementPosition = el.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - navOffset;
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth',
+      });
     }
   }, []);
 
@@ -65,34 +74,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ userEmail, onOpenAuth 
       {/* Framer WAAPI Appear/Loop Effects */}
       <FramerEffects />
 
-      {/* Framer Momentum Smooth Scrolling (Matches FintechX Video Feel) */}
+      {/* Inertia Momentum Smooth Scrolling (Framer SmoothscrollProd) */}
       <SmoothscrollProd intensity={50} />
 
-      {/* Top Fixed Blur Gradient (Framer BlurgradientProd) */}
-      <div
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          height: 96,
-          zIndex: 40,
-          pointerEvents: 'none',
-        }}
-      >
-        <BlurgradientProd
-          blur={10}
-          borderRadius="0px"
-          direction="toBottom"
-          style={{ width: '100%', height: '100%' }}
-        />
-      </div>
-
-      {/* Sticky Pill Navbar (Matches 181634.png) */}
+      {/* Sticky Top Navbar (Matches Framer 1qd17to Content Spec) */}
       <header
         style={{
           position: 'fixed',
-          top: 20,
+          top: 16,
           left: 0,
           right: 0,
           zIndex: 50,
@@ -107,14 +96,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ userEmail, onOpenAuth 
           style={{
             pointerEvents: 'auto',
             width: '100%',
-            maxWidth: 760,
-            backgroundColor: 'rgba(255, 255, 255, 0.92)',
-            backdropFilter: 'blur(20px)',
-            WebkitBackdropFilter: 'blur(20px)',
-            borderRadius: 100,
-            padding: '8px 10px 8px 22px',
-            border: '1px solid rgba(221, 229, 237, 0.85)',
-            boxShadow: '0 8px 30px rgba(15, 23, 42, 0.06)',
+            maxWidth: 860,
+            backgroundColor: 'rgb(255, 255, 255)',
+            borderRadius: 10,
+            boxShadow: '0px 0px 0px 4px rgb(221, 229, 237), 0 8px 24px rgba(15, 23, 42, 0.06)',
+            padding: '5px 8px 5px 20px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
@@ -131,31 +117,25 @@ export const LandingPage: React.FC<LandingPageProps> = ({ userEmail, onOpenAuth 
             style={{
               display: 'inline-flex',
               alignItems: 'center',
-              gap: 9,
+              gap: 10,
               textDecoration: 'none',
               color: '#1d1d1d',
             }}
           >
-            <span
+            <img
+              src="/infera-logo.png"
+              alt="INFERA Logo"
               style={{
                 width: 28,
                 height: 28,
-                borderRadius: 8,
-                background: 'linear-gradient(135deg, #2b7fff 0%, #1d4ed8 100%)',
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: '#ffffff',
-                fontWeight: 800,
-                fontSize: 15,
+                objectFit: 'contain',
+                display: 'block',
               }}
-            >
-              ✦
-            </span>
+            />
             <span
               style={{
                 fontFamily: HEADING_FONT,
-                fontSize: 21,
+                fontSize: 19,
                 fontWeight: 700,
                 letterSpacing: '-0.02em',
                 color: '#1d1d1d',
@@ -165,19 +145,18 @@ export const LandingPage: React.FC<LandingPageProps> = ({ userEmail, onOpenAuth 
             </span>
           </a>
 
-          {/* Center Anchor Links */}
+          {/* Center Anchor Links — Clean 4 Essential Links */}
           <div
             className="hidden md:flex"
             style={{
               alignItems: 'center',
-              gap: 28,
+              gap: 6,
             }}
           >
             {[
-              { label: 'Beranda', href: '#top' },
-              { label: 'Fitur', href: '#features' },
-              { label: 'Cara Kerja', href: '#how-it-works' },
-              { label: 'Skema', href: '#pricing' },
+              { label: 'Features', href: '#features' },
+              { label: 'Workflow', href: '#how-it-works' },
+              { label: 'Pricing', href: '#pricing' },
               { label: 'FAQ', href: '#faq' },
             ].map((item) => (
               <a
@@ -185,19 +164,26 @@ export const LandingPage: React.FC<LandingPageProps> = ({ userEmail, onOpenAuth 
                 href={item.href}
                 onClick={(e) => {
                   e.preventDefault();
-                  if (item.href === '#top') {
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                  } else {
-                    handleScrollToSection(item.href);
-                  }
+                  handleScrollToSection(item.href);
                 }}
                 style={{
                   fontFamily: BODY_FONT,
-                  fontSize: 15,
-                  fontWeight: 500,
-                  color: '#1d1d1d',
+                  fontSize: 15.5,
+                  fontWeight: 600,
+                  color: 'rgb(77, 88, 95)',
+                  backgroundColor: 'transparent',
+                  borderRadius: 100,
+                  padding: '7px 16px',
                   textDecoration: 'none',
-                  transition: 'opacity 0.2s ease',
+                  transition: 'all 0.2s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = 'rgb(29, 29, 29)';
+                  e.currentTarget.style.backgroundColor = 'rgba(221, 229, 237, 0.45)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = 'rgb(77, 88, 95)';
+                  e.currentTarget.style.backgroundColor = 'transparent';
                 }}
               >
                 {item.label}
@@ -205,10 +191,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ userEmail, onOpenAuth 
             ))}
           </div>
 
-          {/* Right Action ButtonIcon */}
+          {/* Right Action Button (Black Nav Button Variant) */}
           <ButtonIcon
             variant="Nav Button"
-            title={userEmail ? 'Buka Dashboard' : 'Mulai Sekarang'}
+            title={userEmail ? 'Open Dashboard' : 'Try it free'}
             onClick={handlePrimaryAction}
           />
         </nav>

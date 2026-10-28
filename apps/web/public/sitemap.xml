@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+        http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+
+  <!-- Landing / Home Page -->
+  <url>
+    <loc>https://infera.web.id/</loc>
+    <lastmod>2026-10-28</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <!-- Dashboard Overview -->
+  <url>
+    <loc>https://infera.web.id/dashboard</loc>
+    <lastmod>2026-10-28</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- Deep Dive Cases -->
+  <url>
+    <loc>https://infera.web.id/dashboard/cases</loc>
+    <lastmod>2026-10-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- AI Investigation Report -->
+  <url>
+    <loc>https://infera.web.id/dashboard/ai-report</loc>
+    <lastmod>2026-10-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- JKN Regulations & Hybrid RAG Knowledge Base -->
+  <url>
+    <loc>https://infera.web.id/dashboard/regulations</loc>
+    <lastmod>2026-10-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Identity Risk Analysis -->
+  <url>
+    <loc>https://infera.web.id/dashboard/identity-risk</loc>
+    <lastmod>2026-10-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Unnecessary Services Analysis -->
+  <url>
+    <loc>https://infera.web.id/dashboard/unnecessary-services</loc>
+    <lastmod>2026-10-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Pharmacy & Alkes Monitoring -->
+  <url>
+    <loc>https://infera.web.id/dashboard/pharmacy-alkes</loc>
+    <lastmod>2026-10-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- Master Data & Settings -->
+  <url>
+    <loc>https://infera.web.id/dashboard/master-data</loc>
+    <lastmod>2026-10-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+</urlset>

@@ -24,6 +24,7 @@
 
   html {
     color-scheme: light;
+    scroll-behavior: smooth;
   }
 
   html.dark {
@@ -62,3 +63,89 @@
     background: transparent;
   }
 }
+
+/* ==========================================================================
+   FRAMER COMPONENT CONTRAST & LEGIBILITY FIXES
+   Ensures text on dark variant cards and dark variant buttons is bright white
+   ========================================================================== */
+
+/* 1. All Button Dark Variants (Pelajari Lebih Lanjut, Get started, Contact sales) */
+.framer-QPobS.framer-v-z5dw7n p,
+.framer-QPobS.framer-v-xd86s8 p,
+.framer-QPobS[data-framer-name="Dark"] p,
+.framer-QPobS[data-framer-name="Dark - Phone"] p,
+.framer-QPobS.framer-v-z5dw7n .framer-styles-preset-6b8cag,
+.framer-QPobS.framer-v-xd86s8 .framer-styles-preset-6b8cag,
+.framer-QPobS[data-framer-name="Dark"] .framer-styles-preset-6b8cag,
+[data-framer-name="Dark"] .framer-styles-preset-6b8cag {
+  color: #ffffff !important;
+  --framer-text-color: #ffffff !important;
+}
+
+/* Hover on Dark Button turns light background (#dde5ed), so text turns dark */
+.framer-QPobS.framer-v-z5dw7n:hover p,
+.framer-QPobS[data-framer-name="Dark"]:hover p,
+.framer-QPobS.framer-v-z5dw7n:hover .framer-styles-preset-6b8cag,
+.framer-QPobS[data-framer-name="Dark"]:hover .framer-styles-preset-6b8cag {
+  color: #1d1d1d !important;
+  --framer-text-color: #1d1d1d !important;
+}
+
+/* 2. StatLgCard Dark Variants (Stabilitas Sistem 99,9%, Faskes Terhubung 120+, etc.) */
+.framer-cSJRf.framer-v-980uvy,
+.framer-cSJRf.framer-v-w96wp4,
+.framer-cSJRf[data-framer-name="Dark"],
+.framer-cSJRf[data-framer-name="Dark - Phone"] {
+  background: linear-gradient(135deg, rgb(36, 40, 48) 0%, rgb(15, 18, 24) 100%) !important;
+}
+
+/* StatLgCard Dark: PreTitle ("Stabilitas Sistem", "Faskes Terhubung") */
+.framer-cSJRf.framer-v-980uvy .framer-dpzfsj p,
+.framer-cSJRf.framer-v-w96wp4 .framer-dpzfsj p,
+.framer-cSJRf[data-framer-name="Dark"] .framer-dpzfsj p,
+.framer-cSJRf[data-framer-name="Dark - Phone"] .framer-dpzfsj p,
+.framer-cSJRf.framer-v-980uvy .framer-dpzfsj .framer-styles-preset-1couuo6,
+.framer-cSJRf[data-framer-name="Dark"] .framer-dpzfsj .framer-styles-preset-1couuo6 {
+  color: rgba(255, 255, 255, 0.9) !important;
+  --framer-text-color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* StatLgCard Dark: Big Stat Number ("99,9%", "120+") */
+.framer-cSJRf.framer-v-980uvy .framer-1bz0cfg h3,
+.framer-cSJRf.framer-v-w96wp4 .framer-1bz0cfg h3,
+.framer-cSJRf[data-framer-name="Dark"] .framer-1bz0cfg h3,
+.framer-cSJRf[data-framer-name="Dark - Phone"] .framer-1bz0cfg h3,
+.framer-cSJRf.framer-v-980uvy .framer-1bz0cfg .framer-styles-preset-19enqwt,
+.framer-cSJRf[data-framer-name="Dark"] .framer-1bz0cfg .framer-styles-preset-19enqwt {
+  color: #ffffff !important;
+  --framer-text-color: #ffffff !important;
+}
+
+/* StatLgCard Dark: Description */
+.framer-cSJRf.framer-v-980uvy .framer-1o6vdti p,
+.framer-cSJRf.framer-v-w96wp4 .framer-1o6vdti p,
+.framer-cSJRf[data-framer-name="Dark"] .framer-1o6vdti p,
+.framer-cSJRf[data-framer-name="Dark - Phone"] .framer-1o6vdti p,
+.framer-cSJRf.framer-v-980uvy .framer-1o6vdti .framer-styles-preset-1couuo6,
+.framer-cSJRf[data-framer-name="Dark"] .framer-1o6vdti .framer-styles-preset-1couuo6 {
+  color: rgba(255, 255, 255, 0.78) !important;
+  --framer-text-color: rgba(255, 255, 255, 0.78) !important;
+}
+
+/* 3. PricingItem buttons & dark elements */
+.framer-giX1w .framer-v-z5dw7n p,
+.framer-giX1w .framer-v-xd86s8 p,
+.framer-giX1w [data-framer-name="Dark"] p {
+  color: #ffffff !important;
+  --framer-text-color: #ffffff !important;
+}
+
+/* 4. ButtonIcon Nav Button variant (Coba Gratis navbar button) */
+.framer-L4G2x.framer-v-yrv591 p,
+.framer-L4G2x[data-framer-name="Nav Button"] p,
+.framer-L4G2x.framer-v-yrv591 .framer-styles-preset-1mvqed6 {
+  color: #ffffff !important;
+  --framer-text-color: #ffffff !important;
+}
+
+

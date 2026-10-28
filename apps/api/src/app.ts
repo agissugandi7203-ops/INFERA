@@ -4,8 +4,9 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import { env } from './config/env.js';
 import { isTrustedOrigin } from './config/origins.js';
-import { API_PREFIX } from '@healthathon/shared';
+import { API_PREFIX, API_V2_PREFIX } from '@healthathon/shared';
 import apiRouter from './routes/api.routes.js';
+import apiV2Router from './routes/v2/api.v2.routes.js';
 import docsRouter from './routes/docs.routes.js';
 import { swaggerSpec } from './config/swagger.js';
 import { notFoundHandler, errorHandler } from './middleware/error.middleware.js';
@@ -79,7 +80,9 @@ export const createApp = (): Application => {
   // Body parsers — tight default limit; larger only where multimodal payloads are expected.
   app.use(requireJsonBody);
   app.use(`${API_PREFIX}/ai`, express.json({ limit: '12mb' })); // PDF/image attachments (base64)
+  app.use(`${API_V2_PREFIX}/ai`, express.json({ limit: '12mb' }));
   app.use(`${API_PREFIX}/voice`, express.json({ limit: '4mb' })); // short audio clips for STT
+  app.use(`${API_V2_PREFIX}/voice`, express.json({ limit: '4mb' }));
   app.use(express.json({ limit: '512kb', strict: true }));
 
   // Swagger documentation — disabled in production unless explicitly enabled
@@ -103,8 +106,9 @@ export const createApp = (): Application => {
     });
   });
 
-  // Mount API Router strictly under API_PREFIX (/api/v1) — never cache API responses
+  // Mount API Router strictly under API_PREFIX (/api/v1) and API_V2_PREFIX (/api/v2) — never cache API responses
   app.use(API_PREFIX, noStore, apiRouter);
+  app.use(API_V2_PREFIX, noStore, apiV2Router);
 
   // 404 and Global Error handling
   app.use(notFoundHandler);

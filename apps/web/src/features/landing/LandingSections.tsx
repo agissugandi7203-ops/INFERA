@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import {
   Button,
   ButtonIcon,
@@ -18,6 +18,7 @@ import {
   PricingItem,
   FaqsCta,
   ClientLogo,
+  IntegrationIcon,
   FeatureBoxTitle,
 } from './framer-ui/components';
 import {
@@ -51,292 +52,351 @@ export const HeroSection: React.FC<SectionActionProps> = ({
   onPrimaryAction,
   onScrollToSection,
 }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ['start start', 'end start'],
+  });
+
+  // Scroll-linked transforms matching FintechX smooth video motion
+  const bgOpacity = useTransform(scrollYProgress, [0, 0.55, 0.85], [1, 0.75, 0]);
+  const cloudLeftX = useTransform(scrollYProgress, [0, 0.7], [0, -240]);
+  const cloudRightX = useTransform(scrollYProgress, [0, 0.7], [0, 240]);
+  const cloudBottomY = useTransform(scrollYProgress, [0, 0.7], [0, 160]);
+
+  // Tahap scroll bukit hijau:
+  // - Tahap 1 & 2: bukit tetap menutup bagian bawah dashboard (y: 0, opacity: 1)
+  // - Tahap 3 (scroll > 0.25): bukit tenggelam ke bawah dan menghilang (fade out)
+  const hillsY = useTransform(scrollYProgress, [0, 0.22, 0.52], [0, 0, 360]);
+  const hillsOpacity = useTransform(scrollYProgress, [0, 0.28, 0.5], [1, 1, 0]);
+  const hillsScale = useTransform(scrollYProgress, [0, 0.5], [1, 1.06]);
+
+  // Teks hero tidak hilang tiba-tiba, melainkan bergerak lurus ke atas seperti scroll natural
+  const titleY = useTransform(scrollYProgress, [0, 0.48], [0, -320]);
+  const titleOpacity = useTransform(scrollYProgress, [0, 0.38, 0.48], [1, 1, 0]);
+
+  // Dashboard scale & position:
+  // Di awal tertutup sebagian oleh bukit (scale 0.72), pada tahap 3 membesar penuh ke 1.0 dan tampil utuh
+  const dashboardScale = useTransform(scrollYProgress, [0, 0.5], [0.72, 1]);
+  const dashboardY = useTransform(scrollYProgress, [0, 0.5], [25, -135]);
+
   return (
     <section
+      ref={containerRef}
       style={{
         position: 'relative',
         width: '100%',
-        minHeight: '100vh',
+        minHeight: '220vh',
         backgroundColor: '#ffffff',
-        overflow: 'hidden',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        paddingTop: 145,
-        paddingBottom: 40,
       }}
     >
-      {/* Sky & Wildflower Meadow Background Layer */}
       <div
         style={{
-          position: 'absolute',
-          inset: 0,
-          pointerEvents: 'none',
-          zIndex: 0,
-        }}
-      >
-        <img
-          src={FRAMER_IMAGES.heroBgMeadow}
-          alt=""
-          style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            objectPosition: 'center top',
-          }}
-        />
-        {/* Top White Gradient Fade */}
-        <div
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            height: 140,
-            background: 'linear-gradient(180deg, #ffffff 0%, rgba(255,255,255,0) 100%)',
-          }}
-        />
-      </div>
-
-      {/* Clouds - Visible and Floating Naturally */}
-      <img
-        src={FRAMER_IMAGES.heroCloudLeft}
-        alt=""
-        style={{
-          position: 'absolute',
-          top: 90,
-          left: '-6%',
-          width: 'clamp(280px, 38vw, 560px)',
-          pointerEvents: 'none',
-          zIndex: 1,
-        }}
-      />
-      <img
-        src={FRAMER_IMAGES.heroCloudRight}
-        alt=""
-        style={{
-          position: 'absolute',
-          top: 80,
-          right: '-6%',
-          width: 'clamp(280px, 38vw, 560px)',
-          pointerEvents: 'none',
-          zIndex: 1,
-        }}
-      />
-      <img
-        src={FRAMER_IMAGES.heroCloudBottom}
-        alt=""
-        style={{
-          position: 'absolute',
-          bottom: 120,
-          left: '28%',
-          width: 'clamp(300px, 42vw, 620px)',
-          pointerEvents: 'none',
-          zIndex: 1,
-        }}
-      />
-
-      {/* Hero Text, CTAs, and 3 ListItem Feature Pills */}
-      <div
-        style={{
-          position: 'relative',
-          zIndex: 4,
-          maxWidth: 1260,
+          position: 'sticky',
+          top: 0,
           width: '100%',
-          padding: '0 30px',
+          minHeight: '100vh',
+          overflow: 'hidden',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          textAlign: 'center',
+          paddingTop: 145,
+          paddingBottom: 60,
         }}
       >
-        {/* H1 Display Title with Inline 3D AI Icon */}
-        <h1
+        {/* Sky & Wildflower Meadow Background Layer */}
+        <motion.div
           style={{
-            fontFamily: HEADING_FONT,
-            fontSize: 'clamp(40px, 5.4vw, 76px)',
-            fontWeight: 600,
-            lineHeight: 1.05,
-            letterSpacing: '-0.02em',
-            color: '#1d1d1d',
-            margin: 0,
-            maxWidth: 980,
-          }}
-        >
-          <span
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexWrap: 'wrap',
-              gap: '0 14px',
-            }}
-          >
-            <span>Inteligensi</span>
-            <motion.img
-              src={FRAMER_IMAGES.heroTitleAiIcon}
-              alt="AI Badge"
-              initial={{ scale: 0.85, rotate: 4 }}
-              animate={{ scale: 1, rotate: 10 }}
-              transition={{ type: 'spring', stiffness: 220, damping: 16 }}
-              style={{
-                width: 'clamp(48px, 5.2vw, 74px)',
-                height: 'clamp(48px, 5.2vw, 74px)',
-                objectFit: 'contain',
-                display: 'inline-block',
-                verticalAlign: 'middle',
-                filter: 'drop-shadow(0 12px 18px rgba(37, 99, 235, 0.25))',
-              }}
-            />
-            <span>Risiko Klaim</span>
-          </span>
-          <br />
-          <span>untuk Proteksi JKN Modern</span>
-        </h1>
-
-        {/* Subtitle */}
-        <p
-          style={{
-            fontFamily: BODY_FONT,
-            fontSize: 'clamp(16px, 1.3vw, 18px)',
-            fontWeight: 500,
-            lineHeight: 1.4,
-            color: '#4d585f',
-            maxWidth: 610,
-            marginTop: 22,
-            marginBottom: 32,
-          }}
-        >
-          Lacak, analisis, dan optimalkan pengawasan klaim JKN dengan wawasan berbasis AI
-          real-time serta otomatisasi cerdas Permenkes No. 16 Tahun 2019.
-        </p>
-
-        {/* 2 CTA Buttons */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexWrap: 'wrap',
-            gap: 14,
-            marginBottom: 38,
-          }}
-        >
-          <ButtonIcon
-            variant="Default"
-            title={userEmail ? 'Buka Dashboard' : 'Mulai Sekarang'}
-            onClick={onPrimaryAction}
-          />
-          <Button
-            variant="Default"
-            title="Jelajahi Fitur"
-            onClick={() => onScrollToSection('#features')}
-          />
-        </div>
-
-        {/* 3 ListItem Feature Pills with Vertical Dividers */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexWrap: 'wrap',
-            gap: 24,
-          }}
-        >
-          <ListItem
-            variant="Fit"
-            icon={FRAMER_IMAGES.iconStarYellow}
-            title="Wawasan Klaim Berbasis AI"
-            color="rgb(29, 29, 29)"
-          />
-          <div style={{ width: 1, height: 20, backgroundColor: '#dde5ed' }} />
-          <ListItem
-            variant="Fit"
-            icon={FRAMER_IMAGES.iconShieldGreen}
-            title="Keamanan Setara Bank & UU PDP"
-            color="rgb(29, 29, 29)"
-          />
-          <div style={{ width: 1, height: 20, backgroundColor: '#dde5ed' }} />
-          <ListItem
-            variant="Fit"
-            icon={FRAMER_IMAGES.iconBoltRed}
-            title="Pelacakan Klaim Real-Time"
-            color="rgb(29, 29, 29)"
-          />
-        </div>
-      </div>
-
-      {/* Dashboard Mockup Card (zIndex: 2, placed behind the foreground grass hills) */}
-      <motion.div
-        initial={{ opacity: 0, y: 35 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1] }}
-        style={{
-          position: 'relative',
-          zIndex: 2,
-          width: '100%',
-          maxWidth: 1160,
-          padding: '0 24px',
-          marginTop: 32,
-          marginBottom: -50,
-        }}
-      >
-        <div
-          onClick={onPrimaryAction}
-          style={{
-            cursor: 'pointer',
-            padding: 10,
-            borderRadius: 28,
-            backgroundColor: 'rgba(255, 255, 255, 0.92)',
-            border: '1px solid #dde5ed',
-            boxShadow: '0 32px 80px rgba(15, 23, 42, 0.16)',
-            overflow: 'hidden',
+            position: 'absolute',
+            inset: 0,
+            opacity: bgOpacity,
+            pointerEvents: 'none',
+            zIndex: 0,
           }}
         >
           <img
-            src={FRAMER_IMAGES.heroDashboard}
-            alt="INFERA Analytics Dashboard"
+            src={FRAMER_IMAGES.heroBgMeadow}
+            alt=""
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              objectPosition: 'center top',
+            }}
+          />
+          {/* Top & Bottom White Gradient Fades */}
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              height: 150,
+              background: 'linear-gradient(180deg, #ffffff 0%, rgba(255,255,255,0) 100%)',
+            }}
+          />
+          <div
+            style={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: 220,
+              background: 'linear-gradient(0deg, #ffffff 0%, rgba(255,255,255,0) 100%)',
+            }}
+          />
+        </motion.div>
+
+        {/* Parallax Clouds */}
+        <motion.img
+          src={FRAMER_IMAGES.heroCloudLeft}
+          alt=""
+          style={{
+            position: 'absolute',
+            top: 90,
+            left: '-6%',
+            width: 'clamp(280px, 38vw, 560px)',
+            x: cloudLeftX,
+            opacity: bgOpacity,
+            pointerEvents: 'none',
+            zIndex: 1,
+          }}
+        />
+        <motion.img
+          src={FRAMER_IMAGES.heroCloudRight}
+          alt=""
+          style={{
+            position: 'absolute',
+            top: 80,
+            right: '-6%',
+            width: 'clamp(280px, 38vw, 560px)',
+            x: cloudRightX,
+            opacity: bgOpacity,
+            pointerEvents: 'none',
+            zIndex: 1,
+          }}
+        />
+        <motion.img
+          src={FRAMER_IMAGES.heroCloudBottom}
+          alt=""
+          style={{
+            position: 'absolute',
+            bottom: 140,
+            left: '28%',
+            width: 'clamp(300px, 42vw, 620px)',
+            y: cloudBottomY,
+            opacity: bgOpacity,
+            pointerEvents: 'none',
+            zIndex: 1,
+          }}
+        />
+
+        {/* Foreground V-Shaped Grass Hills (zIndex: 3 — In front of dashboard, sinks & disappears at scroll 3) */}
+        <motion.div
+          style={{
+            position: 'absolute',
+            left: '-2%',
+            right: '-2%',
+            bottom: -35,
+            y: hillsY,
+            scale: hillsScale,
+            opacity: hillsOpacity,
+            pointerEvents: 'none',
+            zIndex: 3,
+          }}
+        >
+          <img
+            src={FRAMER_IMAGES.heroGrassHills}
+            alt=""
             style={{
               width: '100%',
               height: 'auto',
               display: 'block',
-              borderRadius: 20,
             }}
           />
-        </div>
-      </motion.div>
+          <div
+            style={{
+              position: 'absolute',
+              left: 0,
+              right: 0,
+              bottom: 0,
+              height: 140,
+              background: 'linear-gradient(0deg, #ffffff 15%, rgba(255,255,255,0) 100%)',
+            }}
+          />
+        </motion.div>
 
-      {/* Foreground V-Shaped Grass Hills (zIndex: 3 - in front of dashboard, lowered slightly) */}
-      <div
-        style={{
-          position: 'absolute',
-          left: '-2%',
-          right: '-2%',
-          bottom: -72,
-          pointerEvents: 'none',
-          zIndex: 3,
-        }}
-      >
-        <img
-          src={FRAMER_IMAGES.heroGrassHills}
-          alt=""
+        {/* Hero Text, CTAs, and 3 ListItem Feature Pills */}
+        <motion.div
           style={{
+            position: 'relative',
+            zIndex: 4,
+            maxWidth: 1260,
             width: '100%',
-            height: 'auto',
-            display: 'block',
+            padding: '0 30px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            textAlign: 'center',
+            opacity: titleOpacity,
+            y: titleY,
           }}
-        />
-        <div
+        >
+          {/* H1 Display Title with Inline 3D AI Icon */}
+          <h1
+            style={{
+              fontFamily: HEADING_FONT,
+              fontSize: 'clamp(40px, 5.4vw, 76px)',
+              fontWeight: 600,
+              lineHeight: 1.05,
+              letterSpacing: '-0.02em',
+              color: '#1d1d1d',
+              margin: 0,
+              maxWidth: 980,
+            }}
+          >
+            <span
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexWrap: 'wrap',
+                gap: '0 14px',
+              }}
+            >
+              <span>Inteligensi</span>
+              <motion.img
+                src={FRAMER_IMAGES.heroTitleAiIcon}
+                alt="AI Badge"
+                initial={{ scale: 0.85, rotate: 4 }}
+                animate={{ scale: 1, rotate: 10 }}
+                transition={{ type: 'spring', stiffness: 220, damping: 16 }}
+                style={{
+                  width: 'clamp(48px, 5.2vw, 74px)',
+                  height: 'clamp(48px, 5.2vw, 74px)',
+                  objectFit: 'contain',
+                  display: 'inline-block',
+                  verticalAlign: 'middle',
+                  filter: 'drop-shadow(0 12px 18px rgba(37, 99, 235, 0.25))',
+                }}
+              />
+              <span>Risiko Klaim</span>
+            </span>
+            <br />
+            <span>untuk Proteksi JKN Modern</span>
+          </h1>
+
+          {/* Subtitle */}
+          <p
+            style={{
+              fontFamily: BODY_FONT,
+              fontSize: 'clamp(16px, 1.3vw, 18px)',
+              fontWeight: 500,
+              lineHeight: 1.4,
+              color: '#4d585f',
+              maxWidth: 610,
+              marginTop: 22,
+              marginBottom: 32,
+            }}
+          >
+            Lacak, analisis, dan optimalkan pengawasan klaim JKN dengan wawasan berbasis AI
+            real-time serta otomatisasi cerdas Permenkes No. 16 Tahun 2019.
+          </p>
+
+          {/* 2 CTA Buttons */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: 14,
+              marginBottom: 38,
+            }}
+          >
+            <ButtonIcon
+              variant="Default"
+              title={userEmail ? 'Buka Dashboard' : 'Mulai Sekarang'}
+              onClick={onPrimaryAction}
+            />
+            <Button
+              variant="Default"
+              title="Jelajahi Fitur"
+              onClick={() => onScrollToSection('#features')}
+            />
+          </div>
+
+          {/* 3 ListItem Feature Pills with Vertical Dividers */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              gap: 24,
+            }}
+          >
+            <ListItem
+              variant="Fit"
+              icon={FRAMER_IMAGES.iconStarYellow}
+              title="Wawasan Klaim Berbasis AI"
+              color="rgb(29, 29, 29)"
+            />
+            <div style={{ width: 1, height: 20, backgroundColor: '#dde5ed' }} />
+            <ListItem
+              variant="Fit"
+              icon={FRAMER_IMAGES.iconShieldGreen}
+              title="Keamanan Setara Bank & UU PDP"
+              color="rgb(29, 29, 29)"
+            />
+            <div style={{ width: 1, height: 20, backgroundColor: '#dde5ed' }} />
+            <ListItem
+              variant="Fit"
+              icon={FRAMER_IMAGES.iconBoltRed}
+              title="Pelacakan Klaim Real-Time"
+              color="rgb(29, 29, 29)"
+            />
+          </div>
+        </motion.div>
+
+        {/* Scroll-Zoom Dashboard Mockup Card (zIndex: 2 — Placed BEHIND Foreground Grass Hills) */}
+        <motion.div
           style={{
-            position: 'absolute',
-            left: 0,
-            right: 0,
-            bottom: 0,
-            height: 120,
-            background: 'linear-gradient(0deg, #ffffff 15%, rgba(255,255,255,0) 100%)',
+            position: 'relative',
+            zIndex: 2,
+            width: '100%',
+            maxWidth: 1160,
+            padding: '0 24px',
+            marginTop: 24,
+            scale: dashboardScale,
+            y: dashboardY,
+            transformOrigin: 'center top',
           }}
-        />
+        >
+          <div
+            onClick={onPrimaryAction}
+            style={{
+              cursor: 'pointer',
+              padding: 10,
+              borderRadius: 28,
+              backgroundColor: 'rgba(255, 255, 255, 0.92)',
+              border: '1px solid #dde5ed',
+              boxShadow: '0 32px 80px rgba(15, 23, 42, 0.16)',
+              overflow: 'hidden',
+            }}
+          >
+            <img
+              src={FRAMER_IMAGES.heroDashboard}
+              alt="INFERA Analytics Dashboard"
+              style={{
+                width: '100%',
+                height: 'auto',
+                display: 'block',
+                borderRadius: 20,
+              }}
+            />
+          </div>
+        </motion.div>
       </div>
     </section>
   );
@@ -454,37 +514,9 @@ export const ClientLogoSection: React.FC = () => {
 // ============================================================================
 export const BeforeAfterSection: React.FC = () => {
   const [mode, setMode] = useState<'Before' | 'After'>('Before');
-  const sectionRef = useRef<HTMLElement>(null);
-  const userInteractedRef = useRef<boolean>(false);
-
-  // Auto-switch to 'After' on scroll into view, reset to 'Before' when scrolling back above
-  useEffect(() => {
-    const handleScroll = () => {
-      if (!sectionRef.current) return;
-      const rect = sectionRef.current.getBoundingClientRect();
-      const viewportHeight = window.innerHeight;
-
-      // When the top of the comparison section reaches ~45% of the viewport (user scrolled into it)
-      if (rect.top <= viewportHeight * 0.45 && rect.bottom >= viewportHeight * 0.2) {
-        if (!userInteractedRef.current && mode !== 'After') {
-          setMode('After');
-        }
-      } else if (rect.top > viewportHeight * 0.65) {
-        // Scrolled back up above the section: reset so scrolling down again will trigger auto-switch
-        userInteractedRef.current = false;
-        if (mode !== 'Before') {
-          setMode('Before');
-        }
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [mode]);
 
   return (
     <section
-      ref={sectionRef}
       style={{
         width: '100%',
         padding: '160px 0 0',
@@ -558,10 +590,7 @@ export const BeforeAfterSection: React.FC = () => {
             {/* Left Tab: Sebelum INFERA */}
             <button
               type="button"
-              onClick={() => {
-                userInteractedRef.current = true;
-                setMode('Before');
-              }}
+              onClick={() => setMode('Before')}
               style={{
                 flex: 1,
                 display: 'flex',
@@ -585,10 +614,7 @@ export const BeforeAfterSection: React.FC = () => {
             {/* Center 3D Rotary Dial Button */}
             <button
               type="button"
-              onClick={() => {
-                userInteractedRef.current = true;
-                setMode((prev) => (prev === 'Before' ? 'After' : 'Before'));
-              }}
+              onClick={() => setMode((prev) => (prev === 'Before' ? 'After' : 'Before'))}
               title="Klik untuk beralih mode"
               style={{
                 background: 'none',
@@ -627,10 +653,7 @@ export const BeforeAfterSection: React.FC = () => {
             {/* Right Tab: Sesudah INFERA */}
             <button
               type="button"
-              onClick={() => {
-                userInteractedRef.current = true;
-                setMode('After');
-              }}
+              onClick={() => setMode('After')}
               style={{
                 flex: 1,
                 display: 'flex',
@@ -1493,6 +1516,7 @@ export const PlatformOverviewSection: React.FC<SectionActionProps> = ({
 }) => {
   return (
     <section
+      id="overview"
       style={{
         position: 'relative',
         width: '100%',
@@ -1566,7 +1590,7 @@ export const PlatformOverviewSection: React.FC<SectionActionProps> = ({
             gap: 16,
           }}
         >
-          <PreTitle variant="Default" title="Ikhtisar Platform" />
+          <PreTitle variant="Default" title="Platform Overview" />
           <h2
             style={{
               fontFamily: HEADING_FONT,
@@ -2023,20 +2047,20 @@ export const IntegrationsSection: React.FC<SectionActionProps> = ({ onPrimaryAct
             position: 'relative',
             width: '100%',
             backgroundColor: '#eef1f3',
-            borderRadius: 32,
-            padding: '76px 30px 40px',
+            borderRadius: 30,
+            padding: '76px 30px 0',
             overflow: 'hidden',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            minHeight: 820,
+            minHeight: 720,
           }}
         >
           {/* Centered Header Block */}
           <div
             style={{
               position: 'relative',
-              zIndex: 10,
+              zIndex: 3,
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
@@ -2077,15 +2101,15 @@ export const IntegrationsSection: React.FC<SectionActionProps> = ({ onPrimaryAct
             </div>
           </div>
 
-          {/* Semi-Circular Arc of 8 SVG Badges + Central Dark 3D Sphere */}
+          {/* Semi-Circular Arc of 8 IntegrationIcon Components + Central 3D Sphere */}
           <div
             style={{
               position: 'relative',
-              zIndex: 5,
+              zIndex: 2,
               width: '100%',
-              maxWidth: 880,
-              height: 440,
-              marginTop: 32,
+              maxWidth: 820,
+              height: 410,
+              marginTop: 24,
             }}
           >
             {INFERA_INTEGRATION_ARC.map((item, idx) => (
@@ -2100,36 +2124,11 @@ export const IntegrationsSection: React.FC<SectionActionProps> = ({ onPrimaryAct
                   left: item.left,
                   top: item.top,
                   transform: `rotate(${item.rotate}deg)`,
-                  zIndex: 6,
+                  boxShadow: '0 12px 30px rgba(15, 23, 42, 0.06)',
+                  borderRadius: '50%',
                 }}
               >
-                <div
-                  title={item.name}
-                  style={{
-                    width: 80,
-                    height: 80,
-                    borderRadius: '50%',
-                    backgroundColor: '#ffffff',
-                    border: '1px solid rgba(221, 229, 237, 0.9)',
-                    boxShadow: '0 12px 28px rgba(15, 23, 42, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer',
-                    transition: 'transform 0.25s ease, box-shadow 0.25s ease',
-                  }}
-                >
-                  <img
-                    src={item.icon}
-                    alt={item.name}
-                    style={{
-                      width: 32,
-                      height: 32,
-                      objectFit: 'contain',
-                      display: 'block',
-                    }}
-                  />
-                </div>
+                <IntegrationIcon icon={item.icon} />
               </motion.div>
             ))}
 
@@ -2138,15 +2137,14 @@ export const IntegrationsSection: React.FC<SectionActionProps> = ({ onPrimaryAct
               style={{
                 position: 'absolute',
                 left: '50%',
-                bottom: 0,
+                bottom: -35,
                 transform: 'translateX(-50%)',
-                width: 360,
-                height: 360,
+                width: 350,
+                height: 350,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 textAlign: 'center',
-                zIndex: 3,
               }}
             >
               <img
@@ -2163,7 +2161,7 @@ export const IntegrationsSection: React.FC<SectionActionProps> = ({ onPrimaryAct
               <p
                 style={{
                   position: 'relative',
-                  zIndex: 4,
+                  zIndex: 2,
                   fontFamily: BODY_FONT,
                   fontSize: 16,
                   fontWeight: 500,
@@ -2178,7 +2176,7 @@ export const IntegrationsSection: React.FC<SectionActionProps> = ({ onPrimaryAct
             </div>
           </div>
 
-          {/* Bottom Green Hills Background (zIndex: 2, sits behind badges and sphere) */}
+          {/* Bottom Green Hills Foreground */}
           <img
             src={FRAMER_IMAGES.integrationHills}
             alt=""
@@ -2186,10 +2184,10 @@ export const IntegrationsSection: React.FC<SectionActionProps> = ({ onPrimaryAct
               position: 'absolute',
               left: -10,
               right: -10,
-              bottom: 0,
+              bottom: -65,
               width: 'calc(100% + 20px)',
               height: 'auto',
-              zIndex: 2,
+              zIndex: 3,
               pointerEvents: 'none',
             }}
           />

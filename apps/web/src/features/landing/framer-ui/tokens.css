@@ -800,3 +800,34 @@
   line-height: 1.3em;
   color: rgb(77, 88, 95);
 }
+
+/* Overrides for text contrast on dark cards and buttons */
+.framer-QPobS.framer-v-z5dw7n p,
+.framer-QPobS.framer-v-xd86s8 p,
+.framer-QPobS[data-framer-name="Dark"] p,
+.framer-QPobS[data-framer-name="Dark - Phone"] p {
+  color: #ffffff !important;
+  --framer-text-color: #ffffff !important;
+}
+
+.framer-cSJRf.framer-v-980uvy .framer-dpzfsj p,
+.framer-cSJRf.framer-v-w96wp4 .framer-dpzfsj p,
+.framer-cSJRf[data-framer-name="Dark"] .framer-dpzfsj p {
+  color: rgba(255, 255, 255, 0.9) !important;
+  --framer-text-color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.framer-cSJRf.framer-v-980uvy .framer-1bz0cfg h3,
+.framer-cSJRf.framer-v-w96wp4 .framer-1bz0cfg h3,
+.framer-cSJRf[data-framer-name="Dark"] .framer-1bz0cfg h3 {
+  color: #ffffff !important;
+  --framer-text-color: #ffffff !important;
+}
+
+.framer-cSJRf.framer-v-980uvy .framer-1o6vdti p,
+.framer-cSJRf.framer-v-w96wp4 .framer-1o6vdti p,
+.framer-cSJRf[data-framer-name="Dark"] .framer-1o6vdti p {
+  color: rgba(255, 255, 255, 0.82) !important;
+  --framer-text-color: rgba(255, 255, 255, 0.82) !important;
+}
+

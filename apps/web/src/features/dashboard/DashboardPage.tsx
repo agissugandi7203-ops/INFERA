@@ -15,6 +15,7 @@ import {
   sendOpenRouterChat,
 } from './services/openrouter';
 import { SpeechService } from './services/speech';
+import { RealtimeVoiceService } from './services/RealtimeVoiceService';
 import {
   VOICE_DEFAULT_ID,
   VOICE_SECONDARY_ID,
@@ -49,6 +50,8 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
   const [isMinimized, setIsMinimized] = useState<boolean>(false);
   const [isListening, setIsListening] = useState<boolean>(false);
   const [isSoundDetected, setIsSoundDetected] = useState<boolean>(false);
+  const [_isWebRtcActive, setIsWebRtcActive] = useState<boolean>(false);
+  const realtimeVoiceRef = useRef<RealtimeVoiceService | null>(null);
 
   const controllerRef = useRef<AvatarController | null>(null);
   const emotionTimedownRef = useRef<NodeJS.Timeout | null>(null);
@@ -121,7 +124,48 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
     }
   }, [messages]);
 
+  // Initialize OpenAI Realtime WebRTC Voice Service (v2)
+  useEffect(() => {
+    const service = new RealtimeVoiceService({
+      onStateChange: (st) => {
+        setIsListening(st === 'listening');
+        setIsSoundDetected(st === 'listening' || st === 'speaking');
+        setIsWebRtcActive(st === 'connected' || st === 'listening' || st === 'speaking');
+      },
+      onMouthOpen: (openVal) => {
+        if (controllerRef.current) {
+          controllerRef.current.setMouthOpen(openVal);
+        }
+        setManualMouthOpen(openVal);
+      },
+      onEmotionChange: (emo) => {
+        handleSelectEmotion(emo, 4500);
+      },
+      onTranscript: (item) => {
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: item.id,
+            role: item.role,
+            content: item.text,
+            timestamp: item.timestamp,
+          },
+        ]);
+      },
+      onError: (err) => {
+        console.warn('[RealtimeVoice] WebRTC notice:', err);
+      },
+    });
+
+    realtimeVoiceRef.current = service;
+
+    return () => {
+      service.disconnect();
+    };
+  }, []);
+
   const handleClearHistory = () => {
+    realtimeVoiceRef.current?.disconnect();
     SpeechService.stopSpeaking();
     setMessages([]);
     localStorage.removeItem('healthathon_avatar_chat_history');
@@ -171,10 +215,20 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
   };
 
   // Voice Interaction: Click to Speak
-  const handleToggleClickToSpeak = () => {
+  const handleToggleClickToSpeak = async () => {
     const now = Date.now();
     if (now - lastToggleClickTimeRef.current < 450) return;
     lastToggleClickTimeRef.current = now;
+
+    // 1. If WebRTC Realtime call is already active, clicking disconnects it cleanly
+    if (realtimeVoiceRef.current?.isConnected()) {
+      realtimeVoiceRef.current.disconnect();
+      setIsListening(false);
+      setIsSoundDetected(false);
+      setIsWebRtcActive(false);
+      handleSelectEmotion('normal', 0);
+      return;
+    }
 
     if (isListeningRef.current) {
       isListeningRef.current = false;
@@ -189,6 +243,14 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
 
     // Stop any existing speech playback before listening
     SpeechService.stopSpeaking();
+
+    // Attempt OpenAI Realtime WebRTC first (v2)
+    try {
+      await realtimeVoiceRef.current?.connect('shimmer');
+      return;
+    } catch (err) {
+      console.warn('[Voice] Realtime WebRTC not available, using fallback Web Speech:', err);
+    }
     isListeningRef.current = true;
     setIsListening(true);
     handleSelectEmotion('listening', 0);
@@ -414,6 +476,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
         isMinimized={isMinimized}
         selectedVoiceId={settings.avatarVoiceId || settings.elevenLabsVoiceId || VOICE_DEFAULT_ID}
         onSelectVoice={handleSelectVoice}
+        isWebRtcActive={_isWebRtcActive}
       />
 
       {/* Restore Avatar Pop-Up Badge when Minimized */}

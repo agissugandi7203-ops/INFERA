@@ -48,9 +48,10 @@ Thumbs.db
 
 # Temporary Files
 tmp/
-context/mp4/
 temp/
 scratch/
 output/
+context/mp4/
+*.mp4
 
 scripts/*.png
