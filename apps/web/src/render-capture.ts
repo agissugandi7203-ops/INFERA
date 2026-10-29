@@ -16,11 +16,11 @@ async function init() {
   const progressEl = document.getElementById('progress')!;
 
   const urlParams = new URLSearchParams(window.location.search);
-  const totalSeconds = parseFloat(urlParams.get('seconds') || '30');
+  const totalSeconds = parseFloat(urlParams.get('seconds') || '120');
   const fps = parseInt(urlParams.get('fps') || '30', 10);
   const totalFrames = Math.round(totalSeconds * fps);
 
-  statusEl.innerText = `Setting up PixiJS (Resolution: 800x1000, Total frames: ${totalFrames})...`;
+  statusEl.innerText = `Setting up PixiJS (Resolution: 800x1000, Total frames: ${totalFrames}, Duration: ${totalSeconds}s)...`;
 
   const VIRTUAL_WIDTH = 800;
   const VIRTUAL_HEIGHT = 1000;
@@ -77,18 +77,18 @@ async function init() {
   const browLInitY = controller.browLInitY;
   const browRInitY = controller.browRInitY;
 
-  // Harmonically tuned frequencies to guarantee 100% mathematical seamless looping at T = 30s
-  const T = totalSeconds;
-  const wb = (8 * 2 * Math.PI) / T;   // ~1.675 rad/s (breathing & chest, ~3.75s period)
-  const whd = (5 * 2 * Math.PI) / T;  // ~1.047 rad/s (head sway drift)
-  const wht = (4 * 2 * Math.PI) / T;  // ~0.838 rad/s (head tilt)
-  const whb = (6 * 2 * Math.PI) / T;  // ~1.257 rad/s (back hair inertia)
-  const wf1 = (11 * 2 * Math.PI) / T; // ~2.304 rad/s (bangs 1)
-  const wf2 = (10 * 2 * Math.PI) / T; // ~2.094 rad/s (bangs 2)
-  const wf3 = (12 * 2 * Math.PI) / T; // ~2.513 rad/s (bangs 3)
-  const wf12 = (10 * 2 * Math.PI) / T;// ~2.094 rad/s (side bang)
+  // Harmonically tuned frequencies to guarantee 100% mathematical seamless looping at T = 30s and multiples (120s)
+  const CYCLE_PERIOD = 30.0;
+  const wb = (8 * 2 * Math.PI) / CYCLE_PERIOD;   // ~1.675 rad/s (breathing & chest, ~3.75s period)
+  const whd = (5 * 2 * Math.PI) / CYCLE_PERIOD;  // ~1.047 rad/s (head sway drift)
+  const wht = (4 * 2 * Math.PI) / CYCLE_PERIOD;  // ~0.838 rad/s (head tilt)
+  const whb = (6 * 2 * Math.PI) / CYCLE_PERIOD;  // ~1.257 rad/s (back hair inertia)
+  const wf1 = (11 * 2 * Math.PI) / CYCLE_PERIOD; // ~2.304 rad/s (bangs 1)
+  const wf2 = (10 * 2 * Math.PI) / CYCLE_PERIOD; // ~2.094 rad/s (bangs 2)
+  const wf3 = (12 * 2 * Math.PI) / CYCLE_PERIOD; // ~2.513 rad/s (bangs 3)
+  const wf12 = (10 * 2 * Math.PI) / CYCLE_PERIOD;// ~2.094 rad/s (side bang)
 
-  // Natural blink timestamps (in seconds)
+  // Natural blink timestamps (in seconds per 30s cycle)
   // Phase 1 (Normal): 3.0s, 7.0s
   // Phase 2 (Happy): 13.5s, 17.5s
   // Phase 3 (Thinking): 23.5s, 27.5s
@@ -119,11 +119,12 @@ async function init() {
   if (mouthOpen) mouthOpen.visible = false;
   if (mouthUncomfortable) mouthUncomfortable.visible = false;
 
-  statusEl.innerText = 'Starting multi-expression 30s frame capture (10s Normal -> 10s Happy -> 10s Thinking)...';
+  statusEl.innerText = `Starting multi-expression frame capture (${totalSeconds}s, expressions rotate every 10s: Normal -> Happy -> Thinking)...`;
   const startTime = Date.now();
 
   for (let frame = 0; frame < totalFrames; frame++) {
-    const t = (frame / fps); // Current time in seconds (0.000 to 29.967)
+    const t = (frame / fps); // Current time in seconds (0.000 to totalSeconds)
+    const cycleT = t % CYCLE_PERIOD; // Repeating 30s cycle for expressions and blinks
 
     // ==========================================
     // 1. EMOTION LOGIC (Changes every 10 seconds)
@@ -141,7 +142,7 @@ async function init() {
     let targetPupilY = 0;
     let activeMouth: 'closed' | 'mouth_3' = 'closed';
 
-    if (t < 9.6) {
+    if (cycleT < 9.6) {
       // Pure Normal (0s - 9.6s)
       targetBrowL_Y = browLInitY;
       targetBrowL_Rot = 0;
@@ -152,9 +153,9 @@ async function init() {
       targetPupilX = 0;
       targetPupilY = 0;
       activeMouth = 'closed';
-    } else if (t < 10.0) {
+    } else if (cycleT < 10.0) {
       // Transition Normal -> Happy (9.6s - 10.0s, 0.4s smooth ease)
-      const p = smoothstep(9.6, 10.0, t);
+      const p = smoothstep(9.6, 10.0, cycleT);
       targetBrowL_Y = lerp(browLInitY, browLInitY - 5, p);
       targetBrowL_Rot = lerp(0, 0.06, p);
       targetBrowR_Y = lerp(browRInitY, browRInitY - 5, p);
@@ -164,7 +165,7 @@ async function init() {
       targetPupilX = 0;
       targetPupilY = 0;
       activeMouth = p >= 0.5 ? 'mouth_3' : 'closed';
-    } else if (t < 19.6) {
+    } else if (cycleT < 19.6) {
       // Pure Happy (10.0s - 19.6s)
       targetBrowL_Y = browLInitY - 5;
       targetBrowL_Rot = 0.06;
@@ -175,9 +176,9 @@ async function init() {
       targetPupilX = 0;
       targetPupilY = 0;
       activeMouth = 'mouth_3';
-    } else if (t < 20.0) {
+    } else if (cycleT < 20.0) {
       // Transition Happy -> Thinking (19.6s - 20.0s, 0.4s smooth ease)
-      const p = smoothstep(19.6, 20.0, t);
+      const p = smoothstep(19.6, 20.0, cycleT);
       targetBrowL_Y = lerp(browLInitY - 5, browLInitY - 3, p);
       targetBrowL_Rot = lerp(0.06, -0.05, p);
       targetBrowR_Y = lerp(browRInitY - 5, browRInitY - 2, p);
@@ -187,7 +188,7 @@ async function init() {
       targetPupilX = lerp(0, 2.5, p);
       targetPupilY = lerp(0, -2.5, p);
       activeMouth = p >= 0.5 ? 'closed' : 'mouth_3';
-    } else if (t < 29.5) {
+    } else if (cycleT < 29.5) {
       // Pure Thinking (20.0s - 29.5s)
       targetBrowL_Y = browLInitY - 3;
       targetBrowL_Rot = -0.05;
@@ -200,7 +201,7 @@ async function init() {
       activeMouth = 'closed';
     } else {
       // Smooth Transition Thinking -> Normal (29.5s - 30.0s) for 100% seamless loop!
-      const p = smoothstep(29.5, 30.0, t);
+      const p = smoothstep(29.5, 30.0, cycleT);
       targetBrowL_Y = lerp(browLInitY - 3, browLInitY, p);
       targetBrowL_Rot = lerp(-0.05, 0, p);
       targetBrowR_Y = lerp(browRInitY - 2, browRInitY, p);
@@ -271,7 +272,7 @@ async function init() {
     // ==========================================
     let blinkMult = 1.0;
     for (const bTime of blinkTimestamps) {
-      const dtBlink = t - bTime;
+      const dtBlink = cycleT - bTime;
       if (dtBlink >= 0 && dtBlink < BLINK_DURATION) {
         const progress = dtBlink / BLINK_DURATION;
         blinkMult = Math.max(0.05, 1.0 - Math.sin(progress * Math.PI));
@@ -286,8 +287,8 @@ async function init() {
     let saccadeY = 0;
     if (targetPupilX === 0 && targetPupilY === 0) {
       // Subtle glance in normal mode
-      saccadeX = Math.sin(t * ((3 * 2 * Math.PI) / T)) * 0.8 + Math.sin(t * ((7 * 2 * Math.PI) / T)) * 0.4;
-      saccadeY = (Math.cos(t * ((2 * 2 * Math.PI) / T)) - 1) * 0.3;
+      saccadeX = Math.sin(cycleT * ((3 * 2 * Math.PI) / CYCLE_PERIOD)) * 0.8 + Math.sin(cycleT * ((7 * 2 * Math.PI) / CYCLE_PERIOD)) * 0.4;
+      saccadeY = (Math.cos(cycleT * ((2 * 2 * Math.PI) / CYCLE_PERIOD)) - 1) * 0.3;
     }
 
     if (pupilL) {

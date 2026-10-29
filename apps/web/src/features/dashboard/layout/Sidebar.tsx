@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
   Sparkles,
@@ -16,6 +16,7 @@ import {
   UserCog,
   Sun,
   Moon,
+  ArrowUpRight,
 } from 'lucide-react';
 import { useSimulationStream } from '../simulation/SimulationContext';
 import { useTheme } from '../../../context/ThemeContext';
@@ -34,7 +35,7 @@ interface NavItem {
   label: string;
   icon: React.ElementType;
   badge?: string;
-  badgeColor?: string;
+  badgeType?: 'active' | 'alert' | 'neutral' | 'accent';
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -42,8 +43,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onToggleCollapse,
   userEmail = 'dr.arief@bpjs-kesehatan.go.id',
   onLogout,
+  onOpenAvatarChat,
   onNavigate,
 }) => {
+  const navigate = useNavigate();
   const { isDark, toggleTheme } = useTheme();
   const { claims, isPaused, togglePause, intervalSec, anomalies } = useSimulationStream();
 
@@ -53,22 +56,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
       to: '/dashboard/ai-report',
       label: 'Chat AI',
       icon: Sparkles,
-      badge: `${anomalies.length > 0 ? anomalies.length : 'Live'}`,
-      badgeColor: 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/80 font-semibold',
+      badge: anomalies.length > 0 ? `${anomalies.length}` : 'Live',
+      badgeType: anomalies.length > 0 ? 'alert' : 'accent',
     },
     {
       to: '/dashboard/transactions',
       label: 'Aliran Transaksi',
       icon: Activity,
       badge: `${claims.length}`,
-      badgeColor: 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 font-medium',
+      badgeType: 'neutral',
     },
     {
       to: '/dashboard/cases',
       label: 'Studi Kasus',
       icon: FolderKanban,
       badge: '4',
-      badgeColor: 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 font-medium',
+      badgeType: 'neutral',
     },
   ];
 
@@ -78,33 +81,30 @@ export const Sidebar: React.FC<SidebarProps> = ({
       label: 'Identitas & Travel',
       icon: MapPin,
       badge: 'M1-2',
-      badgeColor: 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700',
+      badgeType: 'neutral',
     },
     {
       to: '/dashboard/unnecessary-services',
       label: 'Doctor Shopping',
       icon: Stethoscope,
       badge: 'M3',
-      badgeColor: 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700',
+      badgeType: 'neutral',
     },
     {
       to: '/dashboard/pharmacy-alkes',
       label: 'Resep & Alkes',
       icon: Pill,
       badge: 'M4',
-      badgeColor: 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700',
+      badgeType: 'neutral',
     },
   ];
 
-  const knowledgeNav: NavItem[] = [
+  const governanceNav: NavItem[] = [
     {
       to: '/dashboard/regulations',
       label: 'Regulasi JKN',
       icon: BookOpen,
     },
-  ];
-
-  const actionNav: NavItem[] = [
     {
       to: '/dashboard/master-data',
       label: 'Master Data',
@@ -112,39 +112,118 @@ export const Sidebar: React.FC<SidebarProps> = ({
     },
   ];
 
+  const renderBadge = (item: NavItem, isActive: boolean) => {
+    if (!item.badge || isCollapsed) return null;
+
+    if (isActive) {
+      return (
+        <span className="ml-auto text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#131418]/15 text-[#131418]">
+          {item.badge}
+        </span>
+      );
+    }
+
+    if (item.badgeType === 'alert') {
+      return (
+        <span className="ml-auto text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-[#ff5733] text-white shadow-xs">
+          {item.badge}
+        </span>
+      );
+    }
+
+    if (item.badgeType === 'accent') {
+      return (
+        <span className="ml-auto text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#d4f866]/20 text-[#d4f866] border border-[#d4f866]/30">
+          {item.badge}
+        </span>
+      );
+    }
+
+    return (
+      <span className="ml-auto text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/10 text-slate-300">
+        {item.badge}
+      </span>
+    );
+  };
+
+  const renderNavList = (items: NavItem[]) => (
+    <nav className="space-y-1">
+      {items.map((item) => (
+        <NavLink
+          key={item.to}
+          to={item.to}
+          end={item.to === '/dashboard'}
+          onClick={onNavigate}
+          title={isCollapsed ? item.label : undefined}
+          className={({ isActive }) =>
+            `group flex items-center rounded-2xl text-[13.5px] transition-all duration-150 select-none ${
+              isCollapsed
+                ? 'justify-center w-12 h-12 mx-auto p-0'
+                : 'gap-3 px-3.5 py-2.5 w-full'
+            } ${
+              isActive
+                ? 'bg-[#d4f866] text-[#131418] font-bold shadow-sm'
+                : 'text-slate-400 hover:text-white hover:bg-white/[0.08] font-medium'
+            }`
+          }
+        >
+          {({ isActive }) => (
+            <>
+              <item.icon
+                className={`w-[19px] h-[19px] shrink-0 transition-colors ${
+                  isActive
+                    ? 'text-[#131418]'
+                    : 'text-slate-400 group-hover:text-white'
+                }`}
+              />
+              {!isCollapsed && <span className="truncate">{item.label}</span>}
+              {renderBadge(item, isActive)}
+            </>
+          )}
+        </NavLink>
+      ))}
+    </nav>
+  );
+
   return (
     <aside
-      className={`relative flex flex-col bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl transition-all duration-200 z-30 shrink-0 select-none shadow-sm h-full ${
-        isCollapsed ? 'w-16' : 'w-64'
+      className={`relative flex flex-col bg-[#131418] text-white rounded-[28px] border border-white/[0.08] shadow-2xl transition-all duration-300 z-30 shrink-0 select-none h-full overflow-hidden ${
+        isCollapsed ? 'w-[82px]' : 'w-[268px]'
       }`}
     >
-      {/* Brand Header */}
+      {/* Brand Header with crystal-clear Logo on solid white squircle */}
       <div
-        className={`h-14 flex items-center border-b border-slate-100 dark:border-slate-800 shrink-0 ${
-          isCollapsed ? 'justify-center px-2' : 'justify-between px-3.5'
+        className={`h-16 flex items-center border-b border-white/[0.08] shrink-0 ${
+          isCollapsed ? 'justify-center px-2' : 'justify-between px-4'
         }`}
       >
-        <div className={`flex items-center gap-2.5 ${isCollapsed ? 'justify-center' : 'overflow-hidden'}`}>
+        <div className={`flex items-center gap-3 ${isCollapsed ? 'justify-center' : 'overflow-hidden'}`}>
           <button
             type="button"
             onClick={isCollapsed ? onToggleCollapse : undefined}
-            className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 overflow-hidden ${
-              isCollapsed ? 'hover:scale-105 cursor-pointer shadow-xs' : ''
+            className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+              isCollapsed ? 'hover:scale-105 hover:bg-white/[0.05] cursor-pointer' : ''
             }`}
-            title={isCollapsed ? 'Klik untuk membuka sidebar' : 'INFERA'}
+            title={isCollapsed ? 'Buka Sidebar' : 'INFERA JKN'}
           >
             <img
-              src="/infera-logo.png"
+              src="/logo-dark.png"
               alt="INFERA Logo"
-              className="w-8 h-8 rounded-lg object-contain shrink-0 drop-shadow-sm"
+              className="w-7 h-7 object-contain shrink-0 drop-shadow-[0_2px_8px_rgba(255,255,255,0.15)]"
             />
           </button>
+
           {!isCollapsed && (
             <div className="flex flex-col min-w-0">
-              <span className="font-extrabold text-slate-900 dark:text-slate-100 text-sm tracking-tight truncate">
+              <span
+                className="font-extrabold text-white text-[16px] tracking-tight leading-none truncate"
+                style={{ fontFamily: '"Bricolage Grotesque", "Plus Jakarta Sans", sans-serif' }}
+              >
                 INFERA
               </span>
-              <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium truncate">Fraud &amp; Risk Analysis Agent</span>
+              <span className="text-[10px] text-slate-400 font-medium tracking-wide truncate mt-1">
+                Fraud &amp; Risk Agent
+              </span>
             </div>
           )}
         </div>
@@ -153,276 +232,158 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <button
             type="button"
             onClick={onToggleCollapse}
-            className="w-6 h-6 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-400 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors flex items-center justify-center shrink-0"
-            title="Perkecil sidebar"
+            className="w-7 h-7 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-colors flex items-center justify-center shrink-0 cursor-pointer"
+            title="Kecilkan Sidebar"
           >
-            <ChevronLeft className="w-3.5 h-3.5" />
+            <ChevronLeft className="w-4 h-4" />
           </button>
         )}
       </div>
 
-      {/* Stream Status Widget (Quiet, No Blinking) */}
-      {!isCollapsed && (
-        <div className="mx-3 mt-3 p-2 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 flex items-center justify-between">
-          <div className="flex items-center gap-2 min-w-0">
-            <span
-              className={`w-2 h-2 rounded-full shrink-0 ${
-                isPaused ? 'bg-slate-300 dark:bg-slate-600' : 'bg-[#007a3d]'
-              }`}
-            />
-            <div className="flex flex-col min-w-0">
-              <span className="text-[11px] font-semibold text-slate-800 dark:text-slate-200 truncate">
-                {isPaused ? 'Stream Terjeda' : 'Stream Aktif'}
-              </span>
-              <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400 truncate">
-                {claims.length} klaim ({intervalSec}s)
-              </span>
+      {/* Navigation Sections (Clean, uncluttered, Eduplex style) */}
+      <div className="flex-1 overflow-y-auto px-3 py-3.5 space-y-3 custom-scrollbar">
+        {renderNavList(mainNav)}
+
+        <div className="pt-2 border-t border-white/[0.07]">
+          {!isCollapsed && (
+            <p className="px-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+              Modus Investigasi
+            </p>
+          )}
+          {renderNavList(modusNav)}
+        </div>
+
+        <div className="pt-2 border-t border-white/[0.07]">
+          {!isCollapsed && (
+            <p className="px-3.5 text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+              Tata Kelola
+            </p>
+          )}
+          {renderNavList(governanceNav)}
+        </div>
+      </div>
+
+      {/* Eduplex Signature Bottom Card (Vibrant Lime with Arrow Button & Wavy Graphic) */}
+      {!isCollapsed ? (
+        <div className="mx-3 mb-3 p-4 rounded-[24px] bg-[#d4f866] text-[#131418] relative overflow-hidden shadow-lg shadow-[#d4f866]/10">
+          {/* Abstract wavy lines background */}
+          <svg
+            className="absolute -right-3 -bottom-3 w-28 h-28 opacity-25 pointer-events-none"
+            viewBox="0 0 100 100"
+            fill="none"
+            stroke="#131418"
+            strokeWidth="4"
+            strokeLinecap="round"
+          >
+            <path d="M 0 35 C 30 15, 70 55, 100 35" />
+            <path d="M 0 55 C 30 35, 70 75, 100 55" />
+            <path d="M 0 75 C 30 55, 70 95, 100 75" />
+          </svg>
+
+          <div className="flex items-start justify-between relative z-10">
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#131418]/10 text-[#131418] text-[10px] font-bold">
+              <span
+                className={`w-2 h-2 rounded-full ${
+                  isPaused ? 'bg-slate-500' : 'bg-[#131418]'
+                }`}
+              />
+              <span>{isPaused ? 'Stream Terjeda' : 'Stream Aktif'}</span>
             </div>
+            <button
+              onClick={() => {
+                if (onOpenAvatarChat) {
+                  onOpenAvatarChat();
+                } else {
+                  navigate('/dashboard/ai-report');
+                }
+              }}
+              className="w-8 h-8 rounded-full bg-[#131418] text-white hover:scale-110 active:scale-95 transition-transform flex items-center justify-center font-bold text-xs shadow-md shrink-0 cursor-pointer"
+              title="Buka Chat AI"
+            >
+              <ArrowUpRight className="w-4 h-4" />
+            </button>
           </div>
 
+          <div className="mt-3 relative z-10">
+            <div
+              className="font-extrabold text-[14px] leading-tight text-[#131418]"
+              style={{ fontFamily: '"Bricolage Grotesque", "Plus Jakarta Sans", sans-serif' }}
+            >
+              Proteksi JKN AI
+            </div>
+            <p className="text-[11px] text-[#131418]/85 mt-1 font-medium leading-snug">
+              {claims.length} klaim diuji real-time ({intervalSec}s stream)
+            </p>
+          </div>
+
+          {/* Quick Pause / Play Button */}
+          <div className="mt-3 pt-2.5 border-t border-[#131418]/15 flex items-center justify-between text-[11px] font-semibold">
+            <span className="text-[#131418]/80 text-[10px]">Kontrol Stream</span>
+            <button
+              onClick={togglePause}
+              className="flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#131418] text-white hover:bg-[#202127] transition-colors cursor-pointer"
+            >
+              {isPaused ? (
+                <>
+                  <Play className="w-3 h-3" /> Lanjutkan
+                </>
+              ) : (
+                <>
+                  <Pause className="w-3 h-3" /> Jeda
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="flex flex-col items-center gap-2 mb-3 px-2">
           <button
-            onClick={togglePause}
-            className={`p-1 rounded-md border text-xs transition-colors flex items-center justify-center shrink-0 ${
-              isPaused
-                ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/80 hover:bg-emerald-100 dark:hover:bg-emerald-900/60'
-                : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700'
-            }`}
-            title={isPaused ? 'Lanjutkan' : 'Jeda'}
+            onClick={() => {
+              if (onOpenAvatarChat) onOpenAvatarChat();
+              else navigate('/dashboard/ai-report');
+            }}
+            className="w-11 h-11 rounded-2xl bg-[#d4f866] text-[#131418] hover:scale-105 active:scale-95 transition-transform flex items-center justify-center font-bold shadow-md cursor-pointer"
+            title="Buka Chat AI"
           >
-            {isPaused ? <Play className="w-3 h-3" /> : <Pause className="w-3 h-3" />}
+            <ArrowUpRight className="w-5 h-5" />
           </button>
         </div>
       )}
 
-      {/* Navigation Sections */}
-      <div className="flex-1 overflow-y-auto px-2.5 py-3 space-y-3">
-        {/* Section 1: Utama */}
-        <div>
+      {/* User Profile & Actions Footer (Clean & minimal, no blue AR circle) */}
+      <div className="px-3.5 py-3 border-t border-white/[0.08] bg-[#0e0f13]">
+        <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
           {!isCollapsed && (
-            <p className="px-2.5 text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">
-              Navigasi
-            </p>
-          )}
-          <nav className="space-y-0.5">
-            {mainNav.map((item) => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                end={item.to === '/dashboard'}
-                onClick={onNavigate}
-                className={({ isActive }) =>
-                  `flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-xs transition-colors group ${
-                    isActive
-                      ? 'bg-slate-900 dark:bg-emerald-600/90 text-white font-semibold shadow-xs'
-                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100/80 dark:hover:bg-slate-800/70 font-medium'
-                  }`
-                }
-              >
-                {({ isActive }) => (
-                  <>
-                    <item.icon
-                      className={`w-4 h-4 shrink-0 transition-colors ${
-                        isActive ? 'text-white' : 'text-slate-400 dark:text-slate-500 group-hover:text-slate-700 dark:group-hover:text-slate-200'
-                      }`}
-                    />
-                    {!isCollapsed && <span className="truncate">{item.label}</span>}
-                    {!isCollapsed && item.badge && (
-                      <span
-                        className={`ml-auto text-[10px] font-mono px-1.5 py-0.2 rounded-md ${
-                          isActive
-                            ? 'bg-slate-800 dark:bg-emerald-700 text-slate-200 dark:text-white font-bold'
-                            : item.badgeColor
-                        }`}
-                      >
-                        {item.badge}
-                      </span>
-                    )}
-                  </>
-                )}
-              </NavLink>
-            ))}
-          </nav>
-        </div>
-
-        {/* Section 2: Modus Risiko */}
-        <div>
-          {!isCollapsed && (
-            <p className="px-2.5 text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">
-              Modus Risiko
-            </p>
-          )}
-          <nav className="space-y-0.5">
-            {modusNav.map((item) => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                onClick={onNavigate}
-                className={({ isActive }) =>
-                  `flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-xs transition-colors group ${
-                    isActive
-                      ? 'bg-slate-900 dark:bg-emerald-600/90 text-white font-semibold shadow-xs'
-                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100/80 dark:hover:bg-slate-800/70 font-medium'
-                  }`
-                }
-              >
-                {({ isActive }) => (
-                  <>
-                    <item.icon
-                      className={`w-4 h-4 shrink-0 transition-colors ${
-                        isActive ? 'text-white' : 'text-slate-400 dark:text-slate-500 group-hover:text-slate-700 dark:group-hover:text-slate-200'
-                      }`}
-                    />
-                    {!isCollapsed && <span className="truncate">{item.label}</span>}
-                    {!isCollapsed && item.badge && (
-                      <span
-                        className={`ml-auto text-[10px] font-mono px-1.5 py-0.2 rounded-md ${
-                          isActive
-                            ? 'bg-slate-800 dark:bg-emerald-700 text-slate-200 dark:text-white font-bold'
-                            : item.badgeColor
-                        }`}
-                      >
-                        {item.badge}
-                      </span>
-                    )}
-                  </>
-                )}
-              </NavLink>
-            ))}
-          </nav>
-        </div>
-
-        {/* Section 3: Regulasi */}
-        <div>
-          {!isCollapsed && (
-            <p className="px-2.5 text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">
-              Referensi
-            </p>
-          )}
-          <nav className="space-y-0.5">
-            {knowledgeNav.map((item) => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                onClick={onNavigate}
-                className={({ isActive }) =>
-                  `flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-xs transition-colors group ${
-                    isActive
-                      ? 'bg-slate-900 dark:bg-emerald-600/90 text-white font-semibold shadow-xs'
-                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100/80 dark:hover:bg-slate-800/70 font-medium'
-                  }`
-                }
-              >
-                {({ isActive }) => (
-                  <>
-                    <item.icon
-                      className={`w-4 h-4 shrink-0 transition-colors ${
-                        isActive ? 'text-white' : 'text-slate-400 dark:text-slate-500 group-hover:text-slate-700 dark:group-hover:text-slate-200'
-                      }`}
-                    />
-                    {!isCollapsed && <span className="truncate">{item.label}</span>}
-                  </>
-                )}
-              </NavLink>
-            ))}
-          </nav>
-        </div>
-
-        {/* Section 4: Aksi & Master Data */}
-        <div>
-          {!isCollapsed && (
-            <p className="px-2.5 text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">
-              Tindakan
-            </p>
-          )}
-          <nav className="space-y-0.5">
-            {actionNav.map((item) => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                onClick={onNavigate}
-                className={({ isActive }) =>
-                  `flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-xs transition-colors group ${
-                    isActive
-                      ? 'bg-slate-900 dark:bg-emerald-600/90 text-white font-semibold shadow-xs'
-                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100/80 dark:hover:bg-slate-800/70 font-medium'
-                  }`
-                }
-              >
-                {({ isActive }) => (
-                  <>
-                    <item.icon
-                      className={`w-4 h-4 shrink-0 transition-colors ${
-                        isActive ? 'text-white' : 'text-slate-400 dark:text-slate-500 group-hover:text-slate-700 dark:group-hover:text-slate-200'
-                      }`}
-                    />
-                    {!isCollapsed && <span className="truncate">{item.label}</span>}
-                  </>
-                )}
-              </NavLink>
-            ))}
-          </nav>
-        </div>
-      </div>
-
-      {/* Theme Switcher above User Profile */}
-      <div className="p-2 border-t border-slate-100 dark:border-slate-800/80">
-        <button
-          type="button"
-          onClick={toggleTheme}
-          className={`w-full flex items-center rounded-xl text-xs font-medium transition-colors cursor-pointer ${
-            isCollapsed
-              ? 'justify-center p-2 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800'
-              : 'gap-2.5 px-3 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/90'
-          }`}
-          title={isDark ? 'Beralih ke Mode Terang' : 'Beralih ke Mode Gelap'}
-        >
-          {isDark ? (
-            <Sun className="w-4 h-4 text-amber-400 shrink-0" />
-          ) : (
-            <Moon className="w-4 h-4 text-slate-500 dark:text-slate-400 shrink-0" />
-          )}
-          {!isCollapsed && (
-            <div className="flex items-center justify-between flex-1 min-w-0">
-              <span className="truncate">{isDark ? 'Mode Gelap' : 'Mode Terang'}</span>
-              <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
-                {isDark ? 'DARK' : 'LIGHT'}
+            <div className="flex flex-col min-w-0 pr-2">
+              <span className="text-xs font-semibold text-white truncate">
+                {userEmail?.split('@')[0] || 'dr.arief'}
+              </span>
+              <span className="text-[10px] text-slate-400 truncate">
+                Verifikator JKN
               </span>
             </div>
           )}
-        </button>
-      </div>
 
-      {/* User Profile Footer */}
-      <div className="p-2.5 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
-        <div className={`flex items-center gap-2 ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
-          <div className="flex items-center gap-2 overflow-hidden">
-            <div
-              className="w-7 h-7 rounded-lg bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-[11px] flex items-center justify-center shrink-0 border border-slate-300 dark:border-slate-600"
-              title={userEmail || 'Verifikator BPJS'}
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+              title={isDark ? 'Mode Terang' : 'Mode Gelap'}
             >
-              {userEmail ? userEmail.slice(0, 2).toUpperCase() : 'BP'}
-            </div>
-            {!isCollapsed && (
-              <div className="flex flex-col min-w-0">
-                <span className="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">
-                  {userEmail?.split('@')[0] || 'dr.arief'}
-                </span>
-                <span className="text-[10px] text-slate-400 dark:text-slate-500 truncate">
-                  Verifikator JKN
-                </span>
-              </div>
+              {isDark ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4" />}
+            </button>
+            {onLogout && (
+              <button
+                type="button"
+                onClick={onLogout}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer"
+                title="Keluar"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
             )}
           </div>
-
-          {!isCollapsed && onLogout && (
-            <button
-              onClick={onLogout}
-              className="p-1 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors shrink-0"
-              title="Keluar"
-            >
-              <LogOut className="w-3.5 h-3.5" />
-            </button>
-          )}
         </div>
       </div>
     </aside>

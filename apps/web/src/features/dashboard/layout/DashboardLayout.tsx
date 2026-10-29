@@ -25,9 +25,10 @@ import {
   VOICE_CHAT_SECONDARY_ID,
   TTSProcessor,
 } from '../services/tts-processor';
-import { UserCheck, ShieldAlert, X } from 'lucide-react';
+import { ShieldAlert, X, Sparkles } from 'lucide-react';
 import { SimulationProvider, useSimulationStream } from '../simulation/SimulationContext';
-import type { JknClaimRecord } from '@healthathon/shared';
+import type { JknClaimRecord, RealtimeVoiceName } from '@healthathon/shared';
+import { RealtimeVoiceService } from '../services/RealtimeVoiceService';
 
 interface DashboardLayoutProps {
   userEmail?: string | null;
@@ -87,13 +88,21 @@ const DashboardLayoutContent: React.FC<
   const [manualMouthOpen, setManualMouthOpen] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [settings, setSettings] = useState<OpenRouterSettings>(getStoredSettings);
-  const [isMinimized, setIsMinimized] = useState<boolean>(false);
+  const [isMinimized, setIsMinimized] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('infera_avatar_minimized');
+      if (saved !== null) return saved === 'true';
+    }
+    return false; // Tampilkan pop-up asisten Fera di halaman utama secara default
+  });
   const [isListening, setIsListening] = useState<boolean>(false);
   const [isSoundDetected, setIsSoundDetected] = useState<boolean>(false);
   const [liveVoiceText, setLiveVoiceText] = useState<string>('');
   const [voiceErrorMessage, setVoiceErrorMessage] = useState<string | null>(null);
+  const [isWebRtcActive, setIsWebRtcActive] = useState<boolean>(false);
 
   const controllerRef = useRef<AvatarController | null>(null);
+  const realtimeServiceRef = useRef<RealtimeVoiceService | null>(null);
   const emotionTimedownRef = useRef<NodeJS.Timeout | null>(null);
   const stopListeningRef = useRef<(() => void) | null>(null);
   const isVoiceProcessingRef = useRef<boolean>(false);
@@ -132,6 +141,15 @@ const DashboardLayoutContent: React.FC<
       handleSelectEmotion('thinking', 3500);
     }
   }, [latestAnomalyAlert]);
+
+  // Cleanly disconnect WebRTC Realtime Voice on unmount
+  useEffect(() => {
+    return () => {
+      if (realtimeServiceRef.current) {
+        realtimeServiceRef.current.disconnect();
+      }
+    };
+  }, []);
 
   const handleSelectVoice = (voiceId: string) => {
     const validVoiceId = voiceId === VOICE_SECONDARY_ID ? VOICE_SECONDARY_ID : VOICE_DEFAULT_ID;
@@ -367,10 +385,10 @@ const DashboardLayoutContent: React.FC<
     const abortCtrl = new AbortController();
     activeStreamAbortRef.current = abortCtrl;
 
-    // Throttled stream updates to prevent browser lag from updating React state on every single token
+    // Frame-aligned stream updates using requestAnimationFrame for butter-smooth token rendering
     let pendingText: string | null = null;
     let pendingReasoning: string | null = null;
-    let throttleTimeout: ReturnType<typeof setTimeout> | null = null;
+    let streamRafId: number | null = null;
 
     const flushStreamUpdates = () => {
       if (pendingText === null && pendingReasoning === null) return;
@@ -389,11 +407,11 @@ const DashboardLayoutContent: React.FC<
     };
 
     const scheduleStreamUpdate = () => {
-      if (!throttleTimeout) {
-        throttleTimeout = setTimeout(() => {
-          throttleTimeout = null;
+      if (streamRafId === null) {
+        streamRafId = requestAnimationFrame(() => {
+          streamRafId = null;
           flushStreamUpdates();
-        }, 60); // Smooth 60ms batch interval (~16 FPS)
+        });
       }
     };
 
@@ -453,9 +471,9 @@ const DashboardLayoutContent: React.FC<
             scheduleStreamUpdate();
           },
           onDone: (fullText, recs, shortcuts) => {
-            if (throttleTimeout) {
-              clearTimeout(throttleTimeout);
-              throttleTimeout = null;
+            if (streamRafId !== null) {
+              cancelAnimationFrame(streamRafId);
+              streamRafId = null;
             }
             pendingText = null;
             pendingReasoning = null;
@@ -477,9 +495,9 @@ const DashboardLayoutContent: React.FC<
             setIsLoading(false);
           },
           onError: (err) => {
-            if (throttleTimeout) {
-              clearTimeout(throttleTimeout);
-              throttleTimeout = null;
+            if (streamRafId !== null) {
+              cancelAnimationFrame(streamRafId);
+              streamRafId = null;
             }
             pendingText = null;
             pendingReasoning = null;
@@ -540,32 +558,10 @@ const DashboardLayoutContent: React.FC<
     handleSelectEmotion('normal', 0);
   }, [handleSelectEmotion]);
 
-  const handleToggleClickToSpeak = () => {
-    const now = Date.now();
-    // Guard: Debounce fast consecutive taps / simulated click bounce on mobile (450ms)
-    if (now - lastToggleClickTimeRef.current < 450) {
-      return;
-    }
-    lastToggleClickTimeRef.current = now;
-
-    // Use synchronous ref to prevent race condition when state hasn't updated yet
-    if (isListeningRef.current) {
-      isListeningRef.current = false;
-      if (stopListeningRef.current) {
-        stopListeningRef.current();
-        stopListeningRef.current = null;
-      }
-      setIsListening(false);
-      handleSelectEmotion('normal', 0);
-      return;
-    }
-
-    SpeechService.unlockAudio();
-    SpeechService.stopSpeaking();
+  const startFallbackWebSpeech = () => {
     isListeningRef.current = true;
     setIsListening(true);
     handleSelectEmotion('listening', 0);
-
     setVoiceErrorMessage(null);
     setLiveVoiceText('');
 
@@ -609,6 +605,133 @@ const DashboardLayoutContent: React.FC<
     );
 
     stopListeningRef.current = stopFn;
+  };
+
+  const handleToggleClickToSpeak = async () => {
+    const now = Date.now();
+    // Guard: Debounce fast consecutive taps / simulated click bounce on mobile (450ms)
+    if (now - lastToggleClickTimeRef.current < 450) {
+      return;
+    }
+    lastToggleClickTimeRef.current = now;
+
+    // 1. If WebRTC Realtime Voice is active, clicking disconnects the session (toggle off)
+    if (isWebRtcActive || realtimeServiceRef.current?.isConnected()) {
+      if (realtimeServiceRef.current) {
+        realtimeServiceRef.current.disconnect();
+      }
+      setIsWebRtcActive(false);
+      setIsListening(false);
+      setIsSoundDetected(false);
+      isListeningRef.current = false;
+      handleSelectEmotion('normal', 0);
+      return;
+    }
+
+    // 2. If fallback STT listening is active, cancel it
+    if (isListeningRef.current) {
+      isListeningRef.current = false;
+      if (stopListeningRef.current) {
+        stopListeningRef.current();
+        stopListeningRef.current = null;
+      }
+      setIsListening(false);
+      handleSelectEmotion('normal', 0);
+      return;
+    }
+
+    SpeechService.unlockAudio();
+    SpeechService.stopSpeaking();
+
+    // 3. Connect via OpenAI Realtime WebRTC (sub-second duplex voice)
+    try {
+      if (!realtimeServiceRef.current) {
+        realtimeServiceRef.current = new RealtimeVoiceService();
+      }
+
+      const activeVoice = (settings.avatarVoiceId || settings.elevenLabsVoiceId || VOICE_DEFAULT_ID) as RealtimeVoiceName;
+
+      realtimeServiceRef.current.setListeners({
+        onStateChange: (state) => {
+          if (state === 'connected') {
+            setIsWebRtcActive(true);
+            setIsListening(false);
+            setVoiceErrorMessage(null);
+          } else if (state === 'listening') {
+            setIsWebRtcActive(true);
+            setIsListening(true);
+            setIsSoundDetected(true);
+            handleSelectEmotion('listening', 0);
+          } else if (state === 'speaking') {
+            setIsWebRtcActive(true);
+            setIsListening(false);
+            setIsSoundDetected(false);
+            handleSelectEmotion('speaking', 0);
+          } else if (state === 'disconnected') {
+            setIsWebRtcActive(false);
+            setIsListening(false);
+            setIsSoundDetected(false);
+            handleSelectEmotion('normal', 0);
+          } else if (state === 'error') {
+            setIsWebRtcActive(false);
+            setIsListening(false);
+            setIsSoundDetected(false);
+            handleSelectEmotion('confused', 3000);
+          }
+        },
+        onMouthOpen: (mouthOpen) => {
+          if (controllerRef.current) {
+            controllerRef.current.setMouthOpen(mouthOpen);
+          }
+          setManualMouthOpen(mouthOpen);
+        },
+        onEmotionChange: (emo) => {
+          handleSelectEmotion(emo, 4000);
+        },
+        onLiveSpeechText: (liveText) => {
+          // Updates avatar badge / indicator during speech, NEVER inserts chat bubble
+          setLiveVoiceText(liveText);
+        },
+        onTranscript: (item) => {
+          setLiveVoiceText('');
+          if (item.role === 'user') {
+            const userMsg: ChatMessage = {
+              id: item.id || 'msg-' + Date.now() + '-u',
+              role: 'user',
+              content: item.text,
+              timestamp: item.timestamp || new Date().toISOString(),
+            };
+            setMessages((prev) => [...prev, userMsg]);
+          } else if (item.role === 'assistant') {
+            const assistantMsg: ChatMessage = {
+              id: item.id || 'msg-' + Date.now() + '-a',
+              role: 'assistant',
+              content: item.text,
+              timestamp: item.timestamp || new Date().toISOString(),
+            };
+            setMessages((prev) => [...prev, assistantMsg]);
+          }
+        },
+        onError: (err) => {
+          console.warn('[RealtimeVoice] Error:', err);
+          setVoiceErrorMessage(err);
+          setIsWebRtcActive(false);
+          setIsListening(false);
+          setTimeout(() => setVoiceErrorMessage(null), 8000);
+          handleSelectEmotion('confused', 4000);
+        },
+      });
+
+      setIsListening(true);
+      handleSelectEmotion('listening', 0);
+      setVoiceErrorMessage(null);
+
+      await realtimeServiceRef.current.connect(activeVoice);
+    } catch (realtimeErr) {
+      console.warn('[DashboardLayout] Realtime WebRTC failed, falling back to Web Speech:', realtimeErr);
+      setIsWebRtcActive(false);
+      startFallbackWebSpeech();
+    }
   };
 
   const handleTriggerSpeechFromPage = React.useCallback((text: string, emotion: string) => {
@@ -702,8 +825,8 @@ const DashboardLayoutContent: React.FC<
   );
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-[#fafafa] dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans">
-      {/* Desktop Floating Rounded Sidebar */}
+    <div className="flex h-screen w-screen overflow-hidden bg-[#f4f5f8] dark:bg-[#0c0d11] text-slate-900 dark:text-slate-100 font-sans">
+      {/* Desktop Floating Rounded Sidebar (Eduplex style) */}
       <div className="hidden md:block p-3 shrink-0 h-full">
         <Sidebar
           isCollapsed={isSidebarCollapsed}
@@ -796,14 +919,14 @@ const DashboardLayoutContent: React.FC<
           className={`flex-1 min-w-0 ${
             location.pathname === '/dashboard/ai-report'
               ? 'overflow-hidden flex flex-col bg-white dark:bg-slate-950 p-0'
-              : 'overflow-y-auto p-4 sm:p-6 overscroll-contain bg-slate-50/50 dark:bg-slate-950'
+              : 'overflow-y-auto px-4 sm:px-6 lg:px-8 py-6 overscroll-contain bg-[#f4f5f8] dark:bg-[#0c0d11]'
           }`}
         >
           <div
             className={
               location.pathname === '/dashboard/ai-report'
                 ? 'flex-1 flex flex-col h-full w-full min-h-0'
-                : 'max-w-6xl mx-auto w-full space-y-5'
+                : 'w-full max-w-[1760px] mx-auto space-y-6'
             }
           >
             <Outlet context={outletContextValue} />
@@ -836,6 +959,32 @@ const DashboardLayoutContent: React.FC<
         </main>
       </div>
 
+      {/* Floating launcher when Fera is minimized */}
+      {isMinimized && location.pathname !== '/dashboard/ai-report' && (
+        <button
+          type="button"
+          onClick={() => {
+            setIsMinimized(false);
+            try {
+              localStorage.setItem('infera_avatar_minimized', 'false');
+            } catch {}
+          }}
+          className="fixed bottom-6 right-6 z-40 flex items-center gap-2.5 pl-3 pr-4 py-2.5 rounded-full bg-[#131418] text-white border border-white/20 shadow-2xl hover:scale-105 active:scale-95 transition-all cursor-pointer group"
+          title="Buka Asisten Fera"
+        >
+          <div className="relative w-7 h-7 rounded-full bg-blue-500/20 text-blue-400 border border-blue-400/30 flex items-center justify-center font-bold text-xs shrink-0 shadow-sm group-hover:scale-105 transition-transform">
+            <Sparkles className="w-3.5 h-3.5 text-blue-400" />
+            <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-blue-400 ring-2 ring-[#131418]" />
+          </div>
+          <div className="text-left leading-tight">
+            <div className="text-xs font-bold flex items-center gap-1.5">
+              <span>Asisten Fera</span>
+            </div>
+            <div className="text-[10px] text-white/60">Tanya AI &amp; Suara</div>
+          </div>
+        </button>
+      )}
+
       {/* Persistent Floating 2D Avatar (Zero-unmount: guarantees anti-lag) */}
       <FloatingAvatarWidget
         currentEmotion={currentEmotion}
@@ -847,24 +996,17 @@ const DashboardLayoutContent: React.FC<
         liveTranscript={liveVoiceText}
         errorMessage={voiceErrorMessage}
         onOpenChat={() => navigate('/dashboard/ai-report')}
-        onMinimize={() => setIsMinimized(true)}
-        isMinimized={isMinimized || location.pathname === '/dashboard/ai-report'}
+        onMinimize={() => {
+          setIsMinimized(true);
+          try {
+            localStorage.setItem('infera_avatar_minimized', 'true');
+          } catch {}
+        }}
+        isMinimized={isMinimized}
         selectedVoiceId={settings.avatarVoiceId || settings.elevenLabsVoiceId || VOICE_DEFAULT_ID}
         onSelectVoice={handleSelectVoice}
+        isWebRtcActive={isWebRtcActive}
       />
-
-      {/* Avatar Pop-Up Trigger when Minimized (hidden on ai-report page) */}
-      {isMinimized && location.pathname !== '/dashboard/ai-report' && (
-        <button
-          onClick={() => setIsMinimized(false)}
-          className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-3.5 py-1.5 bg-white dark:bg-slate-800 hover:bg-slate-50 text-slate-800 dark:text-slate-200 rounded-full shadow-md border border-slate-200 dark:border-slate-700 text-xs font-medium transition-colors cursor-pointer"
-          title="Buka Asisten AI"
-        >
-          <div className="w-2 h-2 rounded-full bg-[#007a3d]" />
-          <span>Buka Asisten AI</span>
-          <UserCheck className="w-4 h-4 text-slate-600 dark:text-slate-300" />
-        </button>
-      )}
     </div>
   );
 };

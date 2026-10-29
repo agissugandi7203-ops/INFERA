@@ -7,15 +7,39 @@ const ELEVENLABS_BASE = 'https://api.elevenlabs.io/v1';
 const DEFAULT_VOICE_ID = '3bAVnCtF2Efx7MOj2bJ0';
 const UPSTREAM_TIMEOUT_MS = 30_000;
 
-const getApiKey = (): string => {
-  const apiKey = env.ELEVENLABS_API_KEY.trim();
-  if (apiKey.length < 5) {
-    throw new AppError('Layanan suara belum dikonfigurasi di server.', 503, 'SERVICE_UNAVAILABLE');
-  }
-  return apiKey;
+const requestOpenAiTts = async (apiKey: string, voice: string, text: string) => {
+  const openAiVoices = new Set(['alloy', 'ash', 'coral', 'echo', 'fable', 'onyx', 'nova', 'sage', 'shimmer']);
+  const chosenVoice = openAiVoices.has(voice.toLowerCase()) ? voice.toLowerCase() : 'coral';
+  return fetch('https://api.openai.com/v1/audio/speech', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: 'tts-1',
+      voice: chosenVoice,
+      input: text,
+      response_format: 'mp3',
+    }),
+    signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
+  });
 };
 
-const requestTts = (apiKey: string, voiceId: string, text: string, voiceSettings: Record<string, unknown>) =>
+const requestOpenAiStt = async (apiKey: string, audioBlob: Blob, filename: string) => {
+  const form = new FormData();
+  form.append('model', 'whisper-1');
+  form.append('language', 'id');
+  form.append('file', audioBlob, filename);
+  return fetch('https://api.openai.com/v1/audio/transcriptions', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${apiKey}` },
+    body: form,
+    signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
+  });
+};
+
+const requestElevenLabsTts = (apiKey: string, voiceId: string, text: string, voiceSettings: Record<string, unknown>) =>
   fetch(`${ELEVENLABS_BASE}/text-to-speech/${encodeURIComponent(voiceId)}`, {
     method: 'POST',
     headers: {
@@ -33,11 +57,36 @@ const requestTts = (apiKey: string, voiceId: string, text: string, voiceSettings
 
 export const generateTts = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    // Body already validated & normalised by ttsSchema (voiceId format, settings ranges, text ≤ 1000 chars)
     const { text, voiceId, voiceSettings } = req.body as TtsInput;
-    const apiKey = getApiKey();
-    const targetVoiceId = voiceId || DEFAULT_VOICE_ID;
+    const openAiKey = env.OPENAI_API_KEY?.trim();
+    const elevenLabsKey = env.ELEVENLABS_API_KEY?.trim();
 
+    // Priority 1: OpenAI TTS (tts-1) with voice 'coral' for FERA
+    // Fast, natural, highly expressive Indonesian pronunciation, ~600ms latency
+    if (openAiKey && openAiKey.length > 5) {
+      try {
+        const targetVoice = voiceId || 'coral';
+        const openAiRes = await requestOpenAiTts(openAiKey, targetVoice, text);
+        if (openAiRes.ok) {
+          const audioBuffer = await openAiRes.arrayBuffer();
+          res.setHeader('Content-Type', 'audio/mpeg');
+          res.setHeader('Content-Length', audioBuffer.byteLength.toString());
+          res.setHeader('Cache-Control', 'private, no-store');
+          res.status(200).send(Buffer.from(audioBuffer));
+          return;
+        }
+        console.warn(`[VoiceController] OpenAI TTS returned ${openAiRes.status}, falling back to ElevenLabs`);
+      } catch (openAiErr) {
+        console.warn('[VoiceController] OpenAI TTS request failed, falling back to ElevenLabs:', openAiErr);
+      }
+    }
+
+    // Priority 2: ElevenLabs Fallback
+    if (!elevenLabsKey || elevenLabsKey.length < 5) {
+      throw new AppError('Layanan suara belum dikonfigurasi di server.', 503, 'SERVICE_UNAVAILABLE');
+    }
+
+    const targetVoiceId = voiceId && voiceId.length > 10 ? voiceId : DEFAULT_VOICE_ID;
     const settings = {
       stability: 0.62,
       similarity_boost: 0.78,
@@ -46,24 +95,19 @@ export const generateTts = async (req: Request, res: Response, next: NextFunctio
       ...voiceSettings,
     };
 
-    let elevenLabsRes = await requestTts(apiKey, targetVoiceId, text, settings);
-
+    let elevenLabsRes = await requestElevenLabsTts(elevenLabsKey, targetVoiceId, text, settings);
     if (!elevenLabsRes.ok && targetVoiceId !== DEFAULT_VOICE_ID) {
-      console.warn(`[VoiceController] Voice ${targetVoiceId} failed (${elevenLabsRes.status}), falling back to default voice`);
-      elevenLabsRes = await requestTts(apiKey, DEFAULT_VOICE_ID, text, settings);
+      elevenLabsRes = await requestElevenLabsTts(elevenLabsKey, DEFAULT_VOICE_ID, text, settings);
     }
 
     if (!elevenLabsRes.ok) {
       const errText = await elevenLabsRes.text().catch(() => '');
-      // Upstream detail is logged server-side only (masked for clients by the error handler in production)
       throw AppError.internal(`ElevenLabs TTS error (${elevenLabsRes.status}): ${errText.slice(0, 500)}`);
     }
 
     const audioBuffer = await elevenLabsRes.arrayBuffer();
-
     res.setHeader('Content-Type', 'audio/mpeg');
     res.setHeader('Content-Length', audioBuffer.byteLength.toString());
-    // Spoken AI replies may contain personal data → never store in shared/browser caches
     res.setHeader('Cache-Control', 'private, no-store');
     res.status(200).send(Buffer.from(audioBuffer));
   } catch (err) {
@@ -74,7 +118,8 @@ export const generateTts = async (req: Request, res: Response, next: NextFunctio
 export const transcribeStt = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { audioBase64, mimeType } = req.body as SttInput;
-    const apiKey = getApiKey();
+    const openAiKey = env.OPENAI_API_KEY?.trim();
+    const elevenLabsKey = env.ELEVENLABS_API_KEY?.trim();
 
     const audioBuffer = Buffer.from(audioBase64, 'base64');
     if (audioBuffer.length === 0) {
@@ -92,15 +137,40 @@ export const transcribeStt = async (req: Request, res: Response, next: NextFunct
             ? 'mp3'
             : 'webm';
 
-    // Native FormData builds the multipart body safely (no hand-written headers → no CRLF injection)
+    const audioBlob = new Blob([audioBuffer], { type: baseMime });
+    const filename = `recording.${ext}`;
+
+    // Priority 1: OpenAI Whisper-1 STT
+    if (openAiKey && openAiKey.length > 5) {
+      try {
+        const whisperRes = await requestOpenAiStt(openAiKey, audioBlob, filename);
+        if (whisperRes.ok) {
+          const data = (await whisperRes.json()) as { text?: string };
+          res.status(200).json({
+            text: data.text || '',
+            language_code: 'id',
+          });
+          return;
+        }
+        console.warn(`[VoiceController] Whisper STT returned ${whisperRes.status}, falling back to ElevenLabs`);
+      } catch (whisperErr) {
+        console.warn('[VoiceController] Whisper STT failed, falling back to ElevenLabs:', whisperErr);
+      }
+    }
+
+    // Priority 2: ElevenLabs Scribe STT
+    if (!elevenLabsKey || elevenLabsKey.length < 5) {
+      throw new AppError('Layanan transkripsi suara belum dikonfigurasi di server.', 503, 'SERVICE_UNAVAILABLE');
+    }
+
     const form = new FormData();
     form.append('model_id', 'scribe_v1');
     form.append('language_code', 'id');
-    form.append('file', new Blob([audioBuffer], { type: baseMime }), `recording.${ext}`);
+    form.append('file', audioBlob, filename);
 
     const sttRes = await fetch(`${ELEVENLABS_BASE}/speech-to-text`, {
       method: 'POST',
-      headers: { 'xi-api-key': apiKey },
+      headers: { 'xi-api-key': elevenLabsKey },
       body: form,
       signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
     });

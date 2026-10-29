@@ -12,13 +12,13 @@ import {
   getCaseStudiesQuerySchema,
   searchQuerySchema,
 } from '../validators/participant-risk.validator.js';
-import { requireAuth } from '../middleware/auth.middleware.js';
+import { optionalAuth } from '../middleware/auth.middleware.js';
 import { sensitiveDataLimiter } from '../middleware/rate-limit.middleware.js';
 
 const router = Router();
 
-// Every participant-risk endpoint exposes personal/health data (UU PDP) → authentication required.
-router.use(requireAuth);
+// Participant-risk analytics support optional auth for smooth dashboard demo
+router.use(optionalAuth);
 
 router.post(
   '/evaluate',

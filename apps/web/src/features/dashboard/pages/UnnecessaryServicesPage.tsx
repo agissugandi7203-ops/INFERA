@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Building2,
   Repeat,
-  ShieldCheck,
-  Zap,
+  Scale,
+  MessageSquare,
+  ChevronDown,
+  ChevronUp,
+  ShieldOff,
+  Building2,
   Clock,
-  CheckCircle2,
-  Sparkles,
 } from 'lucide-react';
-import { MetricCard } from '../components/charts/MetricCard';
+
+const HEADING_FONT = '"Bricolage Grotesque", "Inter", sans-serif';
 
 interface ClinicVisit {
   faskes: string;
@@ -30,11 +32,8 @@ interface DoctorShoppingCase {
   diagnosa: string;
   totalInefisiensi: string;
   dsiValue: number;
-  dsiThreshold: number;
   visits: ClinicVisit[];
-  aiExplanation: string;
   legalBasis: string;
-  recommendations: string[];
 }
 
 const CASES_DATA: DoctorShoppingCase[] = [
@@ -46,7 +45,6 @@ const CASES_DATA: DoctorShoppingCase[] = [
     diagnosa: 'R42 - Vertigo & Gangguan Keseimbangan',
     totalInefisiensi: 'Rp 4.200.000',
     dsiValue: 1.0,
-    dsiThreshold: 0.3,
     visits: [
       {
         faskes: 'Klinik Pratama Sehat Sejahtera',
@@ -63,30 +61,23 @@ const CASES_DATA: DoctorShoppingCase[] = [
         tipeFaskes: 'Poli Saraf (Kelas C)',
         tgl: '28 Agu 2026',
         intervalHari: '+2 Hari',
-        keluhan: 'Pusing berputar, minta obat lebih kuat',
-        tindakan: 'Flunarizine + Lab Darah Rutin',
+        keluhan: 'Pusing berputar, minta resep baru',
+        tindakan: 'Flunarizine + Lab Rutin Redundan',
         biaya: 'Rp 950.000',
         isRedundant: true,
       },
       {
         faskes: 'RS Advent Bandung',
-        tipeFaskes: 'Instalasi Gawat Darurat (IGD)',
+        tipeFaskes: 'IGD Rumah Sakit',
         tgl: '31 Agu 2026',
         intervalHari: '+3 Hari',
-        keluhan: 'Pusing berputar (tanpa defisit neurologis)',
+        keluhan: 'Pusing berputar (tanpa defisit)',
         tindakan: 'CT-Scan Kepala Non-Kontras Redundan',
         biaya: 'Rp 1.450.000',
         isRedundant: true,
       },
     ],
-    aiExplanation:
-      'Pasien mengunjungi 3 fasilitas kesehatan berbeda dalam kurun waktu 5 hari dengan diagnosa keluhan vertigo yang identik. Pemeriksaan penunjang laboratorium dan CT-Scan diulang tanpa indikasi kegawatdaruratan medis baru, sementara obat sebelumnya masih aktif. Pola ini terbukti sebagai Doctor Shopping untuk akumulasi resep dan utilisasi pemeriksaan yang tidak perlu.',
-    legalBasis: 'Permenkes No. 16/2019 Pasal 5 ayat (3) & Pedoman Layanan INA-CBG (Unnecessary Utilization)',
-    recommendations: [
-      'Kunci rujukan mandiri bertingkat di sistem VClaim untuk diagnosa R42.',
-      'Wajibkan review dokter keluarga FKTP sebelum penerbitan SEP subspesialis.',
-      'Notifikasi edukasi hak layanan terbit ke akun Mobile JKN peserta.',
-    ],
+    legalBasis: 'Permenkes 16/2019 Ps. 5 ayat (3) & Pedoman INA-CBG (Unnecessary Utilization)',
   },
   {
     id: 'HK-DS-02',
@@ -96,7 +87,6 @@ const CASES_DATA: DoctorShoppingCase[] = [
     diagnosa: 'M54.5 - Low Back Pain Kronis',
     totalInefisiensi: 'Rp 2.850.000',
     dsiValue: 0.67,
-    dsiThreshold: 0.3,
     visits: [
       {
         faskes: 'Klinik Harapan Medika',
@@ -114,280 +104,212 @@ const CASES_DATA: DoctorShoppingCase[] = [
         tgl: '04 Sep 2026',
         intervalHari: '+2 Hari',
         keluhan: 'Nyeri punggung bawah menetap',
-        tindakan: 'Rontgen Lumbal Redundan + Terapi Analgetik',
+        tindakan: 'Rontgen Lumbal Redundan',
         biaya: 'Rp 820.000',
         isRedundant: true,
       },
     ],
-    aiExplanation:
-      'Pemeriksaan radiologi rontgen diulang di rumah sakit rujukan dalam 48 jam tanpa melampirkan hasil foto dari faskes tingkat pertama, menimbulkan duplikasi klaim tarif INA-CBG.',
-    legalBasis: 'Permenkes No. 26/2021 tentang Efisiensi Penjaminan Mutu & Biaya Layanan',
-    recommendations: [
-      'Sinkronisasi riwayat radiologi digital melalui integrasi SATUSEHAT.',
-      'Tolak tagihan klaim sekunder rontgen non-emergency.',
-    ],
+    legalBasis: 'Permenkes 16/2019 tentang Pencegahan Kecurangan JKN',
   },
 ];
 
 export const UnnecessaryServicesPage: React.FC = () => {
   const navigate = useNavigate();
-  const [selectedCaseId, setSelectedCaseId] = useState<string>('HK-DS-01');
-  const [analyzedCases, setAnalyzedCases] = useState<Record<string, boolean>>({
-    'HK-DS-01': true,
-  });
-  const [isScanning, setIsScanning] = useState<boolean>(false);
+  const [expandedId, setExpandedId] = useState<string | null>('HK-DS-01');
 
-  const currentCase = CASES_DATA.find((c) => c.id === selectedCaseId) || CASES_DATA[0]!;
-  const isAnalyzed = !!analyzedCases[selectedCaseId];
+  const toggleExpand = (id: string) => {
+    setExpandedId((prev) => (prev === id ? null : id));
+  };
 
-  const handleRunAiAudit = () => {
-    setIsScanning(true);
-    setTimeout(() => {
-      setAnalyzedCases((prev) => ({ ...prev, [selectedCaseId]: true }));
-      setIsScanning(false);
-    }, 550);
+  const handleAskFera = (patient: string, diag: string, inefisiensi: string) => {
+    navigate('/dashboard/ai-report', {
+      state: {
+        autoPrompt: `Analisis Doctor Shopping ${patient} (Diagnosa: ${diag}). Inefisiensi: ${inefisiensi}.\nBerikan saran penguncian rujukan VClaim dan sanksi yang sesuai.`,
+      },
+    });
+  };
+
+  const handleGoToMasterData = () => {
+    navigate('/dashboard/master-data');
   };
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto w-full">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200/80 dark:border-slate-800">
+    <div className="space-y-6 w-full max-w-[1400px] mx-auto pb-16">
+      {/* ================================================================ */}
+      {/* 1. Header & Metric Pills                                         */}
+      {/* ================================================================ */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
-              Doctor Shopping &amp; Layanan Redundan
-            </h1>
-            <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
-              MODUS 3
-            </span>
-          </div>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            Analisis indeks pemanfaatan berulang (Doctor Shopping Index) untuk menghentikan pemborosan dana jaminan.
+          <h1
+            className="text-2xl sm:text-3xl font-semibold text-slate-900 dark:text-slate-50 tracking-tight leading-none"
+            style={{ fontFamily: HEADING_FONT }}
+          >
+            Doctor Shopping
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1.5">
+            Pelayanan berulang tanpa indikasi medis baru &amp; perpindahan faskes berturut-turut.
           </p>
         </div>
 
-        <button
-          onClick={handleRunAiAudit}
-          disabled={isScanning}
-          className="px-4 py-2 rounded-xl bg-[#007a3d] hover:bg-[#006633] text-white text-xs font-bold flex items-center gap-2 transition-all shadow-sm hover:shadow-md cursor-pointer self-start sm:self-auto disabled:opacity-60"
-        >
-          {isScanning ? (
-            <>
-              <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              <span>Memvalidasi Rekam Medis...</span>
-            </>
-          ) : (
-            <>
-              <Zap className="w-3.5 h-3.5 text-amber-300 fill-amber-300" />
-              <span>{isAnalyzed ? 'Uji Analisis Ulang' : 'Jalankan Audit AI'}</span>
-            </>
-          )}
-        </button>
-      </div>
-
-      {/* Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
-        <MetricCard
-          title="DSI Rata-Rata Terindikasi"
-          value="0.84"
-          subtitle="Ambang batas aman BPJS: < 0.30"
-          badgeText="Tinggi"
-          icon={Repeat}
-          iconColorClass="text-rose-600 dark:text-rose-400"
-          iconBgClass="bg-rose-50 dark:bg-rose-950/60 border border-rose-100 dark:border-rose-900/40"
-        />
-        <MetricCard
-          title="Klaim Penunjang Redundan"
-          value="42 Kasus"
-          subtitle="Lab / CT-Scan diulang dalam 7 hari"
-          badgeText="Audit VEDIKA"
-          icon={Building2}
-          iconColorClass="text-amber-600 dark:text-amber-400"
-          iconBgClass="bg-amber-50 dark:bg-amber-950/60 border border-amber-100 dark:border-amber-900/40"
-        />
-        <MetricCard
-          title="Efisiensi Biaya Dicegah"
-          value="Rp 194.2 Jt"
-          subtitle="Duplikasi berhasil dibatalkan"
-          badgeText="DJS Efisien"
-          icon={ShieldCheck}
-          iconColorClass="text-emerald-600 dark:text-emerald-400"
-          iconBgClass="bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-100 dark:border-emerald-900/40"
-        />
-      </div>
-
-      {/* Main Grid: Queue & Interactive Journey */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-        {/* Left 4 Cols: Queue */}
-        <div className="lg:col-span-4 space-y-3">
-          <div className="flex items-center justify-between pb-1">
-            <h3 className="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider">
-              Daftar Peserta Terindikasi
-            </h3>
-            <span className="text-[10px] font-mono text-slate-400">Pilih Kasus</span>
+        <div className="flex items-center gap-2 flex-wrap">
+          <div className="h-9 px-3.5 rounded-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] flex items-center gap-2 text-xs font-semibold">
+            <span className="text-slate-400">Inefisiensi DJS:</span>
+            <span className="font-bold text-rose-500 font-mono">Rp 7,05 Jt</span>
           </div>
-
-          <div className="space-y-2.5">
-            {CASES_DATA.map((item) => {
-              const isSelected = item.id === selectedCaseId;
-              const hasAnalyzed = !!analyzedCases[item.id];
-              return (
-                <div
-                  key={item.id}
-                  onClick={() => setSelectedCaseId(item.id)}
-                  className={`p-4 rounded-2xl border transition-all duration-200 cursor-pointer ${
-                    isSelected
-                      ? 'bg-white dark:bg-slate-900 border-[#007a3d] dark:border-emerald-500 shadow-md shadow-emerald-900/5 -translate-y-0.5'
-                      : 'bg-white dark:bg-slate-900 border-slate-200/90 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-sm'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-900 dark:text-slate-100">{item.patientName}</span>
-                    <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-900">
-                      Skor {item.score}
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 truncate">
-                    {item.diagnosa}
-                  </p>
-                  <div className="mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px]">
-                    <span className="text-slate-400">Inefisiensi: <strong className="font-mono text-rose-600 dark:text-rose-400">{item.totalInefisiensi}</strong></span>
-                    {hasAnalyzed ? (
-                      <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-semibold text-[10px]">
-                        <CheckCircle2 className="w-3 h-3" /> Audit Selesai
-                      </span>
-                    ) : (
-                      <span className="flex items-center gap-1 text-amber-600 dark:text-amber-400 font-semibold text-[10px]">
-                        <Clock className="w-3 h-3" /> Siap Diaudit
-                      </span>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+          <div className="h-9 px-3.5 rounded-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] flex items-center gap-2 text-xs font-semibold">
+            <span className="text-slate-400">Batas Wajar:</span>
+            <span className="font-bold text-amber-500 font-mono">DSI &lt; 0.30</span>
+          </div>
+          <div className="h-9 px-3.5 rounded-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] flex items-center gap-2 text-xs font-semibold">
+            <span className="text-slate-400">Kasus:</span>
+            <span className="font-bold text-slate-900 dark:text-slate-100">2 Terdeteksi</span>
           </div>
         </div>
+      </div>
 
-        {/* Right 8 Cols: Interactive Visual Journey & Reasoning */}
-        <div className="lg:col-span-8 space-y-4">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200/90 dark:border-slate-800 shadow-sm space-y-5">
-            {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-bold text-slate-900 dark:text-slate-100">
-                    Alur Kunjungan Faskes: {currentCase.patientName}
-                  </span>
-                  <span className="font-mono text-[10px] text-slate-400">({currentCase.nik})</span>
-                </div>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                  Indeks Doctor Shopping: <strong className="font-mono text-rose-600 dark:text-rose-400">DSI {currentCase.dsiValue.toFixed(2)}</strong> (Ambang Batas: 0.30)
-                </p>
-              </div>
+      {/* ================================================================ */}
+      {/* 2. Tiered Cases List                                             */}
+      {/* ================================================================ */}
+      <div className="space-y-3.5">
+        {CASES_DATA.map((c) => {
+          const isExpanded = expandedId === c.id;
 
-              <div className="text-left sm:text-right">
-                <span className="text-[10px] text-slate-400 block">Total Beban Klaim:</span>
-                <span className="text-sm font-bold text-rose-600 dark:text-rose-400 font-mono">
-                  {currentCase.totalInefisiensi}
-                </span>
-              </div>
-            </div>
-
-            {/* Clean Visual Timeline of Visits */}
-            <div className="space-y-3">
-              <span className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide block">
-                Kronologi Kunjungan Faskes Terdeteksi
-              </span>
-
-              <div className="space-y-2.5">
-                {currentCase.visits.map((visit, idx) => (
-                  <div
-                    key={idx}
-                    className={`p-3.5 rounded-xl border transition-all ${
-                      visit.isRedundant
-                        ? 'bg-rose-50/60 dark:bg-rose-950/30 border-rose-200 dark:border-rose-900/60'
-                        : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200/80 dark:border-slate-700/80'
-                    }`}
-                  >
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 pb-1.5 border-b border-slate-200/60 dark:border-slate-700/60 text-xs">
-                      <div className="flex items-center gap-2">
-                        <span className={`w-5 h-5 rounded-full flex items-center justify-center font-bold text-[10px] ${
-                          visit.isRedundant
-                            ? 'bg-rose-600 text-white'
-                            : 'bg-slate-700 text-white'
-                        }`}>
-                          {idx + 1}
-                        </span>
-                        <span className="font-bold text-slate-900 dark:text-slate-100">{visit.faskes}</span>
-                        <span className="text-[10px] text-slate-400">({visit.tipeFaskes})</span>
-                      </div>
-                      <span className="font-mono text-[11px] text-slate-500 dark:text-slate-400">
-                        {visit.tgl} ({visit.intervalHari})
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 text-xs">
-                      <div>
-                        <span className="text-slate-400 text-[10px] block">Keluhan &amp; Terapi</span>
-                        <div className="font-medium text-slate-800 dark:text-slate-200">
-                          {visit.tindakan}
-                        </div>
-                      </div>
-                      <div className="sm:text-right">
-                        <span className="text-slate-400 text-[10px] block">Biaya Klaim</span>
-                        <div className="font-mono font-bold text-slate-900 dark:text-slate-100">
-                          {visit.biaya}
-                          {visit.isRedundant && (
-                            <span className="ml-1.5 px-1.5 py-0.2 rounded text-[9px] font-bold bg-rose-100 dark:bg-rose-900/80 text-rose-700 dark:text-rose-300">
-                              REDUNDAN
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
+          return (
+            <div
+              key={c.id}
+              className={`rounded-2xl transition-all border overflow-hidden ${
+                isExpanded
+                  ? 'bg-white dark:bg-[#131418] border-slate-300 dark:border-white/[0.16] shadow-lg ring-1 ring-white/[0.06]'
+                  : 'bg-white dark:bg-[#131418] border-slate-200/80 dark:border-white/[0.07] hover:border-slate-300 dark:hover:border-white/[0.12]'
+              }`}
+            >
+              {/* TIER 1: Compact Preview Row */}
+              <div
+                onClick={() => toggleExpand(c.id)}
+                className="p-4 sm:px-5 sm:py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 cursor-pointer select-none"
+              >
+                <div className="flex items-center gap-3.5 min-w-0">
+                  <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-500 border border-amber-500/20 flex items-center justify-center shrink-0">
+                    <Repeat className="w-5 h-5" />
                   </div>
-                ))}
-              </div>
-            </div>
-
-            {/* AI Reasoning Box */}
-            {isAnalyzed ? (
-              <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border-2 border-emerald-600/40 dark:border-emerald-500/40 shadow-sm space-y-3">
-                <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 font-bold text-xs">
-                  <Sparkles className="w-4 h-4 text-emerald-600" />
-                  <span>Kesimpulan AI &amp; Dasar Regulasi</span>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-white/[0.08] text-slate-700 dark:text-slate-300">
+                        {c.id}
+                      </span>
+                      <h3
+                        className="text-sm sm:text-base font-bold text-slate-900 dark:text-slate-100 truncate"
+                        style={{ fontFamily: HEADING_FONT }}
+                      >
+                        {c.patientName} · {c.diagnosa}
+                      </h3>
+                    </div>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                      Doctor Shopping Index (DSI) <strong className="text-amber-500">{c.dsiValue.toFixed(2)}</strong> (Ambang Batas: 0.30) · {c.visits.length} Kunjungan
+                    </p>
+                  </div>
                 </div>
 
-                <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
-                  {currentCase.aiExplanation}
-                </p>
-
-                <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[11px]">
-                  <span className="text-slate-500 dark:text-slate-400">
-                    Regulasi: <strong className="text-slate-700 dark:text-slate-300">{currentCase.legalBasis}</strong>
-                  </span>
-
+                <div className="flex items-center gap-5 shrink-0 self-end sm:self-center">
+                  <div className="text-right">
+                    <div className="text-[10px] text-slate-400 uppercase font-semibold">Inefisiensi</div>
+                    <div className="text-sm font-bold font-mono text-rose-500">{c.totalInefisiensi}</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-[10px] text-slate-400 uppercase font-semibold">Skor Risiko</div>
+                    <div className="text-sm font-bold font-mono text-amber-500">{c.score}/100</div>
+                  </div>
                   <button
-                    onClick={() => navigate('/dashboard/master-data')}
-                    className="px-3 py-1.5 rounded-lg bg-slate-900 dark:bg-slate-100 hover:bg-slate-800 dark:hover:bg-white text-white dark:text-slate-900 font-bold transition-colors cursor-pointer self-start sm:self-auto"
+                    type="button"
+                    className="w-8 h-8 rounded-full bg-slate-100 dark:bg-white/[0.06] text-slate-600 dark:text-slate-300 flex items-center justify-center"
                   >
-                    Tindak Lanjuti di Master Data &rarr;
+                    {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                   </button>
                 </div>
               </div>
-            ) : (
-              <div className="p-8 text-center rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 space-y-2">
-                <Clock className="w-6 h-6 text-slate-400 mx-auto" />
-                <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                  Data Kunjungan Siap Dievaluasi
-                </p>
-                <p className="text-[11px] text-slate-400 max-w-sm mx-auto">
-                  Klik tombol &quot;Jalankan Audit AI&quot; untuk menghitung rasio redundansi klinis dan memvalidasi dasar regulasi.
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
+
+              {/* TIER 2: Expanded Encounter Table */}
+              {isExpanded && (
+                <div className="border-t border-slate-100 dark:border-white/[0.08] p-4 sm:p-5 bg-slate-50/60 dark:bg-white/[0.015] space-y-4">
+                  {/* Visits Table */}
+                  <div>
+                    <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-200/60 dark:border-white/[0.06] text-xs font-bold text-slate-700 dark:text-slate-200">
+                      <span className="flex items-center gap-1.5">
+                        <Clock className="w-3.5 h-3.5 text-slate-400" />
+                        Kronologi Kunjungan Faskes ({c.visits.length} Kali)
+                      </span>
+                      <span className="font-mono text-[11px] text-slate-400">NIK: {c.nik}</span>
+                    </div>
+
+                    <div className="divide-y divide-slate-100 dark:divide-white/[0.05] bg-white dark:bg-[#111216] rounded-xl border border-slate-200/70 dark:border-white/[0.06] overflow-hidden">
+                      {c.visits.map((v, i) => (
+                        <div
+                          key={i}
+                          className="px-4 py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs"
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <span className="w-5 h-5 rounded-full bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-300 text-[10px] font-mono font-bold flex items-center justify-center shrink-0">
+                              {i + 1}
+                            </span>
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-1.5">
+                                <Building2 className="w-3 h-3 text-slate-400 shrink-0" />
+                                <span className="font-semibold text-slate-900 dark:text-slate-100">{v.faskes}</span>
+                                <span className="text-slate-400 text-[10px]">({v.tipeFaskes})</span>
+                              </div>
+                              <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                                {v.keluhan} · <span className="text-slate-700 dark:text-slate-300 font-medium">{v.tindakan}</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex sm:flex-col items-baseline sm:items-end justify-between sm:justify-center shrink-0">
+                            <div className="flex items-center gap-2">
+                              {v.isRedundant && (
+                                <span className="px-1.5 py-0.5 rounded text-[9.5px] font-bold bg-rose-500/10 text-rose-500 border border-rose-500/20">
+                                  Redundan
+                                </span>
+                              )}
+                              <span className="font-mono font-bold text-slate-900 dark:text-slate-100">{v.biaya}</span>
+                            </div>
+                            <span className="font-mono text-[10.5px] text-slate-400">{v.tgl} ({v.intervalHari})</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Legal & Actions */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
+                    <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                      <Scale className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+                      <span>Rujukan: <strong className="text-slate-700 dark:text-slate-200">{c.legalBasis}</strong></span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={handleGoToMasterData}
+                        className="px-3.5 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <ShieldOff className="w-3 h-3" />
+                        <span>Kirim Surat / Suspend</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleAskFera(c.patientName, c.diagnosa, c.totalInefisiensi)}
+                        className="px-3.5 py-1.5 rounded-xl bg-slate-200 hover:bg-slate-300 dark:bg-white/[0.08] dark:hover:bg-white/[0.12] text-slate-800 dark:text-slate-200 text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <MessageSquare className="w-3 h-3" />
+                        <span>Konsultasi AI</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );

@@ -1,7 +1,8 @@
 import {
   API_V2_PREFIX,
+  CUTE_ANIME_VOICE_ID,
+  DEFAULT_REALTIME_VOICE,
   type RealtimeConnectionState,
-  type RealtimeSessionResponseDTO,
   type RealtimeTranscriptItem,
   type RealtimeVoiceName,
   type ActionRecommendation,
@@ -15,11 +16,10 @@ export interface RealtimeVoiceListeners {
   onMouthOpen?: (mouthOpen: number) => void;
   onEmotionChange?: (emotion: CharacterEmotion) => void;
   onTranscript?: (item: RealtimeTranscriptItem) => void;
+  onLiveSpeechText?: (liveText: string) => void;
   onActionRecommendation?: (recommendation: ActionRecommendation) => void;
   onError?: (error: string) => void;
 }
-
-const OPENAI_REALTIME_WEBRTC_URL = 'https://api.openai.com/v1/realtime';
 
 export class RealtimeVoiceService {
   private peerConnection: RTCPeerConnection | null = null;
@@ -32,6 +32,8 @@ export class RealtimeVoiceService {
   private state: RealtimeConnectionState = 'disconnected';
   private listeners: RealtimeVoiceListeners = {};
   private executionContext?: ToolExecutionContext;
+  private currentUserTranscript = '';
+  private bufferedUserText = '';
   private currentAssistantTranscript = '';
   private lastMouthOpen = 0;
 
@@ -63,8 +65,9 @@ export class RealtimeVoiceService {
 
   /**
    * Connect to OpenAI Realtime Voice via WebRTC
+   * Uses direct SDP exchange with GPT-Live & custom anime voice (voice_6ae35d565f908191a5b73228455d503f)
    */
-  public async connect(voice: RealtimeVoiceName = 'shimmer'): Promise<void> {
+  public async connect(voice: RealtimeVoiceName = DEFAULT_REALTIME_VOICE): Promise<void> {
     if (this.isConnected() || this.state === 'connecting') {
       return;
     }
@@ -73,20 +76,19 @@ export class RealtimeVoiceService {
     this.listeners.onEmotionChange?.('listening');
 
     try {
-      // Step 1: Request Ephemeral Token from INFERA Backend v2
-      const session = await this.fetchEphemeralSession(voice);
-
-      // Step 2: Acquire User Microphone
+      // Step 1: Acquire User Microphone with studio-quality constraints (disable telephone AGC)
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,
           noiseSuppression: true,
-          autoGainControl: true,
+          autoGainControl: false,
+          sampleRate: 48000,
+          channelCount: 1,
         },
       });
       this.localStream = stream;
 
-      // Step 3: Initialize RTCPeerConnection
+      // Step 2: Initialize RTCPeerConnection
       const pc = new RTCPeerConnection();
       this.peerConnection = pc;
 
@@ -104,33 +106,44 @@ export class RealtimeVoiceService {
         pc.addTrack(audioTrack, stream);
       }
 
-      // Step 4: Setup SCTP DataChannel (oai-events) for JSON transcripts, events, and tool calling
-      const dc = pc.createDataChannel('oai-events');
+      // Step 3: Setup SCTP DataChannel (live-events & oai-events) for JSON transcripts & events
+      const dc = pc.createDataChannel('live-events');
       this.dataChannel = dc;
       this.setupDataChannel(dc);
 
-      // Step 5: WebRTC SDP Handshake with OpenAI Gateway
+      // Step 4: Create SDP Offer
       const offer = await pc.createOffer();
       await pc.setLocalDescription(offer);
 
-      const sdpUrl = `${OPENAI_REALTIME_WEBRTC_URL}?model=${encodeURIComponent(session.model)}`;
-      const sdpResponse = await fetch(sdpUrl, {
+      // Step 5: Send SDP offer to Backend v2 (which connects to OpenAI Live Sessions with custom voice)
+      const rawApiUrl = (import.meta.env.VITE_API_URL || '').replace(/\/api\/v[12]\/?$/, '').replace(/\/+$/, '');
+      const authHeaders = await getAuthHeaders();
+
+      const res = await fetch(`${rawApiUrl}${API_V2_PREFIX}/voice/realtime-session`, {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${session.clientSecret}`,
-          'Content-Type': 'application/sdp',
+          'Content-Type': 'application/json',
+          ...authHeaders,
         },
-        body: offer.sdp,
+        body: JSON.stringify({
+          sdp: offer.sdp,
+          voice: voice || CUTE_ANIME_VOICE_ID,
+        }),
       });
 
-      if (!sdpResponse.ok) {
-        const errorText = await sdpResponse.text().catch(() => '');
-        throw new Error(
-          `Handshake WebRTC OpenAI gagal (${sdpResponse.status}): ${errorText.slice(0, 300)}`
-        );
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        throw new Error(errJson?.error?.message || `HTTP ${res.status}`);
       }
 
-      const answerSdp = await sdpResponse.text();
+      const resJson = await res.json();
+      const answerSdp = resJson.data?.sdp;
+
+      if (!answerSdp) {
+        throw new Error('Backend tidak mengembalikan SDP answer.');
+      }
+
+      // Step 6: Set Remote Description with SDP Answer from OpenAI
       await pc.setRemoteDescription({
         type: 'answer',
         sdp: answerSdp,
@@ -224,33 +237,10 @@ export class RealtimeVoiceService {
     this.dataChannel.send(JSON.stringify({ type: 'response.create' }));
   }
 
-  private async fetchEphemeralSession(voice: RealtimeVoiceName): Promise<RealtimeSessionResponseDTO> {
-    const backendUrl = import.meta.env.VITE_API_URL || '';
-    const authHeaders = await getAuthHeaders();
-
-    const res = await fetch(`${backendUrl}${API_V2_PREFIX}/voice/realtime-session`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...authHeaders,
-      },
-      body: JSON.stringify({ voice }),
-    });
-
-    if (!res.ok) {
-      const errJson = await res.json().catch(() => ({}));
-      const msg = errJson?.error?.message || `HTTP ${res.status}`;
-      throw new Error(`Gagal menginisiasi sesi Realtime backend: ${msg}`);
-    }
-
-    const json = await res.json();
-    return json.data as RealtimeSessionResponseDTO;
-  }
-
   private setupAudioPipeline(remoteStream: MediaStream): void {
     try {
       const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-      const audioCtx = new AudioCtx();
+      const audioCtx = new AudioCtx({ sampleRate: 48000, latencyHint: 'interactive' });
       this.audioContext = audioCtx;
 
       // Resume context if browser suspended it
@@ -264,10 +254,16 @@ export class RealtimeVoiceService {
       analyser.smoothingTimeConstant = 0.4;
       source.connect(analyser);
 
-      // Play audio on speaker
+      // Connect source to audioCtx.destination directly for full 48kHz wideband audio output!
+      // This bypasses the narrow-band telephony/communications filter in Chrome and Windows.
+      source.connect(audioCtx.destination);
+
+      // Keep muted HTMLAudioElement to satisfy browser WebRTC autoplay permission policy
       const audioEl = new Audio();
       audioEl.srcObject = remoteStream;
+      audioEl.muted = true;
       audioEl.autoplay = true;
+      audioEl.play().catch(() => {});
       this.audioElement = audioEl;
 
       const dataArray = new Uint8Array(analyser.frequencyBinCount);
@@ -326,44 +322,71 @@ export class RealtimeVoiceService {
     const type = String(msg.type || '');
 
     // 1. User starts speaking -> Instant Barge-in!
-    if (type === 'input_audio_buffer.speech_started') {
+    if (type === 'input_audio_buffer.speech_started' || type === 'session.input_speech.started') {
       this.setState('listening');
+      this.currentUserTranscript = '';
       this.listeners.onMouthOpen?.(0);
       this.listeners.onEmotionChange?.('listening');
+      this.listeners.onLiveSpeechText?.('');
       return;
     }
 
     // 2. User stopped speaking
-    if (type === 'input_audio_buffer.speech_stopped') {
+    if (type === 'input_audio_buffer.speech_stopped' || type === 'session.input_speech.stopped') {
       this.setState('connected');
       this.listeners.onEmotionChange?.('thinking');
       return;
     }
 
-    // 3. User Audio Transcription Completed
-    if (type === 'conversation.item.input_audio_transcription.completed') {
-      const transcript = String(msg.transcript || '').trim();
-      if (transcript) {
-        this.listeners.onTranscript?.({
-          id: 'user-' + Date.now(),
-          role: 'user',
-          text: transcript,
-          timestamp: new Date().toISOString(),
-          isFinal: true,
-        });
+    // 3. User Audio Transcription Streaming Deltas (Update live speech preview pill, NEVER spam chat bubbles)
+    if (type === 'session.input_transcript.delta') {
+      const delta = String(msg.delta || '');
+      this.currentUserTranscript += delta;
+      if (this.currentUserTranscript.trim()) {
+        this.listeners.onLiveSpeechText?.(this.currentUserTranscript.trim());
       }
       return;
     }
 
+    // 3b. Finalized User Speech Transcription (Buffer to prevent fragmented bubbles)
+    if (type === 'conversation.item.input_audio_transcription.completed' || type === 'session.input_transcript.done') {
+      const seg = (String(msg.transcript || '') || this.currentUserTranscript).trim();
+      this.currentUserTranscript = '';
+      this.listeners.onLiveSpeechText?.('');
+      if (seg) {
+        if (this.bufferedUserText) {
+          this.bufferedUserText += ' ' + seg;
+        } else {
+          this.bufferedUserText = seg;
+        }
+      }
+      return;
+    }
+
+    // Flush buffered user transcript as a single message right when assistant response begins
+    if (this.bufferedUserText && (type.startsWith('response.') || type.startsWith('session.output_'))) {
+      const consolidatedUserText = this.bufferedUserText.trim();
+      this.bufferedUserText = '';
+      if (consolidatedUserText) {
+        this.listeners.onTranscript?.({
+          id: 'user-' + Date.now(),
+          role: 'user',
+          text: consolidatedUserText,
+          timestamp: new Date().toISOString(),
+          isFinal: true,
+        });
+      }
+    }
+
     // 4. Assistant Audio Transcript Streaming & Completion
-    if (type === 'response.audio_transcript.delta') {
+    if (type === 'response.audio_transcript.delta' || type === 'session.output_transcript.delta') {
       this.setState('speaking');
       this.listeners.onEmotionChange?.('speaking');
       this.currentAssistantTranscript += String(msg.delta || '');
       return;
     }
 
-    if (type === 'response.audio_transcript.done') {
+    if (type === 'response.audio_transcript.done' || type === 'session.output_transcript.done') {
       const fullTranscript = (this.currentAssistantTranscript || String(msg.transcript || '')).trim();
       this.currentAssistantTranscript = '';
       if (fullTranscript) {

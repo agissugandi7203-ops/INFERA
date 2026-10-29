@@ -4,6 +4,28 @@ import App from './App';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 import './index.css';
 
+// Filter out noisy third-party Framer UI deprecation and DOM prop warnings in dev mode
+if (typeof window !== 'undefined') {
+  const originalError = console.error;
+  const originalWarn = console.warn;
+  const shouldFilter = (msg: unknown) => {
+    if (typeof msg !== 'string') return false;
+    return (
+      msg.includes('Support for defaultProps will be removed from function components') ||
+      msg.includes('React does not recognize the `fetchPriority` prop') ||
+      msg.includes('React does not recognize the `__withFX` prop')
+    );
+  };
+  console.error = (...args: unknown[]) => {
+    if (shouldFilter(args[0])) return;
+    originalError.apply(console, args);
+  };
+  console.warn = (...args: unknown[]) => {
+    if (shouldFilter(args[0])) return;
+    originalWarn.apply(console, args);
+  };
+}
+
 // Handle dynamic module import failures gracefully (e.g. after fresh Vercel deployments with new chunk hashes)
 window.addEventListener('vite:preloadError', (event) => {
   event.preventDefault();

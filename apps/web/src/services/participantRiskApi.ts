@@ -7,7 +7,7 @@ import type {
 } from '@healthathon/shared';
 import { getAuthHeaders } from '../lib/supabase';
 
-const API_BASE = '/api/v1/participant-risk';
+const API_BASE = '/api/v2/participant-risk';
 
 // ============================================================================
 // BENCHMARK FALLBACK DATA (Guarantees zero downtime during pitch & offline demos)

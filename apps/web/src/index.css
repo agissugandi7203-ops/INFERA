@@ -148,4 +148,51 @@
   --framer-text-color: #ffffff !important;
 }
 
+/* ==========================================================================
+   DASHBOARD ENTRANCE & SVG CHART ANIMATIONS
+   ========================================================================== */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes barGrow {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes waveDraw {
+  from {
+    stroke-dashoffset: 1200;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-bar-grow {
+  transform-origin: bottom;
+  animation: barGrow 0.75s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-wave-draw {
+  stroke-dasharray: 1200;
+  stroke-dashoffset: 1200;
+  animation: waveDraw 1.5s cubic-bezier(0.16, 1, 0.3, 1) 0.15s forwards;
+}
+
 

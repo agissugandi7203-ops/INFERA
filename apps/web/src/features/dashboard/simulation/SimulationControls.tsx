@@ -31,32 +31,32 @@ interface SimulationControlsProps {
 const SCENARIOS: { id: SimulationScenarioPreset; label: string; badge: string }[] = [
   {
     id: 'ALL_RANDOM',
-    label: '🌐 Semua Skenario (Multi-Modus Acak)',
+    label: ' Semua Skenario (Multi-Modus Acak)',
     badge: 'Real-World Stream',
   },
   {
     id: 'KPK_PHYSIOTHERAPY_PHANTOM',
-    label: '🚨 Kasus KPK 2024: Fisioterapi Fiktif (Phantom Billing)',
+    label: ' Kasus KPK 2024: Fisioterapi Fiktif (Phantom Billing)',
     badge: 'KPK Benchmark',
   },
   {
     id: 'KPK_CATARACT_UPCODING',
-    label: '👁️ Kasus KPK 2024: Katarak Upcoding & Unbundling',
+    label: ' Kasus KPK 2024: Katarak Upcoding & Unbundling',
     badge: 'KPK Benchmark',
   },
   {
     id: 'SECTIO_CESAREAN_UPCODING',
-    label: '👶 Upcoding Seksio Sesarea (Severity III Non-ICU)',
+    label: ' Upcoding Seksio Sesarea (Severity III Non-ICU)',
     badge: 'Upcoding',
   },
   {
     id: 'INAPPROPRIATE_READMISSION',
-    label: '🔄 Readmisi Berulang Prematur (<14 Hari DBD)',
+    label: ' Readmisi Berulang Prematur (<14 Hari DBD)',
     badge: 'Readmission',
   },
   {
     id: 'MONOPOLISTIC_REFERRAL',
-    label: '🤝 Rujukan Monopolistik & Kickback (Self-Referral)',
+    label: ' Rujukan Monopolistik & Kickback (Self-Referral)',
     badge: 'Referral',
   },
 ];

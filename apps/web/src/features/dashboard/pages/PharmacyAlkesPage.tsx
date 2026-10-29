@@ -2,15 +2,16 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Pill,
-  Glasses,
-  ShieldCheck,
-  AlertTriangle,
-  Zap,
+  Scale,
+  MessageSquare,
+  ChevronDown,
+  ChevronUp,
+  ShieldOff,
+  Building2,
   Clock,
-  CheckCircle2,
-  Sparkles,
 } from 'lucide-react';
-import { MetricCard } from '../components/charts/MetricCard';
+
+const HEADING_FONT = '"Bricolage Grotesque", "Inter", sans-serif';
 
 interface PharmacyCase {
   id: string;
@@ -19,10 +20,8 @@ interface PharmacyCase {
   score: number;
   tipeModus: string;
   namaObat: string;
-  totalHariSuplai: number;
-  intervalPengambilanHari: number;
-  overlapPercentage: number;
   totalBiaya: string;
+  highlightText: string;
   apotekList: Array<{
     nama: string;
     tgl: string;
@@ -30,7 +29,6 @@ interface PharmacyCase {
     biaya: string;
     isOverLimit?: boolean;
   }>;
-  aiExplanation: string;
   legalBasis: string;
 }
 
@@ -42,20 +40,18 @@ const PHARMACY_CASES: PharmacyCase[] = [
     score: 94,
     tipeModus: 'Resale Arbitrage Obat PRB',
     namaObat: 'Insulin Glargine Pen + Amlodipine 10mg',
-    totalHariSuplai: 90,
-    intervalPengambilanHari: 22,
-    overlapPercentage: 190,
     totalBiaya: 'Rp 1.185.000',
+    highlightText: 'Overlap Kuota 190% (90 hari suplai diambil dalam 22 hari)',
     apotekList: [
       {
-        nama: 'Apotek Kimia Farma Juanda',
+        nama: 'Apotek Kimia Farma Juanda Medan',
         tgl: '10 Agu 2026',
         jatahHari: 30,
         biaya: 'Rp 395.000',
         isOverLimit: false,
       },
       {
-        nama: 'Apotek K-24 Gatot Subroto',
+        nama: 'Apotek K-24 Gatot Subroto Medan',
         tgl: '20 Agu 2026 (+10h)',
         jatahHari: 30,
         biaya: 'Rp 395.000',
@@ -69,9 +65,7 @@ const PHARMACY_CASES: PharmacyCase[] = [
         isOverLimit: true,
       },
     ],
-    aiExplanation:
-      'Pasien mengambil suplai obat kronis Program Rujuk Balik (PRB) untuk kebutuhan 90 hari hanya dalam rentang waktu 22 hari di 3 apotek jejaring berbeda. Terjadi overlap kuota 190% di atas kebutuhan wajar medis, mengindikasikan kuat pengumpulan obat bersubsidi untuk tujuan resale (dijual kembali ke pasar gelap).',
-    legalBasis: 'Permenkes No. 26/2021 & Panduan Tata Laksana PRB BPJS Kesehatan (Maksimal 30 hari/siklus)',
+    legalBasis: 'Permenkes 26/2021 & Panduan PRB BPJS Kesehatan (Maks. 30 hari/siklus)',
   },
   {
     id: 'HK-ALKES-01',
@@ -79,11 +73,9 @@ const PHARMACY_CASES: PharmacyCase[] = [
     nik: '3374**********89',
     score: 82,
     tipeModus: 'Pelanggaran Cooling-Off Kacamata',
-    namaObat: 'Klaim Kacamata Koreksi Visus Sferis -2.5',
-    totalHariSuplai: 0,
-    intervalPengambilanHari: 0,
-    overlapPercentage: 0,
+    namaObat: 'Koreksi Visus Sferis -2.5',
     totalBiaya: 'Rp 330.000',
+    highlightText: 'Klaim ulang dalam 9 bulan (Regulasi wajib jeda 2 tahun / 730 hari)',
     apotekList: [
       {
         nama: 'Optik Melawai Semarang',
@@ -93,297 +85,212 @@ const PHARMACY_CASES: PharmacyCase[] = [
         isOverLimit: false,
       },
       {
-        nama: 'Optik Seis Mall Paragon',
+        nama: 'Optik Seis Paragon Semarang',
         tgl: '18 Agu 2026 (9 bln kemudian)',
         jatahHari: 730,
         biaya: 'Rp 330.000',
         isOverLimit: true,
       },
     ],
-    aiExplanation:
-      'Klaim kacamata diajukan kembali setelah 9 bulan dari klaim sebelumnya. Sesuai regulasi penjaminan alat kesehatan BPJS Kesehatan, klaim kacamata memiliki masa jeda (cooling-off period) minimal 2 tahun (24 bulan) sekali.',
-    legalBasis: 'Perpres No. 82/2018 Pasal 54 & Permenkes No. 3/2023 tentang Manfaat Alat Kesehatan JKN',
+    legalBasis: 'Perpres 82/2018 Ps. 54 & Permenkes 28/2014 (Cooling-off 2 Tahun Alkes Optik)',
   },
 ];
 
 export const PharmacyAlkesPage: React.FC = () => {
   const navigate = useNavigate();
-  const [selectedCaseId, setSelectedCaseId] = useState<string>('HK-PRB-01');
-  const [analyzedCases, setAnalyzedCases] = useState<Record<string, boolean>>({
-    'HK-PRB-01': true,
-  });
-  const [isScanning, setIsScanning] = useState<boolean>(false);
+  const [expandedId, setExpandedId] = useState<string | null>('HK-PRB-01');
 
-  const currentCase = PHARMACY_CASES.find((c) => c.id === selectedCaseId) || PHARMACY_CASES[0]!;
-  const isAnalyzed = !!analyzedCases[selectedCaseId];
+  const toggleExpand = (id: string) => {
+    setExpandedId((prev) => (prev === id ? null : id));
+  };
 
-  const handleRunAiAudit = () => {
-    setIsScanning(true);
-    setTimeout(() => {
-      setAnalyzedCases((prev) => ({ ...prev, [selectedCaseId]: true }));
-      setIsScanning(false);
-    }, 550);
+  const handleAskFera = (patient: string, modus: string, obat: string) => {
+    navigate('/dashboard/ai-report', {
+      state: {
+        autoPrompt: `Analisis anomali farmasi ${patient} (${modus} - ${obat}).\nBerikan langkah verifikasi apotek dan sanksi yang sesuai.`,
+      },
+    });
+  };
+
+  const handleGoToMasterData = () => {
+    navigate('/dashboard/master-data');
   };
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto w-full">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200/80 dark:border-slate-800">
+    <div className="space-y-6 w-full max-w-[1400px] mx-auto pb-16">
+      {/* ================================================================ */}
+      {/* 1. Header & Metric Pills                                         */}
+      {/* ================================================================ */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
-              Resep PRB &amp; Klaim Alkes
-            </h1>
-            <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
-              MODUS 4
-            </span>
-          </div>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            Pengawasan rasio tumpang tindih resep kronis (POR) dan penegakan batas jeda (cooling-off) alat kesehatan.
+          <h1
+            className="text-2xl sm:text-3xl font-semibold text-slate-900 dark:text-slate-50 tracking-tight leading-none"
+            style={{ fontFamily: HEADING_FONT }}
+          >
+            Resep &amp; Alkes
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1.5">
+            Monitoring kuota tumpang tindih obat PRB dan pelanggaran periode cooling-off alkes.
           </p>
         </div>
 
-        <button
-          onClick={handleRunAiAudit}
-          disabled={isScanning}
-          className="px-4 py-2 rounded-xl bg-[#007a3d] hover:bg-[#006633] text-white text-xs font-bold flex items-center gap-2 transition-all shadow-sm hover:shadow-md cursor-pointer self-start sm:self-auto disabled:opacity-60"
-        >
-          {isScanning ? (
-            <>
-              <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              <span>Memvalidasi Kuota Apotek...</span>
-            </>
-          ) : (
-            <>
-              <Zap className="w-3.5 h-3.5 text-amber-300 fill-amber-300" />
-              <span>{isAnalyzed ? 'Uji Analisis Ulang' : 'Jalankan Audit AI'}</span>
-            </>
-          )}
-        </button>
-      </div>
-
-      {/* Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
-        <MetricCard
-          title="Prescription Overlap Ratio"
-          value="182%"
-          subtitle="Ambang batas normal: 100% - 120%"
-          badgeText="Kritikal"
-          icon={Pill}
-          iconColorClass="text-rose-600 dark:text-rose-400"
-          iconBgClass="bg-rose-50 dark:bg-rose-950/60 border border-rose-100 dark:border-rose-900/40"
-        />
-        <MetricCard
-          title="Pelanggaran Cooling-Off"
-          value="29 Klaim"
-          subtitle="Kacamata &amp; alat bantu < 24 bulan"
-          badgeText="Audit Alkes"
-          icon={Glasses}
-          iconColorClass="text-amber-600 dark:text-amber-400"
-          iconBgClass="bg-amber-50 dark:bg-amber-950/60 border border-amber-100 dark:border-amber-900/40"
-        />
-        <MetricCard
-          title="Dana Farmasi Diamankan"
-          value="Rp 84.6 Jt"
-          subtitle="Suplai ilegal berhasil diblokir"
-          badgeText="DJS Terlindungi"
-          icon={ShieldCheck}
-          iconColorClass="text-emerald-600 dark:text-emerald-400"
-          iconBgClass="bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-100 dark:border-emerald-900/40"
-        />
-      </div>
-
-      {/* Main Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-        {/* Left 4 Cols: Cases Queue */}
-        <div className="lg:col-span-4 space-y-3">
-          <div className="flex items-center justify-between pb-1">
-            <h3 className="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider">
-              Antrean Verifikasi Farmasi
-            </h3>
-            <span className="text-[10px] font-mono text-slate-400">Pilih Kasus</span>
+        <div className="flex items-center gap-2 flex-wrap">
+          <div className="h-9 px-3.5 rounded-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] flex items-center gap-2 text-xs font-semibold">
+            <span className="text-slate-400">Overlap Maks:</span>
+            <span className="font-bold text-rose-500 font-mono">190% Kuota</span>
           </div>
-
-          <div className="space-y-2.5">
-            {PHARMACY_CASES.map((item) => {
-              const isSelected = item.id === selectedCaseId;
-              const hasAnalyzed = !!analyzedCases[item.id];
-              return (
-                <div
-                  key={item.id}
-                  onClick={() => setSelectedCaseId(item.id)}
-                  className={`p-4 rounded-2xl border transition-all duration-200 cursor-pointer ${
-                    isSelected
-                      ? 'bg-white dark:bg-slate-900 border-[#007a3d] dark:border-emerald-500 shadow-md shadow-emerald-900/5 -translate-y-0.5'
-                      : 'bg-white dark:bg-slate-900 border-slate-200/90 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-sm'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-900 dark:text-slate-100">{item.patientName}</span>
-                    <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-900">
-                      Skor {item.score}
-                    </span>
-                  </div>
-                  <div className="text-[11px] font-medium text-slate-700 dark:text-slate-300 mt-1">
-                    {item.tipeModus}
-                  </div>
-                  <div className="mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px]">
-                    <span className="text-slate-400 font-mono text-rose-600 dark:text-rose-400 font-semibold">{item.totalBiaya}</span>
-                    {hasAnalyzed ? (
-                      <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-semibold text-[10px]">
-                        <CheckCircle2 className="w-3 h-3" /> Terverifikasi AI
-                      </span>
-                    ) : (
-                      <span className="flex items-center gap-1 text-amber-600 dark:text-amber-400 font-semibold text-[10px]">
-                        <Clock className="w-3 h-3" /> Siap Diaudit
-                      </span>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+          <div className="h-9 px-3.5 rounded-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] flex items-center gap-2 text-xs font-semibold">
+            <span className="text-slate-400">Cooling-Off:</span>
+            <span className="font-bold text-amber-500 font-mono">2 Tahun (Kacamata)</span>
+          </div>
+          <div className="h-9 px-3.5 rounded-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] flex items-center gap-2 text-xs font-semibold">
+            <span className="text-slate-400">Total Kasus:</span>
+            <span className="font-bold text-slate-900 dark:text-slate-100">2 Terdeteksi</span>
           </div>
         </div>
+      </div>
 
-        {/* Right 8 Cols: Interactive Visual Overlap Canvas */}
-        <div className="lg:col-span-8 space-y-4">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200/90 dark:border-slate-800 shadow-sm space-y-5">
-            {/* Case Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-bold text-slate-900 dark:text-slate-100">
-                    Audit Peresepan: {currentCase.patientName}
-                  </span>
-                  <span className="font-mono text-[10px] text-slate-400">({currentCase.nik})</span>
-                </div>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                  Item: <strong className="text-slate-700 dark:text-slate-300">{currentCase.namaObat}</strong>
-                </p>
-              </div>
+      {/* ================================================================ */}
+      {/* 2. Tiered Cases List                                             */}
+      {/* ================================================================ */}
+      <div className="space-y-3.5">
+        {PHARMACY_CASES.map((c) => {
+          const isExpanded = expandedId === c.id;
 
-              <div className="text-left sm:text-right">
-                <span className="text-[10px] text-slate-400 block">Total Klaim Farmasi:</span>
-                <span className="text-sm font-bold text-rose-600 dark:text-rose-400 font-mono">
-                  {currentCase.totalBiaya}
-                </span>
-              </div>
-            </div>
-
-            {/* Visual Overlap Bar (Intuitive, Clean) */}
-            <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/80 space-y-3">
-              <div className="flex items-center justify-between text-xs">
-                <span className="font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
-                  Visualisasi Kuota vs Realisasi Pengambilan
-                </span>
-                {currentCase.overlapPercentage > 0 && (
-                  <span className="font-mono font-bold text-rose-600 dark:text-rose-400">
-                    Overlap {currentCase.overlapPercentage}% (Surplus {currentCase.totalHariSuplai - 30} Hari)
-                  </span>
-                )}
-              </div>
-
-              {/* Visual Progress Bars */}
-              <div className="space-y-2">
-                <div>
-                  <div className="flex justify-between text-[11px] text-slate-500 dark:text-slate-400 mb-1">
-                    <span>Jatah Maksimal Pasien PRB (1 Bulan):</span>
-                    <span className="font-mono font-bold text-slate-700 dark:text-slate-300">30 Hari</span>
+          return (
+            <div
+              key={c.id}
+              className={`rounded-2xl transition-all border overflow-hidden ${
+                isExpanded
+                  ? 'bg-white dark:bg-[#131418] border-slate-300 dark:border-white/[0.16] shadow-lg ring-1 ring-white/[0.06]'
+                  : 'bg-white dark:bg-[#131418] border-slate-200/80 dark:border-white/[0.07] hover:border-slate-300 dark:hover:border-white/[0.12]'
+              }`}
+            >
+              {/* TIER 1: Compact Preview Row */}
+              <div
+                onClick={() => toggleExpand(c.id)}
+                className="p-4 sm:px-5 sm:py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 cursor-pointer select-none"
+              >
+                <div className="flex items-center gap-3.5 min-w-0">
+                  <div className="w-10 h-10 rounded-xl bg-rose-500/10 text-rose-500 border border-rose-500/20 flex items-center justify-center shrink-0">
+                    <Pill className="w-5 h-5" />
                   </div>
-                  <div className="w-full h-2.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                    <div className="h-full bg-emerald-500 rounded-full w-[33%]" />
-                  </div>
-                </div>
-
-                <div>
-                  <div className="flex justify-between text-[11px] text-slate-500 dark:text-slate-400 mb-1">
-                    <span>Total Obat Diambil (dalam 22 Hari):</span>
-                    <span className="font-mono font-bold text-rose-600 dark:text-rose-400">{currentCase.totalHariSuplai || 180} Hari</span>
-                  </div>
-                  <div className="w-full h-2.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                    <div className="h-full bg-rose-600 rounded-full w-[100%]" />
-                  </div>
-                </div>
-              </div>
-
-              <div className="p-3 rounded-xl bg-rose-50/80 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 flex items-center justify-between text-xs">
-                <div className="flex items-center gap-2 text-rose-900 dark:text-rose-200">
-                  <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
-                  <span>Obat diambil 3x sebelum jatah obat pertama habis (indikasi kuat penimbunan stok/resale).</span>
-                </div>
-                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-600 text-white shrink-0">
-                  ANOMALI ARBITRAGE
-                </span>
-              </div>
-            </div>
-
-            {/* Apotek Breakdown Table */}
-            <div className="space-y-2">
-              <span className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide block">
-                Jejaring Titik Pengambilan Terdaftar
-              </span>
-
-              <div className="divide-y divide-slate-100 dark:divide-slate-800 border border-slate-200/80 dark:border-slate-800 rounded-xl overflow-hidden bg-white dark:bg-slate-900 text-xs">
-                {currentCase.apotekList.map((ap, idx) => (
-                  <div
-                    key={idx}
-                    className={`p-3 flex items-center justify-between gap-2 ${
-                      ap.isOverLimit
-                        ? 'bg-rose-50/40 dark:bg-rose-950/20 text-rose-900 dark:text-rose-200'
-                        : 'text-slate-700 dark:text-slate-300'
-                    }`}
-                  >
-                    <div>
-                      <div className="font-bold">{ap.nama}</div>
-                      <div className="text-[11px] text-slate-400">{ap.tgl}</div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-white/[0.08] text-slate-700 dark:text-slate-300">
+                        {c.id}
+                      </span>
+                      <h3
+                        className="text-sm sm:text-base font-bold text-slate-900 dark:text-slate-100 truncate"
+                        style={{ fontFamily: HEADING_FONT }}
+                      >
+                        {c.patientName} · {c.tipeModus}
+                      </h3>
                     </div>
-                    <div className="text-right">
-                      <div className="font-mono font-bold">{ap.biaya}</div>
-                      <div className="text-[10px] text-slate-400">Suplai {ap.jatahHari} Hari</div>
-                    </div>
+                    <p className="text-xs text-rose-500 font-semibold truncate mt-0.5">
+                      {c.highlightText}
+                    </p>
                   </div>
-                ))}
-              </div>
-            </div>
-
-            {/* AI Reasoning Response Card */}
-            {isAnalyzed ? (
-              <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border-2 border-emerald-600/40 dark:border-emerald-500/40 shadow-sm space-y-3">
-                <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 font-bold text-xs">
-                  <Sparkles className="w-4 h-4 text-emerald-600" />
-                  <span>Penalaran Klinis AI &amp; Dasar Hukum</span>
                 </div>
 
-                <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
-                  {currentCase.aiExplanation}
-                </p>
-
-                <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[11px]">
-                  <span className="text-slate-500 dark:text-slate-400">
-                    Regulasi: <strong className="text-slate-700 dark:text-slate-300">{currentCase.legalBasis}</strong>
-                  </span>
-
+                <div className="flex items-center gap-5 shrink-0 self-end sm:self-center">
+                  <div className="text-right">
+                    <div className="text-[10px] text-slate-400 uppercase font-semibold">Total Biaya</div>
+                    <div className="text-sm font-bold font-mono text-rose-500">{c.totalBiaya}</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-[10px] text-slate-400 uppercase font-semibold">Skor Risiko</div>
+                    <div className="text-sm font-bold font-mono text-amber-500">{c.score}/100</div>
+                  </div>
                   <button
-                    onClick={() => navigate('/dashboard/master-data')}
-                    className="px-3 py-1.5 rounded-lg bg-slate-900 dark:bg-slate-100 hover:bg-slate-800 dark:hover:bg-white text-white dark:text-slate-900 font-bold transition-colors cursor-pointer self-start sm:self-auto"
+                    type="button"
+                    className="w-8 h-8 rounded-full bg-slate-100 dark:bg-white/[0.06] text-slate-600 dark:text-slate-300 flex items-center justify-center"
                   >
-                    Tindak Lanjuti di Master Data &rarr;
+                    {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                   </button>
                 </div>
               </div>
-            ) : (
-              <div className="p-8 text-center rounded-2xl border border-dashed border-slate-300 dark:border-slate-700 space-y-2">
-                <Clock className="w-6 h-6 text-slate-400 mx-auto" />
-                <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                  Siap untuk Pemindaian Integritas Resep
-                </p>
-                <p className="text-[11px] text-slate-400 max-w-sm mx-auto">
-                  Klik &quot;Jalankan Audit AI&quot; untuk menghitung rasio overlap dan memeriksa kepatuhan batas interval hari suplai.
-                </p>
-              </div>
-            )}
-          </div>
-        </div>
+
+              {/* TIER 2: Expanded Encounter Table */}
+              {isExpanded && (
+                <div className="border-t border-slate-100 dark:border-white/[0.08] p-4 sm:p-5 bg-slate-50/60 dark:bg-white/[0.015] space-y-4">
+                  <div>
+                    <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-200/60 dark:border-white/[0.06] text-xs font-bold text-slate-700 dark:text-slate-200">
+                      <span className="flex items-center gap-1.5">
+                        <Clock className="w-3.5 h-3.5 text-slate-400" />
+                        Kronologi Penyerahan Obat / Alkes ({c.namaObat})
+                      </span>
+                      <span className="font-mono text-[11px] text-slate-400">NIK: {c.nik}</span>
+                    </div>
+
+                    <div className="divide-y divide-slate-100 dark:divide-white/[0.05] bg-white dark:bg-[#111216] rounded-xl border border-slate-200/70 dark:border-white/[0.06] overflow-hidden">
+                      {c.apotekList.map((a, i) => (
+                        <div
+                          key={i}
+                          className="px-4 py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs"
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <span className="w-5 h-5 rounded-full bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-300 text-[10px] font-mono font-bold flex items-center justify-center shrink-0">
+                              {i + 1}
+                            </span>
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-1.5">
+                                <Building2 className="w-3 h-3 text-slate-400 shrink-0" />
+                                <span className="font-semibold text-slate-900 dark:text-slate-100">{a.nama}</span>
+                              </div>
+                              <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                                Jatah suplai: <strong className="text-slate-700 dark:text-slate-300">{a.jatahHari} hari</strong>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex sm:flex-col items-baseline sm:items-end justify-between sm:justify-center shrink-0">
+                            <div className="flex items-center gap-2">
+                              {a.isOverLimit && (
+                                <span className="px-1.5 py-0.5 rounded text-[9.5px] font-bold bg-rose-500/10 text-rose-500 border border-rose-500/20">
+                                  Over Kuota
+                                </span>
+                              )}
+                              <span className="font-mono font-bold text-slate-900 dark:text-slate-100">{a.biaya}</span>
+                            </div>
+                            <span className="font-mono text-[10.5px] text-slate-400">{a.tgl}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Legal & Actions */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
+                    <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                      <Scale className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+                      <span>Rujukan: <strong className="text-slate-700 dark:text-slate-200">{c.legalBasis}</strong></span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={handleGoToMasterData}
+                        className="px-3.5 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <ShieldOff className="w-3 h-3" />
+                        <span>Kirim Surat / Suspend</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleAskFera(c.patientName, c.tipeModus, c.namaObat)}
+                        className="px-3.5 py-1.5 rounded-xl bg-slate-200 hover:bg-slate-300 dark:bg-white/[0.08] dark:hover:bg-white/[0.12] text-slate-800 dark:text-slate-200 text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <MessageSquare className="w-3 h-3" />
+                        <span>Konsultasi AI</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );

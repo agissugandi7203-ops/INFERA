@@ -4,15 +4,17 @@
  */
 
 export type RealtimeVoiceName =
-  | 'shimmer' // Female, warm, friendly — ideal for Avatar Luna
+  | 'coral'   // FERA Natural Anime Indonesian (Default Resmi OpenAI)
+  | 'shimmer' // Luna Cute Anime (Alternatif)
   | 'alloy'   // Neutral, precise
   | 'echo'    // Male, formal
   | 'ballad'  // Warm, storytelling
-  | 'coral'   // Lively
   | 'sage'    // Authoritative, calm
   | 'verse'   // Expressive
   | 'marin'   // Modern, conversational
-  | 'cedar';  // Modern, deep
+  | 'cedar'   // Modern, deep
+  | 'voice_6ae35f4fc2388191a0b2f21060b4e417' // Legacy custom alias (auto-mapped to coral)
+  | (string & {});
 
 export interface RealtimeSessionRequestDTO {
   voice?: RealtimeVoiceName;

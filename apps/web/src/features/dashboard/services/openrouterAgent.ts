@@ -522,8 +522,8 @@ export async function runAgentInvestigationStream(
       };
       callbacks?.onToolStep?.(stepRunning);
 
-      // Brief yield for reactive UI feedback
-      await new Promise((r) => setTimeout(r, 90));
+      // Brief yield for reactive UI feedback without artificial dead-pause
+      await new Promise((r) => setTimeout(r, 10));
 
       try {
         const result = await executeInferaTool(pt.name, pt.args, context);
@@ -643,7 +643,8 @@ export async function runAgentInvestigationStream(
         let iterationText = '';
         let fullReasoningText = '';
 
-        while (true) {
+        let isStreamDone = false;
+        while (!isStreamDone) {
           if (signal?.aborted) {
             reader.cancel().catch(() => {});
             break;
@@ -659,7 +660,10 @@ export async function runAgentInvestigationStream(
           for (const line of lines) {
             const trimmed = line.trim();
             if (!trimmed || trimmed.startsWith(':')) continue;
-            if (trimmed === 'data: [DONE]') break;
+            if (trimmed === 'data: [DONE]' || trimmed === '[DONE]') {
+              isStreamDone = true;
+              break;
+            }
             if (trimmed.startsWith('data: ')) {
               try {
                 const parsed = JSON.parse(trimmed.slice(6));
@@ -683,6 +687,10 @@ export async function runAgentInvestigationStream(
                   iterationText += delta.content;
                   fullAccumulatedText += delta.content;
                   callbacks?.onDelta?.(delta.content, fullAccumulatedText);
+                }
+
+                if (choice.finish_reason) {
+                  isStreamDone = true;
                 }
 
                 if (delta.tool_calls && Array.isArray(delta.tool_calls)) {

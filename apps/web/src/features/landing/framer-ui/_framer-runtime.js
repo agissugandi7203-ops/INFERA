@@ -24968,7 +24968,7 @@ function getDefaultProps(component) {
   return defaultProps;
 }
 function applyControlDefaultsToReactDefaultProps(component, controls) {
-  if (!isReactComponent(component)) return;
+  if (!isReactComponent(component) || (typeof component === 'function' && !component.prototype?.isReactComponent)) return;
   const defaultProps = getDefaultProps(component);
   applyControlDefaultsToDefaultProps(defaultProps, controls);
 }
@@ -26848,7 +26848,7 @@ function StaticImage({
       suppressHydrationWarning: true,
       ref: onImageMount,
       decoding,
-      fetchPriority: image.fetchPriority,
+      fetchpriority: image.fetchPriority,
       loading: image.loading,
       width: image.pixelWidth,
       height: image.pixelHeight,
@@ -36554,9 +36554,10 @@ function isVariantOrVariantList2(value) {
 }
 var withFX = (Component18) => React42.forwardRef((props, forwardedRef) => {
   if (props.__withFX) {
+    const { __withFX, ...cleanProps } = props;
     return /* @__PURE__ */ jsx(Component18, {
       suppressHydrationWarning: true,
-      ...props,
+      ...cleanProps,
       animate: void 0,
       initial: void 0,
       exit: void 0,

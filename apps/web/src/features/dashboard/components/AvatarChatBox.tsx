@@ -18,6 +18,8 @@ import { SpeechService } from '../services/speech';
 import { AIRecommendationCard } from './AIRecommendationCard';
 import { ToolStatusBadge } from './ToolStatusBadge';
 import { AiResponseRenderer } from './AiResponseRenderer';
+import { ActionApprovalCard } from './ActionApprovalCard';
+import { CitationBadge } from './CitationBadge';
 
 interface AvatarChatBoxProps {
   messages: ChatMessage[];
@@ -30,15 +32,15 @@ interface AvatarChatBoxProps {
 }
 
 const EMOTION_MAP: Record<CharacterEmotion, { label: string; icon: string; bg: string }> = {
-  normal: { label: 'Netral', icon: '😐', bg: 'bg-slate-100 text-slate-700' },
-  happy: { label: 'Senang', icon: '😊', bg: 'bg-emerald-100 text-emerald-800' },
-  sad: { label: 'Sedih', icon: '😢', bg: 'bg-blue-100 text-blue-800' },
-  angry: { label: 'Marah', icon: '😠', bg: 'bg-rose-100 text-rose-800' },
-  surprised: { label: 'Terkejut', icon: '😲', bg: 'bg-amber-100 text-amber-800' },
-  confused: { label: 'Bingung', icon: '🤨', bg: 'bg-purple-100 text-purple-800' },
-  thinking: { label: 'Berpikir', icon: '🤔', bg: 'bg-indigo-100 text-indigo-800' },
-  listening: { label: 'Mendengarkan', icon: '👂', bg: 'bg-sky-100 text-sky-800' },
-  speaking: { label: 'Berbicara', icon: '🗣️', bg: 'bg-teal-100 text-teal-800' },
+  normal: { label: 'Netral', icon: '', bg: 'bg-slate-100 text-slate-700' },
+  happy: { label: 'Senang', icon: '', bg: 'bg-emerald-100 text-emerald-800' },
+  sad: { label: 'Sedih', icon: '', bg: 'bg-blue-100 text-blue-800' },
+  angry: { label: 'Marah', icon: '', bg: 'bg-rose-100 text-rose-800' },
+  surprised: { label: 'Terkejut', icon: '', bg: 'bg-amber-100 text-amber-800' },
+  confused: { label: 'Bingung', icon: '', bg: 'bg-purple-100 text-purple-800' },
+  thinking: { label: 'Berpikir', icon: '', bg: 'bg-indigo-100 text-indigo-800' },
+  listening: { label: 'Mendengarkan', icon: '', bg: 'bg-sky-100 text-sky-800' },
+  speaking: { label: 'Berbicara', icon: '', bg: 'bg-teal-100 text-teal-800' },
 };
 
 export const AvatarChatBox: React.FC<AvatarChatBoxProps> = ({
@@ -61,8 +63,8 @@ export const AvatarChatBox: React.FC<AvatarChatBoxProps> = ({
   const lastToggleTimeRef = useRef<number>(0);
 
   useEffect(() => {
-    // Only scroll if there are messages and user isn't actively inspecting older text
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    // Scroll directly without jerky smooth-animation fighting updates
+    messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
   }, [messages.length, isLoading]);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -304,6 +306,49 @@ export const AvatarChatBox: React.FC<AvatarChatBoxProps> = ({
                     <AiResponseRenderer content={msg.content} />
                   </div>
 
+                  {/* Web & File Search Citations */}
+                  {msg.citations && msg.citations.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 pt-1">
+                      {msg.citations.map((c, idx) => (
+                        <CitationBadge
+                          key={c.id || idx}
+                          citation={{
+                            type: 'file_citation',
+                            title: c.title,
+                            filename: c.regulation,
+                            clause: c.article,
+                          }}
+                        />
+                      ))}
+                    </div>
+                  )}
+
+                  {/* HITL Action Approval Cards (MCP Two-Phase) */}
+                  {msg.actionProposals && msg.actionProposals.length > 0 && (
+                    <div className="space-y-2 pt-1">
+                      {msg.actionProposals.map((proposal) => (
+                        <ActionApprovalCard
+                          key={proposal.approvalRequestId}
+                          proposal={proposal}
+                          onApprove={async (id, notes) => {
+                            await fetch('/api/v2/ai/action/approval', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ approvalRequestId: id, approve: true, auditorNotes: notes }),
+                            });
+                          }}
+                          onReject={async (id, notes) => {
+                            await fetch('/api/v2/ai/action/approval', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ approvalRequestId: id, approve: false, auditorNotes: notes }),
+                            });
+                          }}
+                        />
+                      ))}
+                    </div>
+                  )}
+
                   {/* AI Action Recommendation Cards */}
                   {msg.recommendations && msg.recommendations.length > 0 && (
                     <div className="space-y-2 pt-1">
@@ -367,7 +412,7 @@ export const AvatarChatBox: React.FC<AvatarChatBoxProps> = ({
           })
         )}
 
-        {isLoading && (
+        {isLoading && (!messages.length || messages[messages.length - 1].role !== 'assistant') && (
           <div className="flex gap-3 items-start justify-start text-slate-500 text-xs">
             <img
               src="/infera-logo.png"

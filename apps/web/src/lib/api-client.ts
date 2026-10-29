@@ -1,7 +1,7 @@
 import type { ApiResponse } from '@healthathon/shared';
 import { getAuthHeaders } from './supabase';
 
-const BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) || '/api/v1';
+const BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) || '/api/v2';
 
 export class ApiClientError extends Error {
   public code: string;

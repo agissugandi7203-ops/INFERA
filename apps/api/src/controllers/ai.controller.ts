@@ -1,6 +1,7 @@
 import type { Request, Response, NextFunction } from 'express';
 import { sendSuccess } from '../utils/response.js';
 import { openRouterService, ALLOWED_MODELS } from '../services/openrouter.service.js';
+import { OpenAiChatService } from '../services/v2/openai-chat.service.js';
 import { ragService } from '../services/rag.service.js';
 import { env } from '../config/env.js';
 import type { AiChatInput } from '../validators/ai.validator.js';
@@ -261,16 +262,29 @@ export const chatCompletion = async (req: Request, res: Response, next: NextFunc
       ...filteredMessages,
     ];
 
-    const result = await openRouterService.chat({
-      ...input,
-      mode,
-      messages: assembledMessages,
-    });
+    try {
+      const result = await openRouterService.chat({
+        ...input,
+        mode,
+        messages: assembledMessages,
+      });
 
-    sendSuccess(res, {
-      ...result,
-      citations: ragResults,
-    });
+      sendSuccess(res, {
+        ...result,
+        citations: ragResults,
+      });
+    } catch (openRouterErr) {
+      console.warn('[ai.controller] OpenRouter error, falling back to OpenAI v2 service:', openRouterErr);
+      const v2Response = await OpenAiChatService.chat({
+        messages: assembledMessages,
+        mode,
+        maxTokens: input.maxTokens,
+      });
+      sendSuccess(res, {
+        ...v2Response,
+        citations: ragResults,
+      });
+    }
   } catch (error) {
     next(error);
   }

@@ -52,7 +52,11 @@ const AppContent: React.FC = () => {
       if (session?.user?.email) {
         setUserEmail(session.user.email);
         if (event === 'SIGNED_IN') {
-          navigate('/dashboard');
+          // Hanya arahkan ke /dashboard jika user berada di halaman luar (landing atau auth),
+          // JANGAN PERNAH mereset rute jika user sedang berada di sub-halaman dashboard (misal: /dashboard/ai-report)
+          if (!window.location.pathname.startsWith('/dashboard')) {
+            navigate('/dashboard');
+          }
         }
       } else {
         setUserEmail(null);
@@ -82,7 +86,9 @@ const AppContent: React.FC = () => {
   const handleAuthSuccess = (email: string) => {
     setUserEmail(email);
     setIsAuthOpen(false);
-    navigate('/dashboard');
+    if (!window.location.pathname.startsWith('/dashboard')) {
+      navigate('/dashboard');
+    }
   };
 
   return (

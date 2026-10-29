@@ -5,8 +5,8 @@ const { spawn, execSync } = require('child_process');
 
 const PORT = 5174;
 const FPS = parseInt(process.env.FPS || '30', 10);
-const DURATION_SEC = parseInt(process.env.DURATION || '30', 10);
-const TOTAL_FRAMES = DURATION_SEC * FPS; // 900 frames for 30s @ 30fps
+const DURATION_SEC = parseInt(process.env.DURATION || '120', 10);
+const TOTAL_FRAMES = DURATION_SEC * FPS; // 3600 frames for 120s @ 30fps
 
 const OUTPUT_DIR = path.join(__dirname, '../output');
 const FRAMES_DIR = path.join(OUTPUT_DIR, 'frames');
@@ -98,47 +98,69 @@ function encodeVideos() {
   console.log('========================================\n');
 
   const inputPattern = path.join(FRAMES_DIR, 'frame_%04d.png');
-  const webmOutput = path.join(OUTPUT_DIR, 'vera_idle_30s_transparent.webm');
-  const movOutput = path.join(OUTPUT_DIR, 'vera_idle_30s_transparent.mov');
-  const mp4GreenOutput = path.join(OUTPUT_DIR, 'vera_idle_30s_greenscreen.mp4');
+  const webmOutput2m = path.join(OUTPUT_DIR, 'vera_idle_2min_transparent.webm');
+  const movOutput2m = path.join(OUTPUT_DIR, 'vera_idle_2min_transparent.mov');
+  const mp4GreenOutput2m = path.join(OUTPUT_DIR, 'vera_idle_2min_greenscreen.mp4');
+
+  // Also legacy/overwrite names for easy access
+  const webmOutput30s = path.join(OUTPUT_DIR, 'vera_idle_30s_transparent.webm');
+  const movOutput30s = path.join(OUTPUT_DIR, 'vera_idle_30s_transparent.mov');
+  const mp4GreenOutput30s = path.join(OUTPUT_DIR, 'vera_idle_30s_greenscreen.mp4');
 
   try {
-    // 1. Transparent WebM (VP9 + Alpha)
+    // 1. Transparent WebM (VP9 + Alpha) - fast multi-threaded
     console.log('[1/3] Encoding Transparent WebM (VP9 + Alpha)...');
     execSync(
-      `ffmpeg -y -framerate ${FPS} -i "${inputPattern}" -c:v libvpx-vp9 -pix_fmt yuva420p -b:v 3M -auto-alt-ref 0 "${webmOutput}"`,
+      `ffmpeg -y -framerate ${FPS} -i "${inputPattern}" -c:v libvpx-vp9 -deadline realtime -cpu-used 4 -row-mt 1 -threads 8 -pix_fmt yuva420p -b:v 3.5M -auto-alt-ref 0 "${webmOutput2m}"`,
       { stdio: 'inherit' }
     );
-    console.log(`  -> Finished: ${webmOutput} (${(fs.statSync(webmOutput).size / 1024 / 1024).toFixed(2)} MB)`);
+    console.log(`  -> Finished: ${webmOutput2m} (${(fs.statSync(webmOutput2m).size / 1024 / 1024).toFixed(2)} MB)`);
 
     // 2. Transparent Apple ProRes 4444 (MOV + Alpha)
     console.log('\n[2/3] Encoding Transparent Apple ProRes 4444 (MOV + Alpha)...');
     execSync(
-      `ffmpeg -y -framerate ${FPS} -i "${inputPattern}" -c:v prores_ks -profile:v 4 -pix_fmt yuva444p10le -vendor apl0 "${movOutput}"`,
+      `ffmpeg -y -framerate ${FPS} -i "${inputPattern}" -c:v prores_ks -profile:v 4 -pix_fmt yuva444p10le -vendor apl0 "${movOutput2m}"`,
       { stdio: 'inherit' }
     );
-    console.log(`  -> Finished: ${movOutput} (${(fs.statSync(movOutput).size / 1024 / 1024).toFixed(2)} MB)`);
+    console.log(`  -> Finished: ${movOutput2m} (${(fs.statSync(movOutput2m).size / 1024 / 1024).toFixed(2)} MB)`);
 
     // 3. Green Screen MP4 (Chroma Key #00FF00)
     console.log('\n[3/3] Encoding Green Screen MP4 (Chroma Key #00FF00)...');
     execSync(
-      `ffmpeg -y -f lavfi -i color=c=0x00FF00:s=800x1000:r=${FPS} -framerate ${FPS} -i "${inputPattern}" -filter_complex "[0:v][1:v]overlay=shortest=1:format=auto[outv]" -map "[outv]" -c:v libx264 -pix_fmt yuv420p -crf 16 -t ${DURATION_SEC} "${mp4GreenOutput}"`,
+      `ffmpeg -y -f lavfi -i color=c=0x00FF00:s=800x1000:r=${FPS} -framerate ${FPS} -i "${inputPattern}" -filter_complex "[0:v][1:v]overlay=shortest=1:format=auto[outv]" -map "[outv]" -c:v libx264 -preset fast -pix_fmt yuv420p -crf 16 -t ${DURATION_SEC} "${mp4GreenOutput2m}"`,
       { stdio: 'inherit' }
     );
-    console.log(`  -> Finished: ${mp4GreenOutput} (${(fs.statSync(mp4GreenOutput).size / 1024 / 1024).toFixed(2)} MB)`);
+    console.log(`  -> Finished: ${mp4GreenOutput2m} (${(fs.statSync(mp4GreenOutput2m).size / 1024 / 1024).toFixed(2)} MB)`);
 
-    // Copy to user's Downloads folder
-    const userDownloads = path.join(process.env.USERPROFILE || 'C:\\Users\\arief', 'Downloads', 'Vera_Avatar_30s');
-    if (!fs.existsSync(userDownloads)) fs.mkdirSync(userDownloads, { recursive: true });
+    // Also overwrite previous 30s names as requested
+    fs.copyFileSync(webmOutput2m, webmOutput30s);
+    fs.copyFileSync(movOutput2m, movOutput30s);
+    fs.copyFileSync(mp4GreenOutput2m, mp4GreenOutput30s);
 
-    fs.copyFileSync(webmOutput, path.join(userDownloads, 'vera_idle_30s_transparent.webm'));
-    fs.copyFileSync(movOutput, path.join(userDownloads, 'vera_idle_30s_transparent.mov'));
-    fs.copyFileSync(mp4GreenOutput, path.join(userDownloads, 'vera_idle_30s_greenscreen.mp4'));
+    // Copy to user's Downloads folders: both Vera_Avatar_2min and Vera_Avatar_30s
+    const userDownloads2min = path.join(process.env.USERPROFILE || 'C:\\Users\\arief', 'Downloads', 'Vera_Avatar_2min');
+    const userDownloads30s = path.join(process.env.USERPROFILE || 'C:\\Users\\arief', 'Downloads', 'Vera_Avatar_30s');
+    if (!fs.existsSync(userDownloads2min)) fs.mkdirSync(userDownloads2min, { recursive: true });
+    if (!fs.existsSync(userDownloads30s)) fs.mkdirSync(userDownloads30s, { recursive: true });
+
+    // Copy to 2min folder
+    fs.copyFileSync(webmOutput2m, path.join(userDownloads2min, 'vera_idle_2min_transparent.webm'));
+    fs.copyFileSync(movOutput2m, path.join(userDownloads2min, 'vera_idle_2min_transparent.mov'));
+    fs.copyFileSync(mp4GreenOutput2m, path.join(userDownloads2min, 'vera_idle_2min_greenscreen.mp4'));
+
+    // Overwrite in 30s folder so existing links work
+    fs.copyFileSync(webmOutput2m, path.join(userDownloads30s, 'vera_idle_30s_transparent.webm'));
+    fs.copyFileSync(movOutput2m, path.join(userDownloads30s, 'vera_idle_30s_transparent.mov'));
+    fs.copyFileSync(mp4GreenOutput2m, path.join(userDownloads30s, 'vera_idle_30s_greenscreen.mp4'));
+    fs.copyFileSync(webmOutput2m, path.join(userDownloads30s, 'vera_idle_2min_transparent.webm'));
+    fs.copyFileSync(movOutput2m, path.join(userDownloads30s, 'vera_idle_2min_transparent.mov'));
+    fs.copyFileSync(mp4GreenOutput2m, path.join(userDownloads30s, 'vera_idle_2min_greenscreen.mp4'));
 
     console.log('\n========================================');
-    console.log('SUCCESS! ALL 30-SECOND VIDEOS GENERATED & COPIED TO:');
+    console.log(`SUCCESS! ALL ${DURATION_SEC}-SECOND VIDEOS GENERATED & COPIED TO:`);
     console.log('Project output folder:', OUTPUT_DIR);
-    console.log('User Downloads folder:', userDownloads);
+    console.log('User Downloads (2min):', userDownloads2min);
+    console.log('User Downloads (30s):', userDownloads30s);
     console.log('========================================\n');
 
     process.exit(0);
@@ -177,12 +199,12 @@ server.listen(PORT, () => {
     process.exit(1);
   });
 
-  // Watchdog timeout: 5 minutes max
+  // Watchdog timeout: 15 minutes max for 2-minute 3600 frames
   setTimeout(() => {
     if (receivedCount < TOTAL_FRAMES) {
-      console.error(`Timeout! Only received ${receivedCount}/${TOTAL_FRAMES} frames in 5 minutes.`);
+      console.error(`Timeout! Only received ${receivedCount}/${TOTAL_FRAMES} frames in 15 minutes.`);
       if (chromeProcess) try { chromeProcess.kill(); } catch (e) {}
       process.exit(1);
     }
-  }, 300000);
+  }, 900000);
 });

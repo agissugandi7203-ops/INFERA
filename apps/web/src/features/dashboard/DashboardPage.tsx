@@ -246,7 +246,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
 
     // Attempt OpenAI Realtime WebRTC first (v2)
     try {
-      await realtimeVoiceRef.current?.connect('shimmer');
+      await realtimeVoiceRef.current?.connect(VOICE_DEFAULT_ID as any);
       return;
     } catch (err) {
       console.warn('[Voice] Realtime WebRTC not available, using fallback Web Speech:', err);

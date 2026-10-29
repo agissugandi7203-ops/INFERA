@@ -109,7 +109,7 @@ const Card: React.FC<{ className?: string; style?: React.CSSProperties; children
 }) => (
   <div
     onClick={onClick}
-    className={`relative rounded-[26px] bg-white dark:bg-slate-900 border border-slate-200/70 dark:border-slate-800 p-5 overflow-hidden ${className}`}
+    className={`relative rounded-[26px] bg-white dark:bg-[#131418] border border-slate-200/70 dark:border-white/[0.08] p-5 overflow-hidden ${className}`}
     style={{ boxShadow: CARD_SHADOW, ...style }}
   >
     {children}
@@ -144,6 +144,34 @@ const ChangePill: React.FC<{ value: string; positive: boolean; onDark?: boolean 
     {value}
   </span>
 );
+
+function useCountUp(target: number, duration = 1200) {
+  const [val, setVal] = useState(0);
+
+  useEffect(() => {
+    if (!target) return;
+    const startTime = performance.now();
+    let frameId: number;
+
+    const animate = (currentTime: number) => {
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      // easeOutExpo
+      const ease = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+      const current = Math.round(target * ease);
+      setVal(current);
+
+      if (progress < 1) {
+        frameId = requestAnimationFrame(animate);
+      }
+    };
+
+    frameId = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(frameId);
+  }, [target, duration]);
+
+  return val;
+}
 
 // ============================================================================
 // OVERVIEW PAGE — Bento Dashboard
@@ -216,6 +244,22 @@ export const OverviewPage: React.FC = React.memo(() => {
     auditCount: (metrics.totalParticipantsAudited + stats.totalClaims).toLocaleString('id-ID'),
     cleanClaimsValue: ((metrics.totalCleanClaimsApproved + stats.totalVerifiedAmount) / 1_000_000_000).toFixed(1).replace('.', ','),
   }), [metrics, stats.totalDjsLossAmount, stats.totalAnomalies, stats.totalClaims, stats.totalVerifiedAmount]);
+
+  // Smooth Count-Up animations on load & data update
+  const rawAnomaly = metrics.totalAnomaliesDetected + stats.totalAnomalies;
+  const rawAudit = metrics.totalParticipantsAudited + stats.totalClaims;
+  const rawDjsMio = Math.round((metrics.totalPotentialDjsLossPrevented + stats.totalDjsLossAmount) / 1_000_000);
+  const rawCleanMio = Math.round((metrics.totalCleanClaimsApproved + stats.totalVerifiedAmount) / 1_000_000);
+
+  const animatedAnomaly = useCountUp(rawAnomaly, 1200);
+  const animatedAudit = useCountUp(rawAudit, 1400);
+  const animatedDjsMio = useCountUp(rawDjsMio, 1300);
+  const animatedCleanMio = useCountUp(rawCleanMio, 1300);
+
+  const displayDjs = animatedDjsMio > 0 ? (animatedDjsMio / 1000).toFixed(2).replace('.', ',') : computed.djsValue;
+  const displayAnomaly = animatedAnomaly > 0 ? animatedAnomaly.toLocaleString('id-ID') : computed.anomalyCount;
+  const displayAudit = animatedAudit > 0 ? animatedAudit.toLocaleString('id-ID') : computed.auditCount;
+  const displayClean = animatedCleanMio > 0 ? (animatedCleanMio / 1000).toFixed(1).replace('.', ',') : computed.cleanClaimsValue;
 
   // Category distribution (computed percentages)
   const categories = useMemo(() => {
@@ -295,7 +339,7 @@ export const OverviewPage: React.FC = React.memo(() => {
             className="text-[28px] sm:text-[32px] font-semibold text-slate-900 dark:text-slate-50 tracking-tight leading-none"
             style={{ fontFamily: HEADING_FONT }}
           >
-            Halo, {displayName} 👋
+            Halo, {displayName}
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">
             Ringkasan integritas klaim JKN &amp; risiko peserta · {metrics.timeframe}
@@ -304,8 +348,8 @@ export const OverviewPage: React.FC = React.memo(() => {
 
         <div className="flex flex-wrap items-center gap-2">
           {/* Live clock pill */}
-          <div className="flex items-center gap-2 h-10 pl-2 pr-4 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-            <span className="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+          <div className="flex items-center gap-2 h-10 pl-2 pr-4 rounded-full bg-white dark:bg-[#131418] border border-slate-200 dark:border-white/[0.08]">
+            <span className="w-7 h-7 rounded-full bg-slate-100 dark:bg-white/5 flex items-center justify-center">
               <Clock className="w-3.5 h-3.5 text-slate-700 dark:text-slate-300" />
             </span>
             <div className="leading-tight">
@@ -315,14 +359,14 @@ export const OverviewPage: React.FC = React.memo(() => {
           </div>
 
           {/* Timeframe segmented pill */}
-          <div className="flex items-center h-10 p-1 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-semibold">
+          <div className="flex items-center h-10 p-1 rounded-full bg-white dark:bg-[#131418] border border-slate-200 dark:border-white/[0.08] text-xs font-semibold">
             {(['7D', '30D'] as const).map((tf) => (
               <button
                 key={tf}
                 onClick={() => setTimeframe(tf)}
                 className={`h-8 px-4 rounded-full transition-colors cursor-pointer ${
                   timeframe === tf
-                    ? 'bg-[#1d1d1d] text-white'
+                    ? 'bg-[#1d1d1d] text-white dark:bg-white dark:text-[#131418]'
                     : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
                 }`}
               >
@@ -348,7 +392,7 @@ export const OverviewPage: React.FC = React.memo(() => {
       {/* ================================================================ */}
       {/* ROW 1 — Hero black card + blue accent card                       */}
       {/* ================================================================ */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
         {/* HERO: Efisiensi DJS + bar/wave chart */}
         <div
           className="lg:col-span-8 relative rounded-[28px] p-6 text-white overflow-hidden"
@@ -368,7 +412,7 @@ export const OverviewPage: React.FC = React.memo(() => {
                   <div className="mt-2 flex items-end gap-2">
                     <span className="text-white/60 text-lg font-semibold mb-1.5">Rp</span>
                     <span className="text-5xl sm:text-[56px] font-semibold tracking-tight leading-none tabular-nums" style={{ fontFamily: HEADING_FONT }}>
-                      {computed.djsValue}
+                      {displayDjs}
                     </span>
                     <span className="text-white/60 text-lg font-semibold mb-1.5">M</span>
                   </div>
@@ -399,56 +443,102 @@ export const OverviewPage: React.FC = React.memo(() => {
                         height={b.h}
                         rx={b.w / 2}
                         fill={i === activeBar ? 'url(#inferaBarBlue)' : 'rgba(255,255,255,0.92)'}
-                        style={{ transition: 'fill 0.2s ease' }}
+                        style={{
+                          transformOrigin: `${b.cx}px ${chart.H - 22}px`,
+                          animation: `barGrow 0.75s cubic-bezier(0.16, 1, 0.3, 1) ${i * 65}ms both`,
+                          transition: 'fill 0.2s ease',
+                        }}
                       />
-                      <text x={b.cx} y={chart.H - 4} textAnchor="middle" fontSize="10" fill="rgba(255,255,255,0.5)">
+                      <text x={b.cx} y={chart.H - 4} textAnchor="middle" fontSize="10" fill="rgba(255,255,255,0.6)" fontWeight="600">
                         {b.date}
                       </text>
                     </g>
                   ))}
-                  <path d={chart.wave} fill="none" stroke="url(#inferaWave)" strokeWidth="4" strokeLinecap="round" />
+                  <path d={chart.wave} fill="none" stroke="url(#inferaWave)" strokeWidth="4" strokeLinecap="round" className="animate-wave-draw" />
                 </svg>
 
-                {chart.bars[activeBar] && (
+                {hoverBar !== null && chart.bars[hoverBar] && (
                   <div
-                    className="absolute -top-1 -translate-x-1/2 px-2.5 py-1.5 rounded-xl bg-white text-[#1d1d1d] text-[11px] font-semibold shadow-lg pointer-events-none whitespace-nowrap"
-                    style={{ left: `${(chart.bars[activeBar]!.cx / chart.W) * 100}%` }}
+                    className="absolute -top-1 -translate-x-1/2 px-2.5 py-1.5 rounded-xl bg-white text-[#1d1d1d] text-[11px] font-semibold shadow-lg pointer-events-none whitespace-nowrap animate-fade-in-up"
+                    style={{ left: `${(chart.bars[hoverBar]!.cx / chart.W) * 100}%` }}
                   >
-                    Rp {chart.bars[activeBar]!.savingsMio} Jt · {chart.bars[activeBar]!.anomalies} anomali
+                    Rp {chart.bars[hoverBar]!.savingsMio} Jt · {chart.bars[hoverBar]!.anomalies} anomali
                   </div>
                 )}
               </div>
             </div>
 
-            {/* Right: two stacked stat pills */}
-            <div className="md:col-span-4 flex flex-col gap-3 rounded-[22px] bg-white p-3 text-[#1d1d1d]">
-              <button
-                onClick={() => navigate('/dashboard/transactions')}
-                className="flex-1 flex flex-col justify-between rounded-2xl bg-slate-100 p-4 text-left hover:bg-slate-200/70 transition-colors cursor-pointer"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-slate-600">Anomali Terdeteksi</span>
-                  <span className="px-2 py-0.5 rounded-full bg-[#1d1d1d] text-white text-[10px] font-bold">+6,2%</span>
-                </div>
-                <div className="text-3xl font-semibold tabular-nums mt-3" style={{ fontFamily: HEADING_FONT }}>
-                  {computed.anomalyCount}
-                </div>
-              </button>
-              <button
-                onClick={() => navigate('/dashboard/master-data')}
-                className="flex-1 flex flex-col justify-between rounded-2xl bg-slate-100 p-4 text-left hover:bg-slate-200/70 transition-colors cursor-pointer"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-slate-600">Peserta Diaudit</span>
-                  <span className="px-2 py-0.5 rounded-full text-white text-[10px] font-bold" style={{ background: BLUE_GRADIENT }}>+12,1%</span>
-                </div>
-                <div className="text-3xl font-semibold tabular-nums mt-3" style={{ fontFamily: HEADING_FONT }}>
-                  {computed.auditCount}
-                </div>
-              </button>
-              <div className="flex items-center justify-between px-1 pb-0.5 text-[10px] font-medium text-slate-500">
+            {/* Right: simple clean stats with inline "Cek" buttons */}
+            <div className="md:col-span-4 flex flex-col justify-between py-1 text-white">
+              {/* Stat 1: Anomali Terdeteksi */}
+              <div className="flex items-center justify-between gap-3">
+                <button
+                  type="button"
+                  onClick={() => navigate('/dashboard/transactions')}
+                  className="text-left group cursor-pointer space-y-1 hover:opacity-90 transition-opacity min-w-0"
+                >
+                  <div className="text-xs font-medium text-white/60">
+                    Anomali Terdeteksi
+                  </div>
+                  <div
+                    className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight leading-none tabular-nums"
+                    style={{ fontFamily: HEADING_FONT }}
+                  >
+                    {displayAnomaly}
+                  </div>
+                  <div className="text-[11px] text-white/60">
+                    4 Kasus Benchmark Kritis
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => navigate('/dashboard/transactions')}
+                  className="group flex items-center gap-1 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 text-white text-xs font-semibold border border-white/15 transition-all shrink-0 cursor-pointer shadow-xs"
+                  title="Cek transaksi anomali"
+                >
+                  <span>Cek</span>
+                  <ArrowUpRight className="w-3.5 h-3.5 text-white/80 group-hover:text-white group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                </button>
+              </div>
+
+              {/* Thin subtle divider */}
+              <div className="border-t border-white/10 my-2" />
+
+              {/* Stat 2: Peserta Diaudit */}
+              <div className="flex items-center justify-between gap-3">
+                <button
+                  type="button"
+                  onClick={() => navigate('/dashboard/master-data')}
+                  className="text-left group cursor-pointer space-y-1 hover:opacity-90 transition-opacity min-w-0"
+                >
+                  <div className="text-xs font-medium text-white/60">
+                    Peserta Diaudit
+                  </div>
+                  <div
+                    className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight leading-none tabular-nums"
+                    style={{ fontFamily: HEADING_FONT }}
+                  >
+                    {displayAudit}
+                  </div>
+                  <div className="text-[11px] text-white/60">
+                    98,4% Integritas Valid
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => navigate('/dashboard/master-data')}
+                  className="group flex items-center gap-1 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 text-white text-xs font-semibold border border-white/15 transition-all shrink-0 cursor-pointer shadow-xs"
+                  title="Cek data audit peserta"
+                >
+                  <span>Cek</span>
+                  <ArrowUpRight className="w-3.5 h-3.5 text-white/80 group-hover:text-white group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                </button>
+              </div>
+
+              {/* Legend Bar on Dark */}
+              <div className="flex items-center justify-between text-[10.5px] font-medium text-white/40 pt-2 border-t border-white/10 mt-1">
                 <span className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-[#1d1d1d]" /> DJS (Juta Rp)
+                  <span className="w-2 h-2 rounded-full bg-white" /> DJS (Juta Rp)
                 </span>
                 <span className="flex items-center gap-1.5">
                   <span className="w-3 h-[3px] rounded-full bg-blue-300" /> Anomali
@@ -505,7 +595,7 @@ export const OverviewPage: React.FC = React.memo(() => {
             </div>
             <div className="text-right leading-none">
               <span className="text-[44px] font-semibold tracking-tight tabular-nums" style={{ fontFamily: HEADING_FONT }}>
-                {computed.cleanClaimsValue}
+                {displayClean}
               </span>
               <span className="text-lg font-medium text-white/70"> M</span>
             </div>
@@ -516,7 +606,7 @@ export const OverviewPage: React.FC = React.memo(() => {
       {/* ================================================================ */}
       {/* ROW 2 — Tipologi + Kasus Prioritas + Live Stream                  */}
       {/* ================================================================ */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 animate-fade-in-up" style={{ animationDelay: '180ms' }}>
         {/* Tipologi modus */}
         <Card className="lg:col-span-4 flex flex-col">
           <div className="flex items-center justify-between">
@@ -588,7 +678,7 @@ export const OverviewPage: React.FC = React.memo(() => {
                 <button
                   key={row.id}
                   onClick={() => navigate('/dashboard/cases')}
-                  className="w-full flex items-center gap-3 p-2.5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-left cursor-pointer group"
+                  className="w-full flex items-center gap-3 p-2.5 rounded-2xl bg-slate-50 dark:bg-white/[0.04] hover:bg-slate-100 dark:hover:bg-white/[0.08] transition-colors text-left cursor-pointer group"
                 >
                   <span
                     className="w-10 h-10 rounded-xl flex items-center justify-center text-xs font-bold shrink-0"
@@ -645,7 +735,7 @@ export const OverviewPage: React.FC = React.memo(() => {
               <span className="text-sm font-semibold" style={{ fontFamily: HEADING_FONT }}>Live Stream</span>
             </div>
             <span className={`flex items-center gap-1.5 text-[10px] font-bold px-2 py-1 rounded-full ${isPaused ? 'bg-white/10 text-white/60' : 'bg-blue-500/20 text-blue-200'}`}>
-              <span className={`w-1.5 h-1.5 rounded-full ${isPaused ? 'bg-white/50' : 'bg-blue-400 animate-pulse'}`} />
+              <span className={`w-1.5 h-1.5 rounded-full ${isPaused ? 'bg-white/50' : 'bg-blue-400'}`} />
               {isPaused ? 'JEDA' : 'LIVE'}
             </span>
           </div>
@@ -693,7 +783,7 @@ export const OverviewPage: React.FC = React.memo(() => {
       {/* ================================================================ */}
       {/* ROW 3 — Sebaran wilayah + Modul cepat                             */}
       {/* ================================================================ */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 animate-fade-in-up" style={{ animationDelay: '260ms' }}>
         <Card className="lg:col-span-5">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2.5">
@@ -751,14 +841,14 @@ export const OverviewPage: React.FC = React.memo(() => {
                   className={`group relative text-left rounded-2xl p-4 transition-all cursor-pointer ${
                     highlight
                       ? 'text-white'
-                      : 'bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800'
+                      : 'bg-slate-50 dark:bg-white/[0.04] hover:bg-slate-100 dark:hover:bg-white/[0.08]'
                   }`}
                   style={highlight ? { background: BLUE_GRADIENT } : undefined}
                 >
                   <div className="flex items-start justify-between">
                     <span
                       className={`w-9 h-9 rounded-xl flex items-center justify-center ${
-                        highlight ? 'bg-white/20' : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700'
+                        highlight ? 'bg-white/20' : 'bg-white dark:bg-[#131418] border border-slate-200 dark:border-white/[0.08]'
                       }`}
                     >
                       <Icon className={`w-4 h-4 ${highlight ? 'text-white' : 'text-slate-800 dark:text-slate-200'}`} />

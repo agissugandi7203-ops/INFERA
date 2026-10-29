@@ -467,10 +467,14 @@ export const AiReportPage: React.FC = () => {
   // Intelligent Scroll Handler: detect whether user is actively reading higher up
   const shouldFocusLatestPromptRef = useRef(false);
 
+  // Intelligent Scroll Pinning: keep pinned to bottom during streaming without jitter
+  const isPinnedToBottomRef = useRef(true);
+
   const handleScroll = () => {
     const el = scrollContainerRef.current;
     if (!el) return;
-    const isNearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 160;
+    const isNearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 60;
+    isPinnedToBottomRef.current = isNearBottom;
     setIsUserScrolledUp(!isNearBottom);
     if (isNearBottom) {
       setHasNewUnseenResponse(false);
@@ -478,24 +482,30 @@ export const AiReportPage: React.FC = () => {
   };
 
   /**
-   * Smoothly scrolls to the latest content at the bottom of the conversation.
+   * Scrolls the conversation container directly to bottom without triggering outer-window layout shifts
    */
-  const scrollToBottom = (smooth = true) => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto' });
+  const scrollToBottom = (smooth = false) => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    if (smooth) {
+      el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
+    } else {
+      el.scrollTop = el.scrollHeight;
     }
+    isPinnedToBottomRef.current = true;
     setIsUserScrolledUp(false);
     setHasNewUnseenResponse(false);
   };
 
-  const scrollToLatestPrompt = scrollToBottom;
+  const scrollToLatestPrompt = (smooth = true) => scrollToBottom(smooth);
 
   // Centralized user prompt dispatcher
   const sendUserPrompt = (text: string, atts?: ChatAttachment[], reasoning?: boolean) => {
     shouldFocusLatestPromptRef.current = true;
+    isPinnedToBottomRef.current = true;
     setIsUserScrolledUp(false);
     onSendMessage(text, atts, reasoning ?? isDeepThinking);
-    setTimeout(() => scrollToBottom(true), 50);
+    setTimeout(() => scrollToBottom(false), 20);
   };
 
   // Handle auto-dispatched prompt from "Uji AI" navigation (e.g. TransactionsPage)
@@ -512,25 +522,17 @@ export const AiReportPage: React.FC = () => {
     }
   }, [location.state]);
 
-  // Scroll effect triggered when new messages are added
-  const prevMsgCountRef = useRef(messages.length);
+  // Keep pinned to bottom when new messages arrive or content streams
   useEffect(() => {
-    if (messages.length > prevMsgCountRef.current) {
-      if (!isUserScrolledUp) {
-        scrollToBottom(true);
-      } else {
-        setHasNewUnseenResponse(true);
+    if (isPinnedToBottomRef.current) {
+      const el = scrollContainerRef.current;
+      if (el) {
+        el.scrollTop = el.scrollHeight;
       }
+    } else if (messages.length > 0 && messages[messages.length - 1].role === 'assistant') {
+      setHasNewUnseenResponse(true);
     }
-    prevMsgCountRef.current = messages.length;
-  }, [messages.length, isUserScrolledUp]);
-
-  // If streaming occurs while user is not scrolled up, follow the streaming text smoothly
-  useEffect(() => {
-    if (isLoading && !isUserScrolledUp) {
-      scrollToBottom(false);
-    }
-  }, [messages, isLoading, isUserScrolledUp]);
+  }, [messages, isLoading]);
 
   // Adjust textarea height dynamically
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -606,8 +608,7 @@ export const AiReportPage: React.FC = () => {
         stopDictateRef.current = null;
         if (transcript.trim()) {
           const finalPrompt = baseInput ? `${baseInput} ${transcript.trim()}` : transcript.trim();
-          setInputText('');
-          sendUserPrompt(finalPrompt, undefined, isDeepThinking);
+          setInputText(finalPrompt);
         }
       },
       (listening) => {
@@ -938,7 +939,7 @@ export const AiReportPage: React.FC = () => {
           <div
             ref={scrollContainerRef}
             onScroll={handleScroll}
-            className={`flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 py-4 relative scroll-smooth ${
+            className={`flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 py-4 relative ${
               !isChatActive ? 'flex flex-col justify-center' : ''
             }`}
           >
@@ -1218,13 +1219,26 @@ export const AiReportPage: React.FC = () => {
                       isEnabled={msg.isReasoningEnabled ?? isDeepThinking}
                     />
 
-                    {/* Rendered Markdown Body with GFM & Table support */}
-                    <div className="text-[15px] sm:text-base leading-relaxed text-slate-900 dark:text-slate-100 font-sans break-words">
-                      <AiResponseRenderer content={msg.content} />
-                      {msg.isStreaming && (
-                        <span className="inline-block w-1.5 h-4 bg-emerald-500 animate-pulse ml-1 align-middle rounded-xs" />
-                      )}
-                    </div>
+                    {/* Rendered Markdown Body or Seamless Inline Loading State */}
+                    {!msg.content && msg.isStreaming ? (
+                      <div className="flex items-center gap-2.5 py-1.5 text-slate-400 dark:text-slate-500">
+                        <div className="flex gap-1 items-center">
+                          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-bounce" style={{ animationDelay: '0ms' }} />
+                          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-bounce" style={{ animationDelay: '150ms' }} />
+                          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-bounce" style={{ animationDelay: '300ms' }} />
+                        </div>
+                        <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                          INFERA sedang menganalisis regulasi &amp; data klaim...
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="text-[15px] sm:text-base leading-relaxed text-slate-900 dark:text-slate-100 font-sans break-words">
+                        <AiResponseRenderer content={msg.content} />
+                        {msg.isStreaming && (
+                          <span className="inline-block w-1.5 h-4 bg-emerald-500 animate-pulse ml-1 align-middle rounded-xs" />
+                        )}
+                      </div>
+                    )}
 
                     {/* RAG Brain Injected Regulatory Citations */}
                     {msg.citations && msg.citations.length > 0 && (
@@ -1261,7 +1275,7 @@ export const AiReportPage: React.FC = () => {
 
                     {/* Action Shortcut Chips (if available) */}
                     {msg.shortcuts && msg.shortcuts.length > 0 && (
-                      <div className="flex flex-wrap gap-2 pt-1">
+                      <div className="flex flex-wrap gap-2 pt-1 animate-in fade-in duration-200">
                         {msg.shortcuts.map((sc, scIdx) => (
                           <button
                             key={scIdx}
@@ -1278,7 +1292,7 @@ export const AiReportPage: React.FC = () => {
 
                     {/* AI Action Recommendation Cards (Two-Phase Action Model) */}
                     {msg.recommendations && msg.recommendations.length > 0 && (
-                      <div className="space-y-3 pt-1">
+                      <div className="space-y-3 pt-1 animate-in fade-in duration-200">
                         {msg.recommendations.map((rec) => (
                           <AIRecommendationCard
                             key={rec.id}
@@ -1369,8 +1383,8 @@ export const AiReportPage: React.FC = () => {
               );
             })}
 
-            {/* Assistant Loading Indicator */}
-            {isLoading && (
+            {/* Assistant Loading Fallback - Only visible before initial assistant placeholder is mounted */}
+            {isLoading && (!messages.length || messages[messages.length - 1].role !== 'assistant') && (
               <div className="flex items-start gap-3 sm:gap-4">
                 <img
                   src="/infera-logo.png"

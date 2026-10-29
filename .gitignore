@@ -53,5 +53,6 @@ scratch/
 output/
 context/mp4/
 *.mp4
+*.wav
 
 scripts/*.png

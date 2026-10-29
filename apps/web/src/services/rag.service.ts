@@ -2,7 +2,7 @@ import type { RegulationChunk, RagSearchResult, RagSearchRequest } from '@health
 import { JKN_REGULATIONS_CHUNKS } from '../data/regulationsData';
 import { getAuthHeaders } from '../lib/supabase';
 
-const API_BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) || '/api/v1';
+const API_BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) || '/api/v2';
 
 export class WebRagService {
   public getAllRegulations(): RegulationChunk[] {

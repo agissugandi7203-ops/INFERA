@@ -133,7 +133,7 @@ export class SpeechService {
     const timer = controller ? setTimeout(() => controller.abort(), timeoutMs) : null;
 
     try {
-      const backendUrl = import.meta.env.VITE_API_URL || '/api/v1';
+      const backendUrl = import.meta.env.VITE_API_URL || '/api/v2';
       try {
         const authHeaders = await getAuthHeaders();
         const res = await fetch(`${backendUrl}/voice/tts`, {

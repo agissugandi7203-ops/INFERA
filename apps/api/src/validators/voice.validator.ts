@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-/** ElevenLabs voice IDs are short alphanumeric tokens; anything else could alter the upstream URL path. */
-export const VOICE_ID_PATTERN = /^[A-Za-z0-9]{10,40}$/;
+/** Support both OpenAI voices ('coral', 'shimmer', etc.) and ElevenLabs alphanumeric voice IDs */
+export const VOICE_ID_PATTERN = /^[A-Za-z0-9_-]{3,64}$/;
 
 const unit = z.number().min(0).max(1);
 

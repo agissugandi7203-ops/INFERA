@@ -49,7 +49,7 @@ const MODEL_ID = z
   .string()
   .trim()
   .max(100)
-  .regex(/^[a-z0-9._-]+\/[a-z0-9._:-]+$/i, 'Format ID model tidak valid');
+  .regex(/^[a-z0-9._:-]+(\/[a-z0-9._:-]+)?$/i, 'Format ID model tidak valid');
 
 export const aiChatSchema = z.object({
   messages: z

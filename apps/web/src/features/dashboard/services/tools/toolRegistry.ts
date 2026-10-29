@@ -451,7 +451,7 @@ async function findParticipantData(query: string, context?: ToolExecutionContext
 
   // 3. Query Backend Supabase Search API dynamically (/api/v1/participant-risk/search)
   try {
-    const API_BASE = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) || '/api/v1';
+    const API_BASE = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) || '/api/v2';
     const authHeaders = await getAuthHeaders();
     const res = await fetch(`${API_BASE}/participant-risk/search?query=${encodeURIComponent(cleanQ)}`, {
       headers: authHeaders,

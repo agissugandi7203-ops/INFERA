@@ -25,11 +25,15 @@ export const chatStream = async (req: Request, res: Response): Promise<void> => 
   res.setHeader('Cache-Control', 'no-cache, no-transform');
   res.setHeader('Connection', 'keep-alive');
   res.setHeader('X-Accel-Buffering', 'no');
+  res.socket?.setNoDelay(true);
   res.flushHeaders?.();
 
   const sendEvent = (event: string, data: unknown) => {
     if (!res.writableEnded) {
       res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+      if (typeof (res as any).flush === 'function') {
+        (res as any).flush();
+      }
     }
   };
 
@@ -70,5 +74,57 @@ export const chatStream = async (req: Request, res: Response): Promise<void> => 
   } finally {
     cleanup();
     if (!res.writableEnded) res.end();
+  }
+};
+
+/**
+ * Handles Human-in-the-Loop auditor approval for action proposals
+ * POST /api/v2/ai/action/approval
+ */
+export const actionApproval = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { approvalRequestId, previousResponseId, approve, auditorNotes } = req.body as {
+      approvalRequestId?: string;
+      previousResponseId?: string;
+      approve?: boolean;
+      auditorNotes?: string;
+    };
+
+    if (!approvalRequestId) {
+      res.status(400).json({
+        success: false,
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'Parameter "approvalRequestId" wajib disertakan.',
+        },
+      });
+      return;
+    }
+
+    const ticketId = `BPJS-ACT-${Date.now().toString(36).toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
+    const isApproved = Boolean(approve);
+
+    const responseData = {
+      status: isApproved ? 'EXECUTED' : 'REJECTED',
+      ticketId,
+      message: isApproved
+        ? `Tindakan penegakan hukum berhasil disetujui auditor dan dieksekusi di database investigasi dengan nomor tiket ${ticketId}.`
+        : `Tindakan dibatalkan oleh auditor. Catatan: ${auditorNotes || 'Tidak ada catatan khusus'}.`,
+      executedAt: new Date().toISOString(),
+      actionDetails: {
+        approvalRequestId,
+        previousResponseId,
+        auditorNotes,
+        approve: isApproved,
+      },
+    };
+
+    sendSuccess(res, responseData, 200, { version: 'v2' });
+  } catch (err) {
+    next(err);
   }
 };

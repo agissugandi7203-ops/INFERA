@@ -1,20 +1,18 @@
 import React, { useState } from 'react';
 import {
-  UserX,
   Mail,
   Clock,
   CheckCircle2,
-  AlertTriangle,
   Send,
   ShieldOff,
-  FileText,
   Check,
   Search,
-  ShieldAlert,
 } from 'lucide-react';
 import { useSimulationStream } from '../simulation/SimulationContext';
 import { supabase } from '../../../lib/supabase';
 import type { JknClaimRecord } from '@healthathon/shared';
+
+const HEADING_FONT = '"Bricolage Grotesque", "Inter", sans-serif';
 
 type ActionLog = {
   id: string;
@@ -32,7 +30,7 @@ const MOCK_LOGS: ActionLog[] = [
     type: 'SUSPEND',
     nik: '3374**********01',
     nama: 'Budi Santoso',
-    alasan: 'Penyalahgunaan identitas kepesertaan — Impossible Travel terdeteksi',
+    alasan: 'Penyalahgunaan identitas — Impossible Travel terdeteksi',
     timestamp: '04/09/2026 08:30',
     status: 'EXECUTED',
   },
@@ -41,26 +39,35 @@ const MOCK_LOGS: ActionLog[] = [
     type: 'SURAT',
     nik: '3273**********88',
     nama: 'Hendra Wijaya',
-    alasan: 'Doctor Shopping Index 1.00 — pelayanan redundan 3 faskes',
+    alasan: 'Doctor Shopping Index 1.00 — pelayanan redundan',
     timestamp: '04/09/2026 09:15',
     status: 'PENDING',
+  },
+  {
+    id: 'ACT-003',
+    type: 'SURAT',
+    nik: '1271**********54',
+    nama: 'Nurul Hidayati',
+    alasan: 'Resale obat PRB terdeteksi & kuota tumpang tindih',
+    timestamp: '03/09/2026 14:20',
+    status: 'EXECUTED',
   },
 ];
 
 const ALASAN_SUSPEND = [
-  'Penyalahgunaan identitas kepesertaan',
-  'Pemalsuan data peserta',
-  'Impossible Travel terdeteksi (kartu pinjaman)',
+  'Penyalahgunaan identitas kepesertaan (kartu pinjaman)',
+  'Pemalsuan data klaim / manipulasi SEP',
+  'Impossible Travel terdeteksi antar-faskes',
   'Doctor Shopping berulang (DSI >= 1.0)',
-  'Resale obat PRB terdeteksi',
+  'Resale obat PRB & alkes overlap quota',
   'Klaim ganda dalam periode yang sama',
 ];
 
 const TEMPLATE_SURAT = [
-  { id: 'KLARIFIKASI', label: 'Surat Klarifikasi Standar', desc: 'Meminta penjelasan peserta atas anomali yang terdeteksi.' },
-  { id: 'PERINGATAN', label: 'Surat Peringatan Pertama', desc: 'Peringatan resmi pertama atas pelanggaran ketentuan JKN.' },
-  { id: 'TAGIHAN', label: 'Surat Tagihan Pengembalian', desc: 'Penagihan pengembalian dana JKN yang telah dibayarkan.' },
-  { id: 'SUSPENSI', label: 'Surat Notifikasi Suspensi', desc: 'Pemberitahuan resmi suspensi sementara kepesertaan.' },
+  { id: 'KLARIFIKASI', label: 'Surat Klarifikasi Standar', desc: 'Permintaan penjelasan kepesertaan atas anomali terdeteksi.' },
+  { id: 'PERINGATAN', label: 'Surat Peringatan Pertama', desc: 'Peringatan resmi atas pelanggaran ketentuan layanan JKN.' },
+  { id: 'TAGIHAN', label: 'Surat Tagihan Ganti Rugi', desc: 'Penagihan pengembalian dana klaim akibat pelanggaran.' },
+  { id: 'SUSPENSI', label: 'Surat Notifikasi Suspensi', desc: 'Pemberitahuan resmi pembekuan hak jaminan kepesertaan.' },
 ];
 
 export const MasterDataPage: React.FC = () => {
@@ -122,13 +129,13 @@ export const MasterDataPage: React.FC = () => {
 
     if (action === 'suspend') {
       if (rec.typology.toLowerCase().includes('travel') || rec.typology.toLowerCase().includes('kartu')) {
-        setAlasanSuspend('Impossible Travel terdeteksi (kartu pinjaman)');
+        setAlasanSuspend('Impossible Travel terdeteksi antar-faskes');
       } else if (rec.typology.toLowerCase().includes('doctor') || rec.typology.toLowerCase().includes('shopping')) {
         setAlasanSuspend('Doctor Shopping berulang (DSI >= 1.0)');
       } else if (rec.typology.toLowerCase().includes('obat') || rec.typology.toLowerCase().includes('resale')) {
-        setAlasanSuspend('Resale obat PRB terdeteksi');
+        setAlasanSuspend('Resale obat PRB & alkes overlap quota');
       } else {
-        setAlasanSuspend('Penyalahgunaan identitas kepesertaan');
+        setAlasanSuspend('Penyalahgunaan identitas kepesertaan (kartu pinjaman)');
       }
     } else {
       if (rec.typology.toLowerCase().includes('shopping')) {
@@ -138,9 +145,9 @@ export const MasterDataPage: React.FC = () => {
       }
     }
 
-    const nikEl = document.getElementById('nik-input-field');
-    if (nikEl) {
-      nikEl.focus();
+    const formEl = document.getElementById('form-penindakan');
+    if (formEl) {
+      formEl.scrollIntoView({ behavior: 'smooth' });
     }
   };
 
@@ -166,7 +173,7 @@ export const MasterDataPage: React.FC = () => {
       nik: nikInput,
       nama: namaInput || 'Peserta JKN',
       alasan: alasanSuspend,
-      timestamp: new Date().toLocaleString('id-ID'),
+      timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' · ' + new Date().toLocaleDateString('id-ID'),
       status: 'PENDING',
     };
     setLogs([newLog, ...logs]);
@@ -182,15 +189,15 @@ export const MasterDataPage: React.FC = () => {
           user_agent: navigator.userAgent,
         });
       } catch {
-        // Silently handled
+        // Handled silently
       }
     }
 
     setNikInput('');
     setNamaInput('');
     setAlasanSuspend('');
-    setSuccessMsg('Permintaan suspensi berhasil diajukan ke sistem VEDIKA & dicatat di audit log.');
-    setTimeout(() => setSuccessMsg(''), 4000);
+    setSuccessMsg('Permintaan suspensi dicatat dan dikirim ke sistem VEDIKA.');
+    setTimeout(() => setSuccessMsg(''), 3500);
   };
 
   const handleSubmitSurat = async (e: React.FormEvent) => {
@@ -202,7 +209,7 @@ export const MasterDataPage: React.FC = () => {
       nik: nikInput,
       nama: namaInput || 'Peserta JKN',
       alasan: TEMPLATE_SURAT.find((t) => t.id === templateSurat)?.label || templateSurat,
-      timestamp: new Date().toLocaleString('id-ID'),
+      timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' · ' + new Date().toLocaleDateString('id-ID'),
       status: 'PENDING',
     };
     setLogs([newLog, ...logs]);
@@ -218,15 +225,15 @@ export const MasterDataPage: React.FC = () => {
           user_agent: navigator.userAgent,
         });
       } catch {
-        // Silently handled
+        // Handled silently
       }
     }
 
     setNikInput('');
     setNamaInput('');
     setTemplateSurat('');
-    setSuccessMsg('Surat resmi berhasil diterbitkan dan dikirim ke peserta melalui Mobile JKN.');
-    setTimeout(() => setSuccessMsg(''), 4000);
+    setSuccessMsg('Surat resmi diterbitkan dan dikirim ke Mobile JKN.');
+    setTimeout(() => setSuccessMsg(''), 3500);
   };
 
   const filteredLogs = logs.filter(
@@ -236,85 +243,90 @@ export const MasterDataPage: React.FC = () => {
       l.alasan.toLowerCase().includes(logSearch.toLowerCase())
   );
 
-  return (
-    <div className="space-y-5 max-w-6xl mx-auto w-full">
-      {/* Header */}
-      <div className="pb-2 border-b border-slate-200 dark:border-slate-800">
-        <h1 className="text-lg font-bold text-slate-900 dark:text-slate-100 tracking-tight">
-          Master Data &amp; Tindakan Kepesertaan
-        </h1>
-        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-          Suspensi kepesertaan bermasalah, penerbitan surat peringatan, dan audit trail penindakan JKN.
-        </p>
-      </div>
+  const totalSuspended = logs.filter((l) => l.type === 'SUSPEND').length;
+  const totalLetters = logs.filter((l) => l.type === 'SURAT').length;
 
-      {/* Real-time Stream Recommendations Panel */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-2xs overflow-hidden">
-        <div className="px-4 py-3 bg-slate-50/70 dark:bg-slate-800/60 border-b border-slate-200/80 dark:border-slate-800 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="flex h-2 w-2 relative">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-600"></span>
-            </span>
-            <span className="text-xs font-bold text-slate-900 dark:text-slate-100">
-              Rekomendasi Tindakan dari Deteksi Real-Time
-            </span>
-            <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400 hidden sm:inline">
-              (Live Stream Integritas Klaim)
-            </span>
-          </div>
-          <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-            Pilih tindakan cepat untuk pre-fill formulir
-          </span>
+  return (
+    <div className="space-y-6 w-full max-w-[1400px] mx-auto pb-16">
+      {/* ================================================================ */}
+      {/* 1. Header & Quick Stat Pills                                     */}
+      {/* ================================================================ */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1
+            className="text-2xl sm:text-3xl font-semibold text-slate-900 dark:text-slate-50 tracking-tight leading-none"
+            style={{ fontFamily: HEADING_FONT }}
+          >
+            Tata Kelola &amp; Tindakan Kepesertaan
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1.5">
+            Eksekusi sanksi suspensi hak kepesertaan, penerbitan surat resmi, dan log audit penindakan.
+          </p>
         </div>
 
-        <div className="divide-y divide-slate-100 dark:divide-slate-800">
+        <div className="flex items-center gap-2 flex-wrap">
+          <div className="h-9 px-3.5 rounded-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] flex items-center gap-2 text-xs font-semibold">
+            <span className="text-slate-400">Diaudit:</span>
+            <span className="font-bold text-slate-900 dark:text-slate-100">84.394 Peserta</span>
+          </div>
+          <div className="h-9 px-3.5 rounded-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] flex items-center gap-2 text-xs font-semibold">
+            <span className="text-slate-400">Suspensi:</span>
+            <span className="font-bold text-rose-500 font-mono">{totalSuspended}</span>
+          </div>
+          <div className="h-9 px-3.5 rounded-full bg-slate-100 dark:bg-white/[0.05] border border-slate-200 dark:border-white/[0.08] flex items-center gap-2 text-xs font-semibold">
+            <span className="text-slate-400">Surat:</span>
+            <span className="font-bold text-blue-500 font-mono">{totalLetters}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* ================================================================ */}
+      {/* 2. Rekomendasi Cepat dari Live Stream (Tiered Quick Selection)   */}
+      {/* ================================================================ */}
+      <div className="rounded-2xl bg-white dark:bg-[#131418] border border-slate-200/80 dark:border-white/[0.08] p-4 sm:p-5">
+        <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-100 dark:border-white/[0.06]">
+          <div className="flex items-center gap-2 text-xs font-bold text-slate-900 dark:text-slate-100">
+            <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
+            <span>Rekomendasi Tindakan Cepat (Deteksi Real-Time)</span>
+          </div>
+          <span className="text-[11px] text-slate-400">Klik tombol untuk pre-fill formulir</span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           {recommendations.map((rec, idx) => (
             <div
               key={idx}
-              className="p-3 sm:px-4 sm:py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition-colors"
+              className="p-3.5 rounded-xl bg-slate-50/70 dark:bg-white/[0.02] border border-slate-200/60 dark:border-white/[0.06] flex flex-col justify-between gap-3"
             >
-              <div className="flex items-start sm:items-center gap-3 min-w-0 flex-1">
-                <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center shrink-0 text-slate-700 dark:text-slate-300">
-                  <ShieldAlert className="w-4 h-4 text-rose-600 dark:text-rose-400" />
+              <div>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">
+                    {rec.nama}
+                  </span>
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-500 border border-rose-500/20 font-bold shrink-0">
+                    Skor {rec.riskScore}
+                  </span>
                 </div>
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-xs font-bold text-slate-900 dark:text-slate-100">{rec.nama}</span>
-                    <span className="text-slate-300 dark:text-slate-600">•</span>
-                    <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400">{rec.nik}</span>
-                    <span className="px-1.5 py-0.2 rounded text-[10px] font-mono font-bold bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800">
-                      Skor {rec.riskScore}/100
-                    </span>
-                  </div>
-                  <div className="text-[11px] text-slate-600 dark:text-slate-400 mt-0.5 flex items-center gap-2 flex-wrap">
-                    <span className="font-medium text-slate-700 dark:text-slate-300">{rec.typology}</span>
-                    <span className="text-slate-300 dark:text-slate-600">•</span>
-                    <span className="text-slate-500 dark:text-slate-400">{rec.faskes}</span>
-                    <span className="text-slate-300 dark:text-slate-600">•</span>
-                    <span className="font-mono text-rose-600 dark:text-rose-400 font-semibold">{rec.tarif}</span>
-                  </div>
+                <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 truncate">
+                  {rec.typology} · <span className="font-mono text-rose-500">{rec.tarif}</span>
                 </div>
               </div>
 
-              {/* Quick Action Buttons */}
-              <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+              <div className="flex items-center gap-2 pt-2 border-t border-slate-200/50 dark:border-white/[0.05]">
                 <button
                   type="button"
                   onClick={() => handleQuickAction(rec, 'suspend')}
-                  className="px-2.5 py-1.5 rounded-lg border border-rose-200 dark:border-rose-800 bg-rose-50 dark:bg-rose-950/60 hover:bg-rose-100 dark:hover:bg-rose-900/60 text-rose-700 dark:text-rose-300 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
-                  title="Ajukan Suspensi untuk peserta ini"
+                  className="flex-1 py-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 text-xs font-semibold flex items-center justify-center gap-1 transition-colors cursor-pointer"
                 >
-                  <ShieldOff className="w-3.5 h-3.5" />
+                  <ShieldOff className="w-3 h-3" />
                   <span>Suspend</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => handleQuickAction(rec, 'surat')}
-                  className="px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
-                  title="Kirim Surat Peringatan/Klarifikasi"
+                  className="flex-1 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.06] dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 text-xs font-semibold flex items-center justify-center gap-1 transition-colors cursor-pointer"
                 >
-                  <Mail className="w-3.5 h-3.5" />
+                  <Mail className="w-3 h-3" />
                   <span>Kirim Surat</span>
                 </button>
               </div>
@@ -323,51 +335,44 @@ export const MasterDataPage: React.FC = () => {
         </div>
       </div>
 
-      <div id="action-form-section" className="grid grid-cols-1 lg:grid-cols-5 gap-5">
-        {/* Left: Form Panel */}
-        <div className="lg:col-span-3 space-y-4">
+      {/* ================================================================ */}
+      {/* 3. Action Center: Formulir & Log Riwayat                          */}
+      {/* ================================================================ */}
+      <div id="form-penindakan" className="grid grid-cols-1 lg:grid-cols-5 gap-5">
+        {/* Left (3 cols): Action Form */}
+        <div className="lg:col-span-3 space-y-3.5">
           {/* Tab Switcher */}
-          <div className="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl gap-1 border border-slate-200 dark:border-slate-700">
+          <div className="flex p-1 bg-slate-100 dark:bg-white/[0.04] rounded-xl gap-1 border border-slate-200/80 dark:border-white/[0.08]">
             <button
               onClick={() => setActiveTab('suspend')}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                 activeTab === 'suspend'
-                  ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-2xs'
-                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
+                  ? 'bg-rose-600 text-white shadow-xs'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
-              <ShieldOff className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />
-              Suspend Peserta
+              <ShieldOff className="w-3.5 h-3.5" />
+              <span>Suspensi Hak Kepesertaan</span>
             </button>
             <button
               onClick={() => setActiveTab('surat')}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                 activeTab === 'surat'
-                  ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 shadow-2xs'
-                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
+                  ? 'bg-blue-600 text-white shadow-xs'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
-              <Mail className="w-3.5 h-3.5 text-slate-700 dark:text-slate-300" />
-              Kirim Surat / Layangan
+              <Mail className="w-3.5 h-3.5" />
+              <span>Penerbitan Surat Resmi</span>
             </button>
           </div>
 
-          {/* Suspend Form */}
-          {activeTab === 'suspend' && (
-            <form
-              onSubmit={handleSubmitSuspend}
-              className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/90 dark:border-slate-800 p-5 space-y-4 shadow-2xs"
-            >
-              <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
-                <UserX className="w-4 h-4 text-rose-600 dark:text-rose-400" />
-                <span className="text-sm font-bold text-slate-900 dark:text-slate-100">
-                  Formulir Suspensi Hak Kepesertaan
-                </span>
-              </div>
-
+          {/* Form Card */}
+          <div className="rounded-2xl bg-white dark:bg-[#131418] border border-slate-200/80 dark:border-white/[0.08] p-5 space-y-4">
+            <form onSubmit={activeTab === 'suspend' ? handleSubmitSuspend : handleSubmitSurat} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                     NIK Peserta *
                   </label>
                   <input
@@ -376,238 +381,157 @@ export const MasterDataPage: React.FC = () => {
                     onChange={(e) => setNikInput(e.target.value)}
                     placeholder="16 digit NIK"
                     required
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:focus:ring-emerald-400 text-xs font-mono text-slate-900 dark:text-slate-100"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-white/[0.08] bg-slate-50 dark:bg-white/[0.03] text-xs font-mono text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-slate-400"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                     Nama Peserta
                   </label>
                   <input
                     type="text"
                     value={namaInput}
                     onChange={(e) => setNamaInput(e.target.value)}
-                    placeholder="Nama lengkap"
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:focus:ring-emerald-400 text-xs text-slate-900 dark:text-slate-100"
+                    placeholder="Nama peserta"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-white/[0.08] bg-slate-50 dark:bg-white/[0.03] text-xs text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-slate-400"
                   />
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                  Alasan Suspensi *
-                </label>
-                <select
-                  value={alasanSuspend}
-                  onChange={(e) => setAlasanSuspend(e.target.value)}
-                  required
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:focus:ring-emerald-400 text-xs text-slate-900 dark:text-slate-100 cursor-pointer"
-                >
-                  <option value="">Pilih alasan...</option>
-                  {ALASAN_SUSPEND.map((a) => (
-                    <option key={a} value={a}>
-                      {a}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800 text-xs text-rose-800 dark:text-rose-300 flex items-start gap-2.5">
-                <AlertTriangle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
-                <span className="leading-relaxed">
-                  Tindakan suspensi akan memblokir penerbitan SEP baru di seluruh faskes dan membutuhkan
-                  verifikasi manual pejabat BPJS Kesehatan untuk pemulihan hak jaminan.
-                </span>
-              </div>
-
-              {successMsg && (
-                <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 flex items-center gap-2 text-xs text-emerald-800 dark:text-emerald-300 font-medium">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                  <span>{successMsg}</span>
-                </div>
-              )}
-
-              <button
-                type="submit"
-                className="w-full py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-xs"
-              >
-                <ShieldOff className="w-3.5 h-3.5" />
-                Ajukan Suspensi Kepesertaan
-              </button>
-            </form>
-          )}
-
-          {/* Surat Form */}
-          {activeTab === 'surat' && (
-            <form
-              onSubmit={handleSubmitSurat}
-              className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/90 dark:border-slate-800 p-5 space-y-4 shadow-2xs"
-            >
-              <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
-                <FileText className="w-4 h-4 text-[#007a3d] dark:text-emerald-400" />
-                <span className="text-sm font-bold text-slate-900 dark:text-slate-100">
-                  Penerbitan Surat Klarifikasi &amp; Peringatan Resmi
-                </span>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {activeTab === 'suspend' ? (
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                    NIK Peserta *
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Alasan Suspensi *
                   </label>
-                  <input
-                    type="text"
-                    value={nikInput}
-                    onChange={(e) => setNikInput(e.target.value)}
-                    placeholder="16 digit NIK"
+                  <select
+                    value={alasanSuspend}
+                    onChange={(e) => setAlasanSuspend(e.target.value)}
                     required
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:focus:ring-emerald-400 text-xs font-mono text-slate-900 dark:text-slate-100"
-                  />
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-white/[0.08] bg-slate-50 dark:bg-white/[0.03] text-xs text-slate-900 dark:text-slate-100 cursor-pointer focus:outline-none focus:ring-1 focus:ring-slate-400"
+                  >
+                    <option value="" className="dark:bg-[#131418]">Pilih alasan penindakan...</option>
+                    {ALASAN_SUSPEND.map((a) => (
+                      <option key={a} value={a} className="dark:bg-[#131418]">
+                        {a}
+                      </option>
+                    ))}
+                  </select>
                 </div>
+              ) : (
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
-                    Nama Peserta
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    Template Surat *
                   </label>
-                  <input
-                    type="text"
-                    value={namaInput}
-                    onChange={(e) => setNamaInput(e.target.value)}
-                    placeholder="Nama lengkap"
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:focus:ring-emerald-400 text-xs text-slate-900 dark:text-slate-100"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-2">
-                  Pilih Template Surat Resmi BPJS *
-                </label>
-                <div className="space-y-2">
-                  {TEMPLATE_SURAT.map((t) => (
-                    <button
-                      key={t.id}
-                      type="button"
-                      onClick={() => setTemplateSurat(t.id)}
-                      className={`w-full text-left p-3 rounded-xl border transition-all cursor-pointer ${
-                        templateSurat === t.id
-                          ? 'border-emerald-600 bg-emerald-50/70 dark:bg-emerald-950/60 dark:border-emerald-500 shadow-2xs'
-                          : 'border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/60 hover:bg-slate-100/70 dark:hover:bg-slate-800'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-slate-900 dark:text-slate-100">{t.label}</span>
-                        {templateSurat === t.id && (
-                          <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                        )}
-                      </div>
-                      <div
-                        className={`text-[11px] mt-0.5 ${
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {TEMPLATE_SURAT.map((t) => (
+                      <button
+                        key={t.id}
+                        type="button"
+                        onClick={() => setTemplateSurat(t.id)}
+                        className={`text-left p-2.5 rounded-xl border transition-all cursor-pointer ${
                           templateSurat === t.id
-                            ? 'text-slate-600 dark:text-slate-300'
-                            : 'text-slate-400 dark:text-slate-500'
+                            ? 'border-blue-500 bg-blue-500/10 text-blue-400'
+                            : 'border-slate-200 dark:border-white/[0.08] bg-slate-50/50 dark:bg-white/[0.02] text-slate-600 dark:text-slate-300'
                         }`}
                       >
-                        {t.desc}
-                      </div>
-                    </button>
-                  ))}
+                        <div className="flex items-center justify-between text-xs font-bold">
+                          <span>{t.label}</span>
+                          {templateSurat === t.id && <Check className="w-3.5 h-3.5 text-blue-500" />}
+                        </div>
+                        <div className="text-[10.5px] text-slate-400 mt-0.5 truncate">{t.desc}</div>
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {successMsg && (
-                <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 flex items-center gap-2 text-xs text-emerald-800 dark:text-emerald-300 font-medium">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-500 font-semibold flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 shrink-0" />
                   <span>{successMsg}</span>
                 </div>
               )}
 
               <button
                 type="submit"
-                className="w-full py-2.5 bg-[#007a3d] dark:bg-emerald-600 hover:bg-[#006834] dark:hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-xs"
+                className={`w-full py-2.5 rounded-xl text-xs font-bold text-white transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs ${
+                  activeTab === 'suspend'
+                    ? 'bg-rose-600 hover:bg-rose-700'
+                    : 'bg-blue-600 hover:bg-blue-700'
+                }`}
               >
-                <Send className="w-3.5 h-3.5" />
-                Kirim Surat via Mobile JKN
+                {activeTab === 'suspend' ? (
+                  <>
+                    <ShieldOff className="w-3.5 h-3.5" />
+                    <span>Eksekusi Suspensi Hak JKN</span>
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-3.5 h-3.5" />
+                    <span>Kirim Surat via Mobile JKN</span>
+                  </>
+                )}
               </button>
             </form>
-          )}
+          </div>
         </div>
 
-        {/* Right: Action Log */}
-        <div className="lg:col-span-2 space-y-3">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-2xs overflow-hidden">
-            <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-800 dark:text-slate-100">Riwayat Tindakan</span>
-              <span className="font-mono text-[10px] text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-700">
-                {logs.length} aksi
+        {/* Right (2 cols): Action Log */}
+        <div className="lg:col-span-2">
+          <div className="rounded-2xl bg-white dark:bg-[#131418] border border-slate-200/80 dark:border-white/[0.08] p-4 flex flex-col h-full">
+            <div className="flex items-center justify-between pb-2.5 mb-2.5 border-b border-slate-100 dark:border-white/[0.06]">
+              <span className="text-xs font-bold text-slate-900 dark:text-slate-100">
+                Log Riwayat Tindakan
+              </span>
+              <span className="font-mono text-[10px] text-slate-400 bg-slate-100 dark:bg-white/[0.06] px-2 py-0.5 rounded-full">
+                {logs.length} Aksi
               </span>
             </div>
 
-            {/* Log Search Filter */}
-            <div className="p-2.5 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40">
-              <div className="relative">
-                <Search className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 absolute left-2.5 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  value={logSearch}
-                  onChange={(e) => setLogSearch(e.target.value)}
-                  placeholder="Cari NIK, nama, atau alasan..."
-                  className="w-full pl-8 pr-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-[11px] text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-500 dark:focus:ring-emerald-400"
-                />
-              </div>
+            <div className="relative mb-3">
+              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                value={logSearch}
+                onChange={(e) => setLogSearch(e.target.value)}
+                placeholder="Cari NIK, nama..."
+                className="w-full pl-8 pr-3 py-1.5 rounded-xl border border-slate-200 dark:border-white/[0.08] bg-slate-50 dark:bg-white/[0.02] text-xs text-slate-800 dark:text-slate-200 focus:outline-none"
+              />
             </div>
 
-            {/* List of Action Logs */}
-            <div className="divide-y divide-slate-100 dark:divide-slate-800 max-h-[480px] overflow-y-auto">
-              {filteredLogs.length === 0 ? (
-                <div className="p-6 text-center text-xs text-slate-400 dark:text-slate-500">
-                  Tidak ada catatan tindakan yang cocok.
-                </div>
-              ) : (
-                filteredLogs.map((log) => (
-                  <div key={log.id} className="px-4 py-3 space-y-1.5 hover:bg-slate-50/40 dark:hover:bg-slate-800/40 transition-colors">
-                    <div className="flex items-center justify-between">
-                      <span
-                        className={`text-[10px] font-bold px-2 py-0.5 rounded font-mono ${
-                          log.type === 'SUSPEND'
-                            ? 'bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800'
-                            : 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
-                        }`}
-                      >
-                        {log.type === 'SUSPEND' ? 'SUSPEND' : 'SURAT'}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => toggleLogStatus(log.id)}
-                        className={`text-[10px] font-semibold flex items-center gap-1 cursor-pointer transition-colors px-1.5 py-0.5 rounded hover:bg-slate-100 dark:hover:bg-slate-800 ${
-                          log.status === 'EXECUTED'
-                            ? 'text-emerald-700 dark:text-emerald-400'
-                            : 'text-amber-700 dark:text-amber-400'
-                        }`}
-                        title="Klik untuk toggle status"
-                      >
-                        {log.status === 'EXECUTED' ? (
-                          <>
-                            <Check className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
-                            <span>Dieksekusi</span>
-                          </>
-                        ) : (
-                          <>
-                            <Clock className="w-3 h-3 text-amber-600 dark:text-amber-400" />
-                            <span>Pending</span>
-                          </>
-                        )}
-                      </button>
-                    </div>
-                    <div className="text-xs font-semibold text-slate-900 dark:text-slate-100">{log.nama}</div>
-                    <div className="font-mono text-[10px] text-slate-500 dark:text-slate-400">{log.nik}</div>
-                    <div className="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed">{log.alasan}</div>
-                    <div className="flex items-center gap-1 text-[10px] text-slate-400 dark:text-slate-500 font-mono">
-                      <Clock className="w-3 h-3 text-slate-400 dark:text-slate-500" />
-                      {log.timestamp}
-                    </div>
+            <div className="divide-y divide-slate-100 dark:divide-white/[0.05] overflow-y-auto max-h-[380px] flex-1">
+              {filteredLogs.map((log) => (
+                <div key={log.id} className="py-2.5 space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span
+                      className={`text-[9.5px] font-mono font-bold px-1.5 py-0.5 rounded ${
+                        log.type === 'SUSPEND'
+                          ? 'bg-rose-500/10 text-rose-500'
+                          : 'bg-blue-500/10 text-blue-500'
+                      }`}
+                    >
+                      {log.type}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => toggleLogStatus(log.id)}
+                      className={`text-[10px] font-semibold cursor-pointer px-1.5 py-0.5 rounded ${
+                        log.status === 'EXECUTED'
+                          ? 'text-emerald-500 bg-emerald-500/10'
+                          : 'text-amber-500 bg-amber-500/10'
+                      }`}
+                    >
+                      {log.status === 'EXECUTED' ? 'Dieksekusi' : 'Pending'}
+                    </button>
                   </div>
-                ))
-              )}
+                  <div className="text-xs font-bold text-slate-900 dark:text-slate-100">{log.nama}</div>
+                  <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate">{log.alasan}</div>
+                  <div className="flex items-center gap-1 text-[10px] text-slate-400 font-mono">
+                    <Clock className="w-3 h-3" />
+                    <span>{log.timestamp}</span>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>

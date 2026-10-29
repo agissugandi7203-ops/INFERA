@@ -1,14 +1,14 @@
-// 1. Suara AI Kanan (Avatar Asisten Virtual 2D - Interaktif & Percakapan Santai)
-export const VOICE_AVATAR_INFERA = '3bAVnCtF2Efx7MOj2bJ0'; // INFERA (Default Suara Utama — Ramah & Ekspresif)
-export const VOICE_AVATAR_FERA = VOICE_AVATAR_INFERA;
+// 1. Suara Avatar FERA (OpenAI Live Custom Voice & WebRTC)
+export const VOICE_AVATAR_FERA = 'voice_6ae35d565f908191a5b73228455d503f'; // FERA Custom Voice (Suara Wanita Jernih, Ramah & Berwibawa)
+export const VOICE_AVATAR_INFERA = VOICE_AVATAR_FERA;
 export const VOICE_AVATAR_VERA = VOICE_AVATAR_FERA;
-export const VOICE_AVATAR_LUNA = 'cgSgspJ2msm6clMCkdW9'; // Luna (Alternatif AI Kanan — Ceria, Hangat & Lembut)
-export const VOICE_DEFAULT_ID = VOICE_AVATAR_INFERA;
-export const VOICE_SECONDARY_ID = VOICE_AVATAR_LUNA;
+export const VOICE_AVATAR_LUNA = 'voice_6ae35d565f908191a5b73228455d503f';
+export const VOICE_DEFAULT_ID = VOICE_AVATAR_FERA;
+export const VOICE_SECONDARY_ID = 'coral';
 
 // 2. Suara Inti AI Chat (INFERA Central AI System - Narator Resmi Laporan & Investigasi)
-export const VOICE_CHAT_SYSTEM_AUDITOR = '3bAVnCtF2Efx7MOj2bJ0'; // INFERA Official Voice (3bAVnCtF2Efx7MOj2bJ0)
-export const VOICE_CHAT_SYSTEM_ANALYST = 'EXAVITQu4vr4xnSDxMaL';  // Narator Analis INFERA (Sarah — Netral, Presisi, Formal)
+export const VOICE_CHAT_SYSTEM_AUDITOR = 'coral'; // INFERA Official Voice
+export const VOICE_CHAT_SYSTEM_ANALYST = 'sage';  // Narator Analis INFERA (Netral, Presisi, Formal)
 export const VOICE_CHAT_DEFAULT_ID = VOICE_CHAT_SYSTEM_AUDITOR;
 export const VOICE_CHAT_SECONDARY_ID = VOICE_CHAT_SYSTEM_ANALYST;
 

@@ -451,9 +451,9 @@ export interface AiResponseRendererProps {
 }
 
 /**
- * Enterprise AI Response Renderer & Paraphrasing Component
+ * Enterprise AI Response Renderer & Paraphrasing Component (Memoized for 60fps streaming)
  */
-export const AiResponseRenderer: React.FC<AiResponseRendererProps> = ({
+export const AiResponseRenderer = React.memo<AiResponseRendererProps>(({
   content,
   className = '',
   enableReasoningDrawer = false,
@@ -462,7 +462,10 @@ export const AiResponseRenderer: React.FC<AiResponseRendererProps> = ({
   const [isReasoningOpen, setIsReasoningOpen] = useState(false);
 
   // 1. Preprocess raw AI content
-  const { reasoning, cleanContent } = preprocessAiResponse(content);
+  const { reasoning, cleanContent } = React.useMemo(
+    () => preprocessAiResponse(content),
+    [content]
+  );
 
   return (
     <div className={`ai-response-rendered font-sans ${className}`}>
@@ -580,4 +583,4 @@ export const AiResponseRenderer: React.FC<AiResponseRendererProps> = ({
       </MarkdownErrorBoundary>
     </div>
   );
-};
+});

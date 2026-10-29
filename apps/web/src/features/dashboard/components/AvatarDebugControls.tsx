@@ -20,8 +20,8 @@ interface AvatarDebugControlsProps {
 }
 
 const AVATAR_VOICE_OPTIONS = [
-  { id: VOICE_DEFAULT_ID, name: 'Fera (AI Kanan)', desc: 'Avatar 2D — Ramah, hangat & interaktif' },
-  { id: VOICE_SECONDARY_ID, name: 'Luna (AI Kanan)', desc: 'Avatar 2D — Ceria, ekspresif & lembut' },
+  { id: VOICE_DEFAULT_ID, name: 'FERA (Suara Kustom)', desc: 'Suara Wanita Jernih, Ramah & Alami' },
+  { id: VOICE_SECONDARY_ID, name: 'Coral (Suara Cadangan)', desc: 'Suara Resmi Bawaan OpenAI' },
 ];
 
 const CHAT_VOICE_OPTIONS = [

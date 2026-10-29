@@ -53,7 +53,7 @@ const MasterDataPage = lazyWithRetry(() =>
 );
 
 const PageSkeleton: React.FC = () => (
-  <div className="space-y-4 max-w-6xl mx-auto w-full animate-pulse">
+  <div className="space-y-4 w-full max-w-[1760px] mx-auto animate-pulse">
     <div className="h-7 bg-slate-200/70 rounded-lg w-1/3 mb-4" />
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
       <div className="h-24 bg-slate-100 rounded-2xl border border-slate-200/60" />

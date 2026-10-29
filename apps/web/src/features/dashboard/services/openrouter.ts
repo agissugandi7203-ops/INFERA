@@ -6,7 +6,12 @@ import {
   VOICE_CHAT_SECONDARY_ID,
   VoiceExpressionMetadata,
 } from './tts-processor';
-import type { RagSearchResult, ActionRecommendation, ToolProgressStep } from '@healthathon/shared';
+import type {
+  RagSearchResult,
+  ActionRecommendation,
+  ToolProgressStep,
+  ActionProposal,
+} from '@healthathon/shared';
 import { webRagService } from '../../../services/rag.service';
 import { getAuthHeaders } from '../../../lib/supabase';
 
@@ -37,6 +42,7 @@ export interface ChatMessage {
   shortcuts?: AiShortcut[];
   citations?: RagSearchResult[];
   recommendations?: ActionRecommendation[];
+  actionProposals?: ActionProposal[];
   toolSteps?: ToolProgressStep[];
   attachments?: ChatAttachment[];
   annotations?: any[];
@@ -376,7 +382,7 @@ export async function streamOpenRouterChat(
   attachments?: ChatAttachment[],
   enableReasoning = false
 ): Promise<string> {
-  const backendUrl = import.meta.env.VITE_API_URL || '/api/v1';
+  const backendUrl = import.meta.env.VITE_API_URL || '/api/v2';
   let accumulated = '';
   let accumulatedReasoning = '';
   let citations: RagSearchResult[] = [];
@@ -413,7 +419,7 @@ export async function streamOpenRouterChat(
         ],
         mode,
         enableReasoning,
-        model: settings.model || (mode === 'voice' ? 'google/gemini-2.0-flash-001' : 'openai/gpt-oss-120b:nitro'),
+        model: 'gpt-6-luna',
         ...(hasPdfAttachment ? { plugins: [{ id: 'file-parser', pdf: { engine: 'cloudflare-ai' } }] } : {}),
       }),
       signal,
@@ -423,8 +429,10 @@ export async function streamOpenRouterChat(
       const reader = res.body.getReader();
       const decoder = new TextDecoder('utf-8');
       let buffer = '';
+      let currentEvent = 'message';
+      let isStreamFinished = false;
 
-      while (true) {
+      while (!isStreamFinished) {
         if (signal?.aborted) {
           reader.cancel().catch(() => {});
           break;
@@ -437,10 +445,14 @@ export async function streamOpenRouterChat(
         const lines = buffer.split('\n');
         buffer = lines.pop() || '';
 
-        let currentEvent = 'message';
         for (const line of lines) {
           const trimmed = line.trim();
-          if (!trimmed || trimmed.startsWith(':')) continue;
+          // Empty line indicates end of current SSE event block
+          if (!trimmed) {
+            currentEvent = 'message';
+            continue;
+          }
+          if (trimmed.startsWith(':')) continue;
 
           if (trimmed.startsWith('event: ')) {
             currentEvent = trimmed.slice(7).trim();
@@ -448,28 +460,43 @@ export async function streamOpenRouterChat(
           }
 
           if (trimmed.startsWith('data: ')) {
-            const dataStr = trimmed.slice(6);
+            const dataStr = trimmed.slice(6).trim();
+
+            if (dataStr === '[DONE]') {
+              isStreamFinished = true;
+              break;
+            }
+
             try {
               const data = JSON.parse(dataStr);
               if (currentEvent === 'metadata') {
                 if (data.citations) citations = data.citations;
                 callbacks?.onMetadata?.(data);
-              } else if (currentEvent === 'reasoning') {
-                if (data.content) {
-                  accumulatedReasoning += data.content;
-                  callbacks?.onReasoning?.(data.content, accumulatedReasoning);
+              } else if (currentEvent === 'reasoning' || data.reasoning) {
+                const reasoningText = data.content ?? data.reasoning;
+                if (reasoningText) {
+                  accumulatedReasoning += reasoningText;
+                  callbacks?.onReasoning?.(reasoningText, accumulatedReasoning);
                 }
-              } else if (currentEvent === 'delta') {
-                if (data.content) {
-                  accumulated += data.content;
+              } else if (
+                currentEvent === 'delta' ||
+                currentEvent === 'chunk' ||
+                currentEvent === 'message' ||
+                data.delta !== undefined ||
+                data.content !== undefined ||
+                data.choices?.[0]?.delta?.content !== undefined
+              ) {
+                const text = data.content ?? data.delta ?? data.choices?.[0]?.delta?.content;
+                if (text) {
+                  accumulated += text;
                   const visible = getStreamingVisibleText(accumulated);
-                  callbacks?.onDelta?.(data.content, visible);
+                  callbacks?.onDelta?.(text, visible);
                 }
-              } else if (currentEvent === 'done') {
-                const cleanFinal = cleanRawAiResponse(accumulated);
-                const shortcuts = extractShortcuts(cleanFinal);
-                callbacks?.onDone?.(cleanFinal, shortcuts, accumulatedReasoning || undefined);
-                return cleanFinal;
+              }
+
+              if (currentEvent === 'done' || data.finishReason || data.choices?.[0]?.finish_reason) {
+                isStreamFinished = true;
+                break;
               } else if (currentEvent === 'error') {
                 throw new Error(data.message || 'Stream error from server');
               }
@@ -480,12 +507,10 @@ export async function streamOpenRouterChat(
         }
       }
 
-      if (accumulated.trim()) {
-        const cleanFinal = cleanRawAiResponse(accumulated);
-        const shortcuts = extractShortcuts(cleanFinal);
-        callbacks?.onDone?.(cleanFinal, shortcuts, accumulatedReasoning || undefined);
-        return cleanFinal;
-      }
+      const cleanFinal = cleanRawAiResponse(accumulated);
+      const shortcuts = extractShortcuts(cleanFinal);
+      callbacks?.onDone?.(cleanFinal, shortcuts, accumulatedReasoning || undefined);
+      return cleanFinal;
     }
   } catch (err) {
     if (signal?.aborted) return cleanRawAiResponse(accumulated);
@@ -576,8 +601,9 @@ export async function streamOpenRouterChat(
     const reader = res.body.getReader();
     const decoder = new TextDecoder('utf-8');
     let buffer = '';
+    let isDirectFinished = false;
 
-    while (true) {
+    while (!isDirectFinished) {
       if (signal?.aborted) {
         reader.cancel().catch(() => {});
         break;
@@ -593,7 +619,10 @@ export async function streamOpenRouterChat(
       for (const line of lines) {
         const trimmed = line.trim();
         if (!trimmed || trimmed.startsWith(':')) continue;
-        if (trimmed === 'data: [DONE]') break;
+        if (trimmed === 'data: [DONE]' || trimmed === '[DONE]') {
+          isDirectFinished = true;
+          break;
+        }
         if (trimmed.startsWith('data: ')) {
           try {
             const parsed = JSON.parse(trimmed.slice(6));
@@ -613,6 +642,11 @@ export async function streamOpenRouterChat(
               accumulated += delta;
               const visible = getStreamingVisibleText(accumulated);
               callbacks?.onDelta?.(delta, visible);
+            }
+
+            if (choice?.finish_reason) {
+              isDirectFinished = true;
+              break;
             }
           } catch {
             // Ignore partial lines
@@ -672,7 +706,7 @@ export async function sendOpenRouterChat(
   const dynamicSystemPrompt = `${SYSTEM_PROMPT}${ragContextBlock}`;
 
   // If useBackendProxy is true or no direct key provided, try backend
-  if (settings.useBackendProxy || (!settings.apiKey && import.meta.env.VITE_API_URL)) {
+  if (settings.useBackendProxy || !settings.apiKey) {
     try {
       const messages = [
         { role: 'system' as const, content: dynamicSystemPrompt },
@@ -681,13 +715,13 @@ export async function sendOpenRouterChat(
       ];
 
       const authHeaders = await getAuthHeaders();
-      const res = await fetch(`${import.meta.env.VITE_API_URL || '/api/v1'}/ai/chat`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || '/api/v2'}/ai/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...authHeaders },
         body: JSON.stringify({
           messages,
           mode,
-          model: mode === 'voice' ? 'meta-llama/llama-3.3-70b-instruct' : (settings.model || 'openai/gpt-oss-120b:nitro'),
+          model: 'gpt-6-luna',
         }),
       });
 
