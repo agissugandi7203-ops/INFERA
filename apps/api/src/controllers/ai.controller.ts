@@ -1,6 +1,5 @@
 import type { Request, Response, NextFunction } from 'express';
 import { sendSuccess } from '../utils/response.js';
-import { openRouterService, ALLOWED_MODELS } from '../services/openrouter.service.js';
 import { OpenAiChatService } from '../services/v2/openai-chat.service.js';
 import { ragService } from '../services/rag.service.js';
 import { env } from '../config/env.js';
@@ -64,10 +63,10 @@ function buildSystemPrompt(mode: 'chat' | 'voice', ragContextBlock: string): str
 
 export const getAiStatus = async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const health = await openRouterService.checkHealth();
+    const health = await OpenAiChatService.checkHealth();
     sendSuccess(res, {
-      configured: openRouterService.hasCredentials(),
-      engine: 'OpenRouter AI API',
+      configured: Boolean(env.OPENAI_API_KEY),
+      engine: 'OpenAI v2 (gpt-6-luna)',
       ...health,
     });
   } catch (error) {
@@ -149,12 +148,7 @@ export const chatStream = async (req: Request, res: Response): Promise<void> => 
 
     // 2. Send metadata event immediately (citations, chosen model, mode)
     sendEvent('metadata', {
-      model:
-        mode === 'voice'
-          ? 'meta-llama/llama-3.3-70b-instruct'
-          : input.model && ALLOWED_MODELS.has(input.model)
-            ? input.model
-            : env.OPENROUTER_DEFAULT_MODEL,
+      model: input.model || 'gpt-6-luna',
       mode,
       citations: ragResults,
       requestId: req.requestId ?? `req-${Date.now()}`,
@@ -178,14 +172,17 @@ export const chatStream = async (req: Request, res: Response): Promise<void> => 
       ...(enableReasoning ? { reasoning: { effort: 'medium' as const } } : {}),
     };
 
-    // 4. Stream chunks from OpenRouter
+    // 4. Stream chunks from OpenAI v2 native engine (gpt-6-luna)
     let streamEnded = false;
-    for await (const chunk of openRouterService.streamChat(aiRequest, abortController.signal)) {
+    for await (const chunk of OpenAiChatService.chatStream(
+      {
+        ...input,
+        messages: assembledMessages,
+        model: 'gpt-6-luna',
+      },
+      abortController.signal
+    )) {
       if (abortController.signal.aborted) break;
-
-      if (enableReasoning && chunk.reasoning) {
-        sendEvent('reasoning', { content: chunk.reasoning });
-      }
 
       if (chunk.delta) {
         sendEvent('delta', { content: chunk.delta });
@@ -194,7 +191,6 @@ export const chatStream = async (req: Request, res: Response): Promise<void> => 
       if (chunk.finishReason) {
         sendEvent('done', {
           finishReason: chunk.finishReason,
-          usage: chunk.usage,
         });
         streamEnded = true;
       }
@@ -262,29 +258,16 @@ export const chatCompletion = async (req: Request, res: Response, next: NextFunc
       ...filteredMessages,
     ];
 
-    try {
-      const result = await openRouterService.chat({
-        ...input,
-        mode,
-        messages: assembledMessages,
-      });
+    const v2Response = await OpenAiChatService.chatCompletion({
+      ...input,
+      messages: assembledMessages,
+      model: 'gpt-6-luna',
+    });
 
-      sendSuccess(res, {
-        ...result,
-        citations: ragResults,
-      });
-    } catch (openRouterErr) {
-      console.warn('[ai.controller] OpenRouter error, falling back to OpenAI v2 service:', openRouterErr);
-      const v2Response = await OpenAiChatService.chat({
-        messages: assembledMessages,
-        mode,
-        maxTokens: input.maxTokens,
-      });
-      sendSuccess(res, {
-        ...v2Response,
-        citations: ragResults,
-      });
-    }
+    sendSuccess(res, {
+      ...v2Response,
+      citations: ragResults,
+    });
   } catch (error) {
     next(error);
   }

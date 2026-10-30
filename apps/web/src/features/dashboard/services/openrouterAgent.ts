@@ -5,7 +5,6 @@ import {
   InvestigationRiskLevel,
 } from '@healthathon/shared';
 import {
-  INFERA_TOOL_DEFINITIONS,
   TOOL_FRIENDLY_LABELS,
   executeInferaTool,
   ToolExecutionContext,
@@ -13,7 +12,6 @@ import {
 import {
   ChatMessage,
   ChatAttachment,
-  formatMessageContent,
   OpenRouterSettings,
   AiShortcut,
   extractShortcuts,
@@ -104,19 +102,6 @@ ATURAN WAJIB & ANTI-HALUSINASI:
    - Rekomendasikan tindakan berjenjang ("propose_participant_suspension", "propose_warning_letter", "propose_case_review") tanpa eksekusi sepihak.
 6. Format Markdown Bersih:
    - Sajikan teks Markdown bersih. JANGAN PERNAH membungkus respon dalam format JSON atau objek {"text": ...}.`;
-}
-
-const AGENT_FALLBACK_MODELS = [
-  'openai/gpt-oss-120b:nitro',
-  'google/gemini-2.0-flash-001',
-  'meta-llama/llama-3.3-70b-instruct',
-  'openai/gpt-4o-mini',
-];
-
-interface RawToolCallAccumulator {
-  id: string;
-  name: string;
-  arguments: string;
 }
 
 interface PlannedTool {
@@ -482,9 +467,6 @@ export async function runAgentInvestigationStream(
   shortcuts: AiShortcut[];
   toolSteps: ToolProgressStep[];
 }> {
-  const apiKey = settings.apiKey.trim();
-  const targetModel = settings.model || 'openai/gpt-oss-120b:nitro';
-
   const collectedRecommendations: ActionRecommendation[] = [];
   const completedSteps: ToolProgressStep[] = [];
   const executedToolSummaries: Array<{ name: string; summary: string; data?: any }> = [];
@@ -601,255 +583,14 @@ export async function runAgentInvestigationStream(
     }
   };
 
-  // 3. Check whether we should run direct OpenRouter client or backend proxy / local agent
-  const hasDirectKey = !!apiKey && !settings.useBackendProxy;
-
   // Extract completed past messages, excluding current query, bounded to last 6 messages (3 conversation turns)
   const priorHistory = history
     .filter((m) => m.content && m.content.trim() && (m.role === 'user' || m.role === 'assistant'))
     .filter((m) => m.content !== userQuery)
     .slice(-6);
 
-  if (hasDirectKey) {
-    // Attempt Direct OpenRouter API Function Calling Loop
-    try {
-      const hasPdfAttachment =
-        Boolean(attachments?.some((a) => a.type === 'pdf')) ||
-        priorHistory.some((m) => m.attachments?.some((a) => a.type === 'pdf'));
-
-      const conversationMessages: Array<{
-        role: string;
-        content?: any;
-        tool_call_id?: string;
-        tool_calls?: Array<{
-          id: string;
-          type: 'function';
-          function: { name: string; arguments: string };
-        }>;
-      }> = [
-        { role: 'system', content: buildAgentSystemPrompt(context) },
-        ...priorHistory.map((m) => ({
-          role: m.role,
-          content: formatMessageContent(m.content, m.attachments),
-          ...(m.annotations ? { annotations: m.annotations } : {}),
-        })),
-        { role: 'user', content: formatMessageContent(userQuery, attachments) },
-      ];
-
-      callbacks?.onMetadata?.({ model: targetModel });
-
-      const MAX_ITERATIONS = 4;
-      let iteration = 0;
-
-      while (iteration < MAX_ITERATIONS) {
-        if (signal?.aborted) break;
-        iteration += 1;
-
-        const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${apiKey}`,
-            'Content-Type': 'application/json',
-            'HTTP-Referer': window.location.origin,
-            'X-Title': 'INFERA BPJS AI Investigation Assistant',
-          },
-          body: JSON.stringify({
-            models: [targetModel, ...AGENT_FALLBACK_MODELS.filter((m) => m !== targetModel)],
-            messages: conversationMessages,
-            tools: INFERA_TOOL_DEFINITIONS,
-            tool_choice: 'auto',
-            temperature: 0.3,
-            max_tokens: 3000,
-            ...(context?.enableReasoning ? { reasoning: { effort: 'medium' } } : {}),
-            stream: true,
-            provider: { allow_fallbacks: true },
-            ...(hasPdfAttachment ? { plugins: [{ id: 'file-parser', pdf: { engine: 'cloudflare-ai' } }] } : {}),
-          }),
-          signal,
-        });
-
-        if (!response.ok || !response.body) {
-          throw new Error(`OpenRouter returned status ${response.status}`);
-        }
-
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder('utf-8');
-        let buffer = '';
-        const toolCallAccumulators: Record<number, RawToolCallAccumulator> = {};
-        let iterationText = '';
-        let fullReasoningText = '';
-
-        let isStreamDone = false;
-        while (!isStreamDone) {
-          if (signal?.aborted) {
-            reader.cancel().catch(() => {});
-            break;
-          }
-
-          const { done, value } = await reader.read();
-          if (done) break;
-
-          buffer += decoder.decode(value, { stream: true });
-          const lines = buffer.split('\n');
-          buffer = lines.pop() || '';
-
-          for (const line of lines) {
-            const trimmed = line.trim();
-            if (!trimmed || trimmed.startsWith(':')) continue;
-            if (trimmed === 'data: [DONE]' || trimmed === '[DONE]') {
-              isStreamDone = true;
-              break;
-            }
-            if (trimmed.startsWith('data: ')) {
-              try {
-                const parsed = JSON.parse(trimmed.slice(6));
-                const choice = parsed.choices?.[0];
-                if (!choice) continue;
-
-                const delta = choice.delta;
-                if (!delta) continue;
-
-                const deltaReasoning =
-                  delta.reasoning ||
-                  delta.reasoning_content ||
-                  (Array.isArray(delta.reasoning_details) ? delta.reasoning_details[0]?.text : '');
-
-                if (context?.enableReasoning && deltaReasoning) {
-                  fullReasoningText += deltaReasoning;
-                  callbacks?.onReasoning?.(deltaReasoning, fullReasoningText);
-                }
-
-                if (delta.content) {
-                  iterationText += delta.content;
-                  fullAccumulatedText += delta.content;
-                  callbacks?.onDelta?.(delta.content, fullAccumulatedText);
-                }
-
-                if (choice.finish_reason) {
-                  isStreamDone = true;
-                }
-
-                if (delta.tool_calls && Array.isArray(delta.tool_calls)) {
-                  for (const tc of delta.tool_calls) {
-                    const idx = tc.index ?? 0;
-                    if (!toolCallAccumulators[idx]) {
-                      toolCallAccumulators[idx] = {
-                        id: tc.id || `call_${Date.now()}_${idx}`,
-                        name: tc.function?.name || '',
-                        arguments: '',
-                      };
-                    }
-                    if (tc.id) toolCallAccumulators[idx].id = tc.id;
-                    if (tc.function?.name) toolCallAccumulators[idx].name = tc.function.name;
-                    if (tc.function?.arguments) {
-                      toolCallAccumulators[idx].arguments += tc.function.arguments;
-                    }
-                  }
-                }
-              } catch {
-                // Ignore chunk parse errors
-              }
-            }
-          }
-        }
-
-        const toolCallList = Object.values(toolCallAccumulators).filter((tc) => tc.name);
-
-        if (toolCallList.length === 0) {
-          // If no tools called by the model, but query clearly required tools, execute planned tools now
-          if (completedSteps.length === 0 && plannedTools.length > 0) {
-            await runLocalPlannedTools();
-          }
-          break;
-        }
-
-        // Append assistant tool call request to conversation
-        conversationMessages.push({
-          role: 'assistant',
-          content: iterationText.trim() || null,
-          tool_calls: toolCallList.map((tc) => ({
-            id: tc.id,
-            type: 'function',
-            function: { name: tc.name, arguments: tc.arguments },
-          })),
-        });
-
-        // Execute each model tool call
-        for (const tc of toolCallList) {
-          const friendlyMeta = TOOL_FRIENDLY_LABELS[tc.name] || {
-            running: `Menjalankan analisis ${tc.name}...`,
-            done: `Analisis ${tc.name} selesai`,
-          };
-
-          const stepRunning: ToolProgressStep = {
-            id: tc.id,
-            toolName: tc.name,
-            label: friendlyMeta.running,
-            status: 'running',
-            timestamp: new Date().toISOString(),
-          };
-          callbacks?.onToolStep?.(stepRunning);
-
-          let parsedArgs: Record<string, unknown> = {};
-          try {
-            parsedArgs = tc.arguments ? JSON.parse(tc.arguments) : {};
-          } catch {
-            parsedArgs = {};
-          }
-
-          const result = await executeInferaTool(tc.name, parsedArgs, context);
-
-          if (result.recommendation) {
-            collectedRecommendations.push(result.recommendation);
-            callbacks?.onRecommendation?.(result.recommendation);
-          }
-
-          const stepDone: ToolProgressStep = {
-            id: tc.id,
-            toolName: tc.name,
-            label: friendlyMeta.done,
-            status: result.success ? 'completed' : 'failed',
-            detail: result.summary,
-            timestamp: new Date().toISOString(),
-          };
-          callbacks?.onToolStep?.(stepDone);
-          completedSteps.push(stepDone);
-
-          conversationMessages.push({
-            role: 'tool',
-            tool_call_id: tc.id,
-            content: JSON.stringify({
-              success: result.success,
-              summary: result.summary,
-              data: result.data,
-              recommendation_prepared: !!result.recommendation,
-              error: result.error,
-            }),
-          });
-        }
-      }
-
-      if (fullAccumulatedText.trim()) {
-        const cleanReply = cleanRawAiResponse(fullAccumulatedText);
-        const shortcuts = extractShortcuts(cleanReply);
-        callbacks?.onDone?.(cleanReply, collectedRecommendations, shortcuts);
-        return {
-          reply: cleanReply,
-          recommendations: collectedRecommendations,
-          shortcuts,
-          toolSteps: completedSteps,
-        };
-      }
-    } catch (directErr) {
-      console.warn(
-        '[OpenRouterAgent] Direct function calling failed or unauthorized, falling back to local hybrid agent:',
-        directErr
-      );
-    }
-  }
-
-  // 4. Deterministic Local & Backend Hybrid Agent Execution
-  // Run all planned analytical and recommendation tools
+  // 3. Deterministic Local & Backend Hybrid Agent Execution
+  // Run all planned analytical and recommendation tools (<5ms execution)
   await runLocalPlannedTools();
 
   // 4.1 Safety Net: If tools ran but collectedRecommendations is empty, synthesize based on analysis results

@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { supabaseService } from './supabase.service.js';
-import { openRouterService } from './openrouter.service.js';
+import { OpenAiChatService } from './v2/openai-chat.service.js';
 import { cacheService } from './cache.service.js';
 import type {
   RegulationChunk,
@@ -96,7 +96,7 @@ class RagService {
         // 1. Compute Query Embedding (if available)
         let queryEmbedding: number[] | null = null;
         try {
-          queryEmbedding = await openRouterService.getEmbedding(cleanQuery);
+          queryEmbedding = await OpenAiChatService.getEmbedding(cleanQuery);
         } catch {
           // Embedding service offline; proceed with high-fidelity lexical scoring
         }

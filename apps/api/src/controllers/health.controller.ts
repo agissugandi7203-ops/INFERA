@@ -1,7 +1,7 @@
 import type { Request, Response, NextFunction } from 'express';
 import { sendSuccess } from '../utils/response.js';
 import { supabaseService } from '../services/supabase.service.js';
-import { openRouterService } from '../services/openrouter.service.js';
+import { OpenAiChatService } from '../services/v2/openai-chat.service.js';
 import { cacheService } from '../services/cache.service.js';
 import { env } from '../config/env.js';
 import type { HealthStatus } from '@healthathon/shared';
@@ -12,7 +12,7 @@ export const getHealth = async (_req: Request, res: Response, next: NextFunction
   try {
     const [dbHealth, aiHealth, cacheHealth] = await Promise.all([
       supabaseService.checkHealth(),
-      openRouterService.checkHealth(),
+      OpenAiChatService.checkHealth(),
       cacheService.checkHealth(),
     ]);
 

@@ -152,7 +152,7 @@ export const ANIME_VOICE_PRESETS = AVATAR_VOICE_PRESETS;
 
 export const DEFAULT_SETTINGS: OpenRouterSettings = {
   apiKey: '',
-  model: (import.meta.env?.VITE_DEFAULT_MODEL as string) || 'openai/gpt-oss-120b:nitro',
+  model: (import.meta.env?.VITE_DEFAULT_MODEL as string) || 'gpt-6-luna',
   useBackendProxy: true,
   elevenLabsApiKey: '',
   avatarVoiceId: (import.meta.env?.VITE_ELEVENLABS_VOICE_ID as string) || VOICE_DEFAULT_ID,
@@ -374,7 +374,7 @@ export interface StreamChatCallbacks {
 export async function streamOpenRouterChat(
   userText: string,
   history: ChatMessage[],
-  settings: OpenRouterSettings,
+  _settings?: OpenRouterSettings,
   mode: 'chat' | 'voice' = 'chat',
   callbacks?: StreamChatCallbacks,
   signal?: AbortSignal,
@@ -385,7 +385,6 @@ export async function streamOpenRouterChat(
   const backendUrl = import.meta.env.VITE_API_URL || '/api/v2';
   let accumulated = '';
   let accumulatedReasoning = '';
-  let citations: RagSearchResult[] = [];
 
   const priorHistory = history
     .filter((m) => m.content && m.content.trim() && (m.role === 'user' || m.role === 'assistant'))
@@ -484,7 +483,6 @@ export async function streamOpenRouterChat(
               try {
                 const data = JSON.parse(dataStr);
                 if (currentEvent === 'metadata') {
-                  if (data.citations) citations = data.citations;
                   callbacks?.onMetadata?.(data);
                 } else if (currentEvent === 'reasoning' || data.reasoning) {
                   const reasoningText = data.content ?? data.reasoning;
@@ -630,157 +628,22 @@ export async function streamOpenRouterChat(
         return cleanFinal;
       }
     } catch (directErr) {
-      console.warn('[Stream Client] Direct OpenAI fallback failed, attempting OpenRouter:', directErr);
+      console.warn('[Stream Client] Direct OpenAI fallback failed:', directErr);
     }
   }
 
-  // 3. Fallback to Direct OpenRouter Client SSE (only if user provided custom override key)
-  const apiKey = (settings.apiKey || '').trim();
-  if (!apiKey) {
-    const errorMsg =
-      'Layanan AI backend sedang memproses antrean investigasi atau mengalami gangguan koneksi sementara. Silakan coba kembali sesaat lagi.';
-    callbacks?.onError?.(new Error(errorMsg));
-    return errorMsg;
-  }
-
-  try {
-    try {
-      citations = await webRagService.search({ query: userText, matchCount: 3 });
-    } catch {
-      citations = [];
-    }
-
-    callbacks?.onMetadata?.({
-      model: settings.model || 'openai/gpt-oss-120b:nitro',
-      mode,
-      citations,
-    });
-
-    const ragContextBlock =
-      citations.length > 0
-        ? `\n=== BUKTI REGULASI RESMI (RAG GROUNDING) ===\n` +
-          citations
-            .map((c, i) => `[${i + 1}] ${c.regulation} (${c.article || ''}): ${c.title}\n"${c.content}"`)
-            .join('\n\n')
-        : '';
-
-    const systemPrompt =
-      systemPromptOverride ||
-      (mode === 'voice'
-        ? VOICE_STREAM_SYSTEM_PROMPT + ragContextBlock
-        : CHAT_STREAM_SYSTEM_PROMPT + ragContextBlock);
-
-    const targetModel = settings.model || (mode === 'voice' ? 'google/gemini-2.0-flash-001' : 'openai/gpt-oss-120b:nitro');
-    const fallbackModels =
-      mode === 'voice'
-        ? ['google/gemini-2.0-flash-001', 'meta-llama/llama-3.3-70b-instruct']
-        : ['openai/gpt-oss-120b:nitro', 'google/gemini-2.0-flash-001', 'meta-llama/llama-3.3-70b-instruct'];
-
-    const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-        'HTTP-Referer': window.location.origin,
-        'X-Title': 'INFERA BPJS AI Assistant',
-      },
-      body: JSON.stringify({
-        models: [targetModel, ...fallbackModels.filter((m) => m !== targetModel)],
-        messages: [
-          { role: 'system', content: systemPrompt },
-          ...priorHistory.map((m) => ({
-            role: m.role,
-            content: formatMessageContent(m.content, m.attachments),
-            ...(m.annotations ? { annotations: m.annotations } : {}),
-          })),
-          {
-            role: 'user',
-            content: formatMessageContent(userText, attachments),
-          },
-        ],
-        temperature: mode === 'voice' ? 0.7 : 0.4,
-        max_tokens: mode === 'voice' ? 220 : 2500,
-        stream: true,
-        provider: { allow_fallbacks: true },
-        // Reasoning integrated ONLY when explicitly enabled by user
-        ...(enableReasoning && mode === 'chat'
-          ? { reasoning: { effort: 'medium' } }
-          : {}),
-        ...(hasPdfAttachment ? { plugins: [{ id: 'file-parser', pdf: { engine: 'cloudflare-ai' } }] } : {}),
-      }),
-      signal,
-    });
-
-    if (!res.ok || !res.body) {
-      throw new Error(`Direct OpenRouter streaming failed with status ${res.status}`);
-    }
-
-    const reader = res.body.getReader();
-    const decoder = new TextDecoder('utf-8');
-    let buffer = '';
-    let isDirectFinished = false;
-
-    while (!isDirectFinished) {
-      if (signal?.aborted) {
-        reader.cancel().catch(() => {});
-        break;
-      }
-
-      const { done, value } = await reader.read();
-      if (done) break;
-
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split('\n');
-      buffer = lines.pop() || '';
-
-      for (const line of lines) {
-        const trimmed = line.trim();
-        if (!trimmed || trimmed.startsWith(':')) continue;
-        if (trimmed === 'data: [DONE]' || trimmed === '[DONE]') {
-          isDirectFinished = true;
-          break;
-        }
-        if (trimmed.startsWith('data: ')) {
-          try {
-            const parsed = JSON.parse(trimmed.slice(6));
-            const choice = parsed.choices?.[0];
-
-            const deltaReasoning =
-              choice?.delta?.reasoning ||
-              choice?.delta?.reasoning_content ||
-              choice?.delta?.reasoning_details?.[0]?.text;
-            if (deltaReasoning) {
-              accumulatedReasoning += deltaReasoning;
-              callbacks?.onReasoning?.(deltaReasoning, accumulatedReasoning);
-            }
-
-            const delta = choice?.delta?.content;
-            if (delta) {
-              accumulated += delta;
-              const visible = getStreamingVisibleText(accumulated);
-              callbacks?.onDelta?.(delta, visible);
-            }
-
-            if (choice?.finish_reason) {
-              isDirectFinished = true;
-              break;
-            }
-          } catch {
-            // Ignore partial lines
-          }
-        }
-      }
-    }
-
+  // 3. Finalize accumulated stream text or report friendly state
+  if (accumulated.trim()) {
     const cleanFinal = cleanRawAiResponse(accumulated);
     const shortcuts = extractShortcuts(cleanFinal);
     callbacks?.onDone?.(cleanFinal, shortcuts, accumulatedReasoning || undefined);
     return cleanFinal;
-  } catch (directErr) {
-    const errorObj = directErr instanceof Error ? directErr : new Error('Gagal memproses streaming AI.');
-    callbacks?.onError?.(errorObj);
-    throw errorObj;
   }
+
+  const errorMsg =
+    'Layanan AI INFERA v2 sedang memproses antrean investigasi atau koneksi sedang tidak stabil. Silakan coba kembali sesaat lagi.';
+  callbacks?.onError?.(new Error(errorMsg));
+  return errorMsg;
 }
 
 export async function sendOpenRouterChat(
@@ -854,168 +717,59 @@ export async function sendOpenRouterChat(
     }
   }
 
-  // Direct OpenRouter Client (fallback only if custom key provided)
-  const apiKey = (settings.apiKey || '').trim();
-  if (!apiKey) {
-    const defaultMsg =
-      'Halo! Saya asisten avatar AI BPJS Kesehatan. Sistem backend AI saat ini sedang memproses data. Silakan coba ajukan pertanyaan Anda kembali.';
-    return {
-      reply: defaultMsg,
-      emotion: 'happy',
-      citations: ragResults,
-      metadata: {
-        text: defaultMsg,
-        emotion: 'happy',
-        expressions: [{ type: 'happy', intensity: 0.6 }],
-        prosody: { energy: 0.8, pitch: 1.0, speed: 1.0 },
-      },
-    };
-  }
-
-  const messages = [
-    { role: 'system', content: dynamicSystemPrompt },
-    ...history.slice(-6).map((m) => ({ role: m.role, content: m.content })),
-    { role: 'user', content: userText },
-  ];
-
-  const targetModel = mode === 'voice' ? 'meta-llama/llama-3.3-70b-instruct' : (settings.model || 'openai/gpt-oss-120b:nitro');
-
-  const payload: Record<string, unknown> = {
-    model: targetModel,
-    messages,
-    temperature: 0.7,
-    max_tokens: 1500,
-  };
-
-  // Only attach tools if model supports tool calls, or let OpenRouter handle it
-  if (!targetModel.includes('nitro')) {
-    payload.tools = AVATAR_EMOTION_TOOLS;
-    payload.tool_choice = 'auto';
-  }
-
-  const abortController = new AbortController();
-  const timeoutId = setTimeout(() => abortController.abort(), 28000);
-
-  let response: Response;
-  try {
-    response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-        'HTTP-Referer': window.location.origin,
-        'X-Title': 'INFERA BPJS AI Assistant',
-      },
-      body: JSON.stringify(payload),
-      signal: abortController.signal,
-    });
-  } catch (netErr) {
-    clearTimeout(timeoutId);
-    if (netErr instanceof Error && netErr.name === 'AbortError') {
-      const errReply = 'Maaf, server AI memerlukan waktu lebih lama dari biasanya untuk merespons. Silakan ulangi pertanyaan Anda.';
-      return {
-        reply: errReply,
-        emotion: 'confused',
-        metadata: {
-          text: errReply,
-          emotion: 'confused',
-          expressions: [{ type: 'confused', intensity: 0.5 }],
-        },
-      };
-    }
-    const netReply = 'Koneksi ke layanan AI terganggu. Silakan periksa jaringan internet Anda atau coba beberapa saat lagi.';
-    return {
-      reply: netReply,
-      emotion: 'confused',
-      metadata: {
-        text: netReply,
-        emotion: 'confused',
-        expressions: [{ type: 'confused', intensity: 0.5 }],
-      },
-    };
-  } finally {
-    clearTimeout(timeoutId);
-  }
-
-  if (!response.ok) {
-    const errBody = await response.text();
-    let errorDetail = errBody;
+  // Direct OpenAI fallback if VITE_OPENAI_API_KEY is available
+  const directOpenAiKey = (import.meta.env.VITE_OPENAI_API_KEY || '').trim();
+  if (directOpenAiKey && directOpenAiKey.length > 10) {
     try {
-      const parsedErr = JSON.parse(errBody);
-      if (parsedErr.error?.message) {
-        errorDetail = parsedErr.error.message;
-      }
-    } catch {
-      // ignore
-    }
-    if (response.status === 429) {
-      const rateLimitReply = 'Layanan AI sedang menerima terlalu banyak permintaan (Rate Limit). Mohon tunggu beberapa detik sebelum bertanya kembali.';
-      return {
-        reply: rateLimitReply,
-        emotion: 'confused',
-        metadata: {
-          text: rateLimitReply,
-          emotion: 'confused',
-          expressions: [{ type: 'confused', intensity: 0.5 }],
+      const openAiRes = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${directOpenAiKey}`,
+          'Content-Type': 'application/json',
         },
-      };
-    }
-    throw new Error(`OpenRouter Error (${response.status}): ${errorDetail}`);
-  }
+        body: JSON.stringify({
+          model: 'gpt-6-luna',
+          messages: [
+            { role: 'system', content: dynamicSystemPrompt },
+            ...history.slice(-6).map((m) => ({ role: m.role, content: m.content })),
+            { role: 'user', content: userText },
+          ],
+          temperature: mode === 'voice' ? 0.7 : 0.3,
+          max_completion_tokens: mode === 'voice' ? 250 : 2000,
+        }),
+      });
 
-  const data = await response.json();
-
-  if (data.error) {
-    throw new Error(`OpenRouter Error: ${data.error.message || JSON.stringify(data.error)}`);
-  }
-
-  const choice = data.choices?.[0];
-  if (!choice) {
-    console.error('OpenRouter empty choice response payload:', data);
-    throw new Error('Respon kosong dari OpenRouter. Silakan periksa status model atau API key Anda.');
-  }
-
-  const message = choice.message;
-  let detectedEmotion: CharacterEmotion | null = null;
-
-  // 1. Check for official Function / Tool Calling from LLM
-  if (message.tool_calls && Array.isArray(message.tool_calls)) {
-    for (const toolCall of message.tool_calls) {
-      if (toolCall.function?.name === 'set_avatar_emotion') {
-        try {
-          const args = JSON.parse(toolCall.function.arguments);
-          if (args.emotion) {
-            detectedEmotion = normalizeEmotion(args.emotion);
-            break;
-          }
-        } catch {
-          // ignore json parse error
+      if (openAiRes.ok) {
+        const data = await openAiRes.json();
+        const rawContent = data.choices?.[0]?.message?.content || '';
+        if (rawContent.trim()) {
+          const parsed = parseAiContent(rawContent);
+          return {
+            reply: parsed.reply,
+            emotion: parsed.emotion || 'happy',
+            shortcuts: parsed.shortcuts,
+            citations: ragResults,
+            metadata: parsed.metadata,
+          };
         }
       }
+    } catch (directErr) {
+      console.warn('[Direct OpenAI Chat] Fallback error:', directErr);
     }
   }
 
-  // 2. Extract reply content
-  let textReply = message.content || '';
-
-  // If content is empty but reasoning is present
-  if (!textReply.trim() && message.reasoning) {
-    textReply = message.reasoning;
-  }
-
-  if (!textReply.trim() && detectedEmotion) {
-    textReply = 'Saya mendengarkan dan siap membantu Anda!';
-  }
-
-  // 3. Parse JSON or inline tags
-  const parsed = parseAiContent(textReply);
-
+  const defaultMsg =
+    'Halo! Saya asisten avatar AI BPJS Kesehatan. Sistem backend AI saat ini sedang memproses data investigasi. Silakan ajukan pertanyaan Anda kembali.';
   return {
-    reply: parsed.reply,
-    emotion: detectedEmotion || parsed.emotion,
-    shortcuts: parsed.shortcuts,
+    reply: defaultMsg,
+    emotion: 'happy',
     citations: ragResults,
-    metadata: parsed.metadata,
+    metadata: {
+      text: defaultMsg,
+      emotion: 'happy',
+      expressions: [{ type: 'happy', intensity: 0.6 }],
+      prosody: { energy: 0.8, pitch: 1.0, speed: 1.0 },
+    },
   };
 }
 

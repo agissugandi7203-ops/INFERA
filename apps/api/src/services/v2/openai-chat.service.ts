@@ -236,4 +236,45 @@ Karakter & Gaya Komunikasi:
       throw new AppError(`OpenAI Stream error: ${errorMsg}`, 502, 'INTERNAL_SERVER_ERROR');
     }
   }
+
+  public static async chatCompletion(request: AiChatRequest): Promise<AiChatResponse> {
+    return this.chat(request);
+  }
+
+  public static async checkHealth(): Promise<{ status: 'healthy' | 'degraded' | 'unreachable' | 'not_configured'; latencyMs: number }> {
+    const start = Date.now();
+    try {
+      const apiKey = env.OPENAI_API_KEY?.trim();
+      if (!apiKey || apiKey.length < 5) {
+        return { status: 'not_configured', latencyMs: 0 };
+      }
+      return { status: 'healthy', latencyMs: Date.now() - start };
+    } catch {
+      return { status: 'unreachable', latencyMs: Date.now() - start };
+    }
+  }
+
+  public static async getEmbedding(text: string): Promise<number[]> {
+    const client = this.getClient();
+    const normalized = text.trim().toLowerCase().slice(0, 1000);
+    const cacheKey = cacheService.hashKey('rag:emb:openai', normalized);
+
+    return cacheService.getOrSet<number[]>(
+      cacheKey,
+      async () => {
+        const response = await client.embeddings.create({
+          model: 'text-embedding-3-small',
+          input: text,
+        });
+
+        const firstItem = response.data?.[0];
+        if (!firstItem || !firstItem.embedding) {
+          throw new AppError('Received empty embedding from OpenAI', 500, 'INTERNAL_SERVER_ERROR');
+        }
+
+        return firstItem.embedding;
+      },
+      { ttlSeconds: 86_400, l1TtlSeconds: 3_600 }
+    );
+  }
 }
