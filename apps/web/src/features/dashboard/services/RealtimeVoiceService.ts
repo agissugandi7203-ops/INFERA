@@ -362,8 +362,37 @@ export class RealtimeVoiceService {
       const analyser = audioCtx.createAnalyser();
       analyser.fftSize = 64;
       analyser.smoothingTimeConstant = 0.35;
-      // Connect ONLY to analyser for 60 FPS lip-sync; audioEl plays the clean native WebRTC audio directly (prevents double-audio echo!)
       source.connect(analyser);
+
+      // Single-path +10 dB (3.2x) Volume Booster & Limiter:
+      // Set audioEl.volume = 0 while audioCtx is running so Chromium decodes the WebRTC stream
+      // WITHOUT outputting a second copy from audioEl (zero double-voice / zero echo!).
+      const gainNode = audioCtx.createGain();
+      gainNode.gain.value = 3.2;
+
+      const compressor = audioCtx.createDynamicsCompressor();
+      compressor.threshold.value = -14;
+      compressor.knee.value = 18;
+      compressor.ratio.value = 4;
+      compressor.attack.value = 0.003;
+      compressor.release.value = 0.18;
+
+      source.connect(gainNode);
+      gainNode.connect(compressor);
+      compressor.connect(audioCtx.destination);
+
+      const syncSingleOutputPath = () => {
+        if (audioCtx.state === 'running') {
+          audioEl.volume = 0;
+        } else {
+          audioEl.volume = 1.0;
+        }
+      };
+      audioCtx.onstatechange = syncSingleOutputPath;
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume().then(syncSingleOutputPath).catch(() => {});
+      }
+      syncSingleOutputPath();
 
       const dataArray = new Uint8Array(analyser.frequencyBinCount);
 

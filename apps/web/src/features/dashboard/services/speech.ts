@@ -255,6 +255,30 @@ export class SpeechService {
     audio.volume = 1.0;
     this.currentAudio = audio;
 
+    // Boost TTS audio output volume (+8.5 dB / 2.6x) via Web Audio API GainNode
+    let ttsAudioCtx: AudioContext | null = null;
+    try {
+      const AudioCtx =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      ttsAudioCtx = new AudioCtx();
+      if (ttsAudioCtx.state === 'suspended') {
+        ttsAudioCtx.resume().catch(() => {});
+      }
+      const source = ttsAudioCtx.createMediaElementSource(audio);
+      const gainNode = ttsAudioCtx.createGain();
+      gainNode.gain.value = 2.6;
+      const compressor = ttsAudioCtx.createDynamicsCompressor();
+      compressor.threshold.value = -14;
+      compressor.knee.value = 18;
+      compressor.ratio.value = 4;
+      source.connect(gainNode);
+      gainNode.connect(compressor);
+      compressor.connect(ttsAudioCtx.destination);
+    } catch {
+      // Fallback to standard audio.volume = 1.0 if Web Audio fails
+    }
+
     let phase = 0;
     const startFlap = () => {
       this.lipSyncInterval = window.setInterval(() => {
