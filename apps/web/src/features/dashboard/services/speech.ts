@@ -75,7 +75,8 @@ export class SpeechService {
   }
 
   /**
-   * Speak using ElevenLabs TTS (via backend proxy or direct key) with instant fallback to Web Speech API.
+   * Speak using OpenAI TTS v2 (model: tts-1, voice: coral/sage) with 60 FPS Lip-Sync,
+   * falling back to ElevenLabs or Web Speech API if offline.
    */
   public static async speak(
     text: string,
@@ -83,7 +84,7 @@ export class SpeechService {
     onStart?: () => void,
     onEnd?: () => void,
     elevenLabsApiKey?: string,
-    elevenLabsVoiceId: string = VOICE_DEFAULT_ID,
+    voiceId: string = 'coral',
     voiceSettings?: ElevenLabsVoiceSettings
   ): Promise<void> {
     this.stopSpeaking();
@@ -103,32 +104,51 @@ export class SpeechService {
     }
 
     try {
-      const audioBlob = await this.fetchElevenLabsAudio(
+      // Priority 1: OpenAI TTS via backend v2 proxy or direct OpenAI
+      const targetVoice = voiceId && voiceId.length < 15 && !voiceId.startsWith('voice_')
+        ? voiceId.toLowerCase()
+        : 'coral';
+
+      const audioBlob = await this.fetchOpenAiTtsAudio(
         cleanText,
-        elevenLabsVoiceId,
-        voiceSettings,
-        elevenLabsApiKey,
-        6000
+        targetVoice,
+        8000
       );
 
       if (this.speakSessionId !== sessionId) return;
       await this.playAudioWithLipSync(audioBlob, onLipSync, onStart, onEnd);
       return;
     } catch (err) {
-      console.warn('[Speech] ElevenLabs TTS unavailable, falling back to Web Speech:', err);
+      console.warn('[Speech] OpenAI TTS unavailable, attempting fallback:', err);
+
+      // Priority 2: Optional ElevenLabs fallback only if user provided custom key
+      if (elevenLabsApiKey && elevenLabsApiKey.trim().length > 5) {
+        try {
+          const elBlob = await this.fetchElevenLabsDirect(
+            cleanText,
+            voiceId.startsWith('voice_') ? VOICE_DEFAULT_ID : voiceId,
+            elevenLabsApiKey,
+            voiceSettings,
+            5000
+          );
+          if (this.speakSessionId !== sessionId) return;
+          await this.playAudioWithLipSync(elBlob, onLipSync, onStart, onEnd);
+          return;
+        } catch {
+          // ignore
+        }
+      }
+
       if (this.speakSessionId !== sessionId) return;
       this.speakWithWebSpeech(cleanText, onLipSync, onStart, onEnd);
     }
   }
 
-  private static async fetchElevenLabsAudio(
+  private static async fetchOpenAiTtsAudio(
     text: string,
-    voiceId: string,
-    voiceSettings?: ElevenLabsVoiceSettings,
-    apiKey?: string,
-    timeoutMs: number = 6000
+    voiceId: string = 'coral',
+    timeoutMs: number = 8000
   ): Promise<Blob> {
-    const settings = voiceSettings || BASE_VOICE_SETTINGS;
     const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
     const timer = controller ? setTimeout(() => controller.abort(), timeoutMs) : null;
 
@@ -142,13 +162,6 @@ export class SpeechService {
           body: JSON.stringify({
             text,
             voiceId,
-            voiceSettings: {
-              stability: settings.stability,
-              similarity_boost: settings.similarity_boost,
-              style: settings.style,
-              use_speaker_boost: settings.use_speaker_boost,
-              speed: settings.speed,
-            },
           }),
           signal: controller?.signal,
         });
@@ -157,37 +170,74 @@ export class SpeechService {
           return await res.blob();
         }
       } catch {
-        // Backend proxy failed, attempt direct
+        // Backend proxy failed, attempt direct OpenAI if key available
       }
 
-      if (apiKey && apiKey.trim().length > 5) {
-        const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+      const directKey = import.meta.env.VITE_OPENAI_API_KEY;
+      if (directKey && directKey.trim().length > 10) {
+        const directRes = await fetch('https://api.openai.com/v1/audio/speech', {
           method: 'POST',
           headers: {
-            'xi-api-key': apiKey.trim(),
+            Authorization: `Bearer ${directKey.trim()}`,
             'Content-Type': 'application/json',
-            Accept: 'audio/mpeg',
           },
           body: JSON.stringify({
-            text,
-            model_id: 'eleven_multilingual_v2',
-            voice_settings: {
-              stability: settings.stability,
-              similarity_boost: settings.similarity_boost,
-              style: settings.style,
-              use_speaker_boost: settings.use_speaker_boost,
-              speed: settings.speed,
-            },
+            model: 'tts-1',
+            input: text,
+            voice: voiceId,
+            speed: 1.05,
           }),
           signal: controller?.signal,
         });
 
-        if (res.ok) {
-          return await res.blob();
+        if (directRes.ok) {
+          return await directRes.blob();
         }
       }
 
-      throw new Error('All ElevenLabs TTS attempts failed');
+      throw new Error('All OpenAI TTS endpoints failed');
+    } finally {
+      if (timer) clearTimeout(timer);
+    }
+  }
+
+  private static async fetchElevenLabsDirect(
+    text: string,
+    voiceId: string,
+    apiKey: string,
+    voiceSettings?: ElevenLabsVoiceSettings,
+    timeoutMs: number = 5000
+  ): Promise<Blob> {
+    const settings = voiceSettings || BASE_VOICE_SETTINGS;
+    const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    const timer = controller ? setTimeout(() => controller.abort(), timeoutMs) : null;
+
+    try {
+      const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+        method: 'POST',
+        headers: {
+          'xi-api-key': apiKey.trim(),
+          'Content-Type': 'application/json',
+          Accept: 'audio/mpeg',
+        },
+        body: JSON.stringify({
+          text,
+          model_id: 'eleven_multilingual_v2',
+          voice_settings: {
+            stability: settings.stability,
+            similarity_boost: settings.similarity_boost,
+            style: settings.style,
+            use_speaker_boost: settings.use_speaker_boost,
+            speed: settings.speed,
+          },
+        }),
+        signal: controller?.signal,
+      });
+
+      if (res.ok) {
+        return await res.blob();
+      }
+      throw new Error(`ElevenLabs returned ${res.status}`);
     } finally {
       if (timer) clearTimeout(timer);
     }

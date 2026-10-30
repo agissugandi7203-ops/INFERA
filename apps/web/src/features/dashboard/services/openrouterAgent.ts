@@ -131,6 +131,24 @@ interface PlannedTool {
 export function isSimpleGreetingOrChat(text: string): boolean {
   if (!text) return true;
   const t = text.toLowerCase().trim().replace(/[.,!?;:'"\\/]/g, '');
+
+  // If query mentions data, claims, anomalies, audits, or known cases, it is NEVER a simple greeting
+  if (
+    t.includes('data') ||
+    t.includes('klaim') ||
+    t.includes('kasus') ||
+    t.includes('audit') ||
+    t.includes('anomali') ||
+    t.includes('periksa') ||
+    t.includes('cek') ||
+    t.includes('budi') ||
+    t.includes('hendra') ||
+    t.includes('nurul') ||
+    t.includes('agus')
+  ) {
+    return false;
+  }
+
   const greetings = [
     'halo', 'halo asisten', 'halo fera', 'halo vera', 'halo luna', 'halo ai', 'halo infera',
     'hai', 'hi', 'hello', 'hey', 'hei',
@@ -301,27 +319,45 @@ function planInvestigationTools(
     });
   }
 
-  // 4. Plan Recent Simulation Cases Tool
-  // Triggered when user asks for recent cases, updates, or anomalies in the system
-  const isRecentCasesQuery =
+  // 4. Plan Recent Simulation Cases & General Data Query Tool
+  // Triggered when user asks for data, cases, recent updates, or anomalies in the system
+  const isDataOrCasesQuery =
+    clean.includes('cari data') ||
+    clean.includes('ada data') ||
+    clean.includes('data apa') ||
+    clean.includes('data dll') ||
+    clean.includes('cek data') ||
+    clean.includes('tampilkan data') ||
+    clean.includes('lihat data') ||
+    clean.includes('data klaim') ||
+    clean.includes('daftar klaim') ||
+    clean.includes('cari klaim') ||
+    clean.includes('cari kasus') ||
     clean.includes('kasus terbaru') ||
     clean.includes('kasus terkini') ||
     clean.includes('ada kasus') ||
     clean.includes('ada ga sekarang') ||
     clean.includes('ada ga kasus') ||
     clean.includes('ada sekarang kasus') ||
-    (clean.includes('ada') && clean.includes('kasus')) ||
     clean.includes('daftar kasus') ||
-    clean.includes('kasus apa saja') ||
+    clean.includes('kasus apa') ||
     clean.includes('anomali terbaru') ||
     clean.includes('anomali terkini') ||
-    clean.includes('update kasus') ||
+    clean.includes('cek anomali') ||
+    clean.includes('cari anomali') ||
     clean.includes('temuan terbaru') ||
-    clean.includes('apa kasus') ||
+    clean.includes('update kasus') ||
     clean.includes('kasus hari ini') ||
-    clean.includes('kasus fraud terbaru');
+    clean.includes('kasus fraud') ||
+    clean === 'data' ||
+    clean === 'cari data' ||
+    clean === 'cek data' ||
+    clean === 'anomali' ||
+    (clean.includes('data') && (clean.includes('ada') || clean.includes('apa') || clean.includes('cari') || clean.includes('cek') || clean.includes('mana') || clean.includes('tampil') || clean.includes('lihat'))) ||
+    (clean.includes('kasus') && (clean.includes('ada') || clean.includes('apa') || clean.includes('cari') || clean.includes('cek') || clean.includes('mana') || clean.includes('tampil') || clean.includes('lihat'))) ||
+    (clean.includes('klaim') && (clean.includes('ada') || clean.includes('apa') || clean.includes('cari') || clean.includes('cek') || clean.includes('mana') || clean.includes('tampil') || clean.includes('lihat')));
 
-  if (isRecentCasesQuery) {
+  if (isDataOrCasesQuery) {
     tools.push({
       name: 'get_recent_simulation_cases',
       args: {

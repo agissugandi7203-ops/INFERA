@@ -14,6 +14,19 @@ const OPENAI_REALTIME_SESSION_URL = 'https://api.openai.com/v1/realtime/client_s
 const OPENAI_LIVE_SESSION_URL = 'https://api.openai.com/v1/live/sessions';
 const UPSTREAM_TIMEOUT_MS = 15_000;
 
+export const VALID_REALTIME_VOICES = new Set([
+  'alloy',
+  'ash',
+  'ballad',
+  'coral',
+  'echo',
+  'sage',
+  'shimmer',
+  'verse',
+  'marin',
+  'cedar',
+]);
+
 export function getFeraRealtimeInstructions(): string {
   const temporal = getTemporalAnchorContext();
   return `
@@ -63,21 +76,6 @@ export class OpenAiRealtimeService {
     }
 
     const model = request.model || DEFAULT_OPENAI_REALTIME_MODEL;
-
-    // Map requested voice safely to OpenAI supported realtime voices:
-    // 'coral' is the official warm, expressive, feminine voice for FERA
-    const VALID_REALTIME_VOICES = new Set([
-      'alloy',
-      'ash',
-      'ballad',
-      'coral',
-      'echo',
-      'sage',
-      'shimmer',
-      'verse',
-      'marin',
-      'cedar',
-    ]);
 
     const rawVoice = (request.voice || DEFAULT_REALTIME_VOICE).toLowerCase().trim();
     let voice: RealtimeVoiceName = 'coral';
@@ -205,13 +203,20 @@ export class OpenAiRealtimeService {
       );
     }
 
-    const customVoiceId = requestedVoice && requestedVoice.startsWith('voice_')
-      ? requestedVoice
-      : 'voice_6ae35d565f908191a5b73228455d503f';
+    const cleanVoice = (requestedVoice || 'coral').trim().toLowerCase();
+    const voiceParam = cleanVoice.startsWith('voice_')
+      ? { id: cleanVoice }
+      : VALID_REALTIME_VOICES.has(cleanVoice)
+        ? cleanVoice
+        : 'coral';
 
-    const voiceParam = customVoiceId.startsWith('voice_')
-      ? { id: customVoiceId }
-      : customVoiceId;
+    // Realtime API requires flat function tool definitions (name, description, parameters at top level)
+    const realtimeTools = INFERA_TOOL_DEFINITIONS.map((t) => ({
+      type: 'function' as const,
+      name: t.function.name,
+      description: t.function.description,
+      parameters: t.function.parameters,
+    }));
 
     const payload = {
       session: {
@@ -222,6 +227,8 @@ export class OpenAiRealtimeService {
             voice: voiceParam,
           },
         },
+        tools: realtimeTools,
+        tool_choice: 'auto',
       },
       transport: {
         type: 'webrtc',
@@ -262,7 +269,7 @@ export class OpenAiRealtimeService {
       return {
         sessionId: data.session?.id || 'live_' + Date.now(),
         sdp: data.transport.sdp,
-        voice: customVoiceId,
+        voice: typeof voiceParam === 'string' ? voiceParam : cleanVoice,
       };
     } catch (err: unknown) {
       if (err instanceof AppError) throw err;

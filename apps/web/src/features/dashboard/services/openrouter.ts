@@ -432,78 +432,110 @@ export async function streamOpenRouterChat(
       let currentEvent = 'message';
       let isStreamFinished = false;
 
-      while (!isStreamFinished) {
-        if (signal?.aborted) {
-          reader.cancel().catch(() => {});
-          break;
+      // Inactivity watchdog: if no new chunk arrives within 15 seconds, exit gracefully
+      const readChunkWithTimeout = async () => {
+        let timer: ReturnType<typeof setTimeout> | undefined;
+        const timeoutPromise = new Promise<{ done: true; value: undefined }>((resolve) => {
+          timer = setTimeout(() => resolve({ done: true, value: undefined }), 15000);
+        });
+        try {
+          return await Promise.race([reader.read(), timeoutPromise]);
+        } finally {
+          if (timer) clearTimeout(timer);
         }
+      };
 
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-        buffer = lines.pop() || '';
-
-        for (const line of lines) {
-          const trimmed = line.trim();
-          // Empty line indicates end of current SSE event block
-          if (!trimmed) {
-            currentEvent = 'message';
-            continue;
-          }
-          if (trimmed.startsWith(':')) continue;
-
-          if (trimmed.startsWith('event: ')) {
-            currentEvent = trimmed.slice(7).trim();
-            continue;
+      try {
+        while (!isStreamFinished) {
+          if (signal?.aborted) {
+            reader.cancel().catch(() => {});
+            break;
           }
 
-          if (trimmed.startsWith('data: ')) {
-            const dataStr = trimmed.slice(6).trim();
+          const { done, value } = await readChunkWithTimeout();
+          if (done) break;
 
-            if (dataStr === '[DONE]') {
-              isStreamFinished = true;
-              break;
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || '';
+
+          for (const line of lines) {
+            const trimmed = line.trim();
+            // Empty line indicates end of current SSE event block
+            if (!trimmed) {
+              currentEvent = 'message';
+              continue;
+            }
+            if (trimmed.startsWith(':')) continue;
+
+            if (trimmed.startsWith('event: ')) {
+              currentEvent = trimmed.slice(7).trim();
+              continue;
             }
 
-            try {
-              const data = JSON.parse(dataStr);
-              if (currentEvent === 'metadata') {
-                if (data.citations) citations = data.citations;
-                callbacks?.onMetadata?.(data);
-              } else if (currentEvent === 'reasoning' || data.reasoning) {
-                const reasoningText = data.content ?? data.reasoning;
-                if (reasoningText) {
-                  accumulatedReasoning += reasoningText;
-                  callbacks?.onReasoning?.(reasoningText, accumulatedReasoning);
-                }
-              } else if (
-                currentEvent === 'delta' ||
-                currentEvent === 'chunk' ||
-                currentEvent === 'message' ||
-                data.delta !== undefined ||
-                data.content !== undefined ||
-                data.choices?.[0]?.delta?.content !== undefined
-              ) {
-                const text = data.content ?? data.delta ?? data.choices?.[0]?.delta?.content;
-                if (text) {
-                  accumulated += text;
-                  const visible = getStreamingVisibleText(accumulated);
-                  callbacks?.onDelta?.(text, visible);
-                }
-              }
+            if (trimmed.startsWith('data: ')) {
+              const dataStr = trimmed.slice(6).trim();
 
-              if (currentEvent === 'done' || data.finishReason || data.choices?.[0]?.finish_reason) {
+              if (dataStr === '[DONE]') {
                 isStreamFinished = true;
                 break;
-              } else if (currentEvent === 'error') {
-                throw new Error(data.message || 'Stream error from server');
               }
-            } catch (err) {
-              if (currentEvent === 'error') throw err;
+
+              try {
+                const data = JSON.parse(dataStr);
+                if (currentEvent === 'metadata') {
+                  if (data.citations) citations = data.citations;
+                  callbacks?.onMetadata?.(data);
+                } else if (currentEvent === 'reasoning' || data.reasoning) {
+                  const reasoningText = data.content ?? data.reasoning;
+                  if (reasoningText) {
+                    accumulatedReasoning += reasoningText;
+                    callbacks?.onReasoning?.(reasoningText, accumulatedReasoning);
+                  }
+                } else if (
+                  currentEvent === 'delta' ||
+                  currentEvent === 'chunk' ||
+                  currentEvent === 'message' ||
+                  data.delta !== undefined ||
+                  data.content !== undefined ||
+                  data.choices?.[0]?.delta?.content !== undefined
+                ) {
+                  const text = data.content ?? data.delta ?? data.choices?.[0]?.delta?.content;
+                  if (text) {
+                    accumulated += text;
+                    const visible = getStreamingVisibleText(accumulated);
+                    callbacks?.onDelta?.(text, visible);
+                  }
+                }
+
+                if (currentEvent === 'done' || data.finishReason || data.choices?.[0]?.finish_reason) {
+                  isStreamFinished = true;
+                  break;
+                } else if (currentEvent === 'error') {
+                  throw new Error(data.message || 'Stream error from server');
+                }
+              } catch (err) {
+                if (currentEvent === 'error') throw err;
+              }
             }
           }
+        }
+      } finally {
+        reader.cancel().catch(() => {});
+      }
+
+      // Process any residual data line in buffer before completing
+      if (buffer.trim().startsWith('data: ')) {
+        try {
+          const residualData = JSON.parse(buffer.trim().slice(6));
+          const text = residualData.content ?? residualData.delta ?? residualData.choices?.[0]?.delta?.content;
+          if (text) {
+            accumulated += text;
+            const visible = getStreamingVisibleText(accumulated);
+            callbacks?.onDelta?.(text, visible);
+          }
+        } catch {
+          // ignore
         }
       }
 
@@ -514,10 +546,95 @@ export async function streamOpenRouterChat(
     }
   } catch (err) {
     if (signal?.aborted) return cleanRawAiResponse(accumulated);
-    console.warn('[Stream Client] Backend stream unavailable, attempting direct OpenRouter fallback:', err);
+    console.warn('[Stream Client] Backend stream unavailable, attempting direct fallback:', err);
   }
 
-  // 2. Fallback to Direct OpenRouter Client SSE (only if user provided custom override key)
+  // 2. Direct OpenAI v2 fallback if VITE_OPENAI_API_KEY is available (guarantees seamless streaming if backend is offline)
+  const directOpenAiKey = (import.meta.env.VITE_OPENAI_API_KEY || '').trim();
+  if (directOpenAiKey && directOpenAiKey.length > 10) {
+    try {
+      const openAiRes = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${directOpenAiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-6-luna',
+          messages: [
+            { role: 'system', content: systemPromptOverride || (mode === 'voice' ? VOICE_STREAM_SYSTEM_PROMPT : CHAT_STREAM_SYSTEM_PROMPT) },
+            ...priorHistory.map((m) => ({
+              role: m.role,
+              content: formatMessageContent(m.content, m.attachments),
+            })),
+            {
+              role: 'user',
+              content: formatMessageContent(userText, attachments),
+            },
+          ],
+          stream: true,
+          max_completion_tokens: mode === 'voice' ? 600 : 4096,
+        }),
+        signal,
+      });
+
+      if (openAiRes.ok && openAiRes.body) {
+        const reader = openAiRes.body.getReader();
+        const decoder = new TextDecoder('utf-8');
+        let buffer = '';
+        let isDirectFinished = false;
+
+        while (!isDirectFinished) {
+          if (signal?.aborted) {
+            reader.cancel().catch(() => {});
+            break;
+          }
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || '';
+
+          for (const line of lines) {
+            const trimmed = line.trim();
+            if (!trimmed || trimmed.startsWith(':')) continue;
+            if (trimmed === 'data: [DONE]' || trimmed === '[DONE]') {
+              isDirectFinished = true;
+              break;
+            }
+            if (trimmed.startsWith('data: ')) {
+              try {
+                const parsed = JSON.parse(trimmed.slice(6));
+                const choice = parsed.choices?.[0];
+                const delta = choice?.delta?.content;
+                if (delta) {
+                  accumulated += delta;
+                  const visible = getStreamingVisibleText(accumulated);
+                  callbacks?.onDelta?.(delta, visible);
+                }
+                if (choice?.finish_reason) {
+                  isDirectFinished = true;
+                  break;
+                }
+              } catch {
+                // ignore
+              }
+            }
+          }
+        }
+
+        const cleanFinal = cleanRawAiResponse(accumulated);
+        const shortcuts = extractShortcuts(cleanFinal);
+        callbacks?.onDone?.(cleanFinal, shortcuts, accumulatedReasoning || undefined);
+        return cleanFinal;
+      }
+    } catch (directErr) {
+      console.warn('[Stream Client] Direct OpenAI fallback failed, attempting OpenRouter:', directErr);
+    }
+  }
+
+  // 3. Fallback to Direct OpenRouter Client SSE (only if user provided custom override key)
   const apiKey = (settings.apiKey || '').trim();
   if (!apiKey) {
     const errorMsg =

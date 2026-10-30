@@ -8,13 +8,13 @@ import { AvatarController, CharacterEmotion } from '../avatar/AvatarController';
 import {
   ChatMessage,
   ChatAttachment,
+  AiShortcut,
   OpenRouterSettings,
   DEFAULT_SETTINGS,
   getStoredSettings,
   saveStoredSettings,
   getStoredChatHistory,
   saveStoredChatHistory,
-  sendOpenRouterChat,
   runAgentInvestigationStream,
 } from '../services/openrouter';
 import { SpeechService } from '../services/speech';
@@ -279,36 +279,53 @@ const DashboardLayoutContent: React.FC<
     handleSelectEmotion('thinking', 15000);
 
     try {
-      // mode: 'voice' ensures concise, conversational, speech-friendly answer
-      const { reply, emotion, metadata, shortcuts, citations } = await sendOpenRouterChat(
+      // Execute investigative agent stream / tool execution for voice
+      // Rapidly resolves queries about data, anomalies, cases, or regulations in < 1s
+      let spokenReply = '';
+      let detectedShortcuts: AiShortcut[] = [];
+
+      const agentResult = await runAgentInvestigationStream(
         trimmed,
         newHistory,
         settings,
-        'voice'
+        {
+          claims,
+          anomalies,
+          selectedClaim: selectedClaimForAudit,
+          userRole: 'auditor',
+          enableReasoning: false,
+        },
+        {
+          onDone: (text, _recs, scs) => {
+            spokenReply = text;
+            detectedShortcuts = scs;
+          },
+        }
       );
+
+      const finalReply = spokenReply || agentResult.reply;
+      const detectedEmotion: CharacterEmotion = finalReply.toLowerCase().includes('kritis') || finalReply.toLowerCase().includes('fraud')
+        ? 'surprised'
+        : 'happy';
 
       const assistantMsg: ChatMessage = {
         id: 'msg-' + Date.now() + '-a',
         role: 'assistant',
-        content: reply,
-        emotion,
-        shortcuts,
-        citations,
+        content: finalReply,
+        emotion: detectedEmotion,
+        shortcuts: detectedShortcuts.length > 0 ? detectedShortcuts : agentResult.shortcuts,
+        recommendations: agentResult.recommendations,
         timestamp: new Date().toISOString(),
       };
 
       setMessages([...newHistory, assistantMsg]);
       setIsLoading(false);
+      handleSelectEmotion(detectedEmotion, 5500);
 
-      handleSelectEmotion(emotion, 5500);
+      // Extract concise spoken summary (up to 240 chars) for speech output
+      const speechText = TTSProcessor.extractSpokenSummary(finalReply, undefined, 240);
 
-      // Speak using ElevenLabs TTS (VOICE ASSISTANT ONLY)
-      const voiceSettings = TTSProcessor.computeVoiceSettings(metadata);
-      const speechText = TTSProcessor.extractSpokenSummary(reply, metadata, 220);
-
-      const el11Key = settings.elevenLabsApiKey || DEFAULT_SETTINGS.elevenLabsApiKey;
-      const el11Voice = settings.avatarVoiceId || settings.elevenLabsVoiceId || VOICE_DEFAULT_ID;
-
+      // Speak using official OpenAI TTS v2 (voice: 'coral') with Lip-Sync
       SpeechService.speak(
         speechText,
         (openVal) => {
@@ -323,9 +340,8 @@ const DashboardLayoutContent: React.FC<
           setManualMouthOpen(0);
           handleSelectEmotion('normal', 0);
         },
-        el11Key,
-        el11Voice,
-        voiceSettings
+        undefined,
+        settings.avatarVoiceId || 'coral'
       );
     } catch (err) {
       setIsLoading(false);
@@ -337,7 +353,7 @@ const DashboardLayoutContent: React.FC<
         content:
           err instanceof Error
             ? `Maaf, terjadi kendala: ${err.message}`
-            : 'Maaf, terjadi kesalahan saat menghubungi layanan OpenRouter AI.',
+            : 'Maaf, terjadi kesalahan saat menghubungi layanan AI.',
         emotion: 'confused',
         timestamp: new Date().toISOString(),
       };
@@ -545,6 +561,7 @@ const DashboardLayoutContent: React.FC<
       if (activeStreamAbortRef.current === abortCtrl) {
         activeStreamAbortRef.current = null;
       }
+      setIsLoading(false);
     }
   };
 

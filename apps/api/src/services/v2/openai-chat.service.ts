@@ -201,9 +201,10 @@ Karakter & Gaya Komunikasi:
       };
 
       if (isReasoningModel) {
-        completionParams.max_completion_tokens = request.maxTokens ?? 2000;
+        // Reasoning models consume tokens for both internal reasoning and final visible output; 4096 ensures no cut-offs
+        completionParams.max_completion_tokens = request.maxTokens ?? 4096;
       } else {
-        completionParams.max_tokens = request.maxTokens ?? 2000;
+        completionParams.max_tokens = request.maxTokens ?? 2500;
       }
 
       const stream = await client.chat.completions.create(completionParams, { signal });

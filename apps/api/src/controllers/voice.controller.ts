@@ -1,15 +1,17 @@
 import type { Request, Response, NextFunction } from 'express';
 import { env } from '../config/env.js';
 import { AppError } from '../utils/app-error.js';
+import { cacheService } from '../services/cache.service.js';
 import type { TtsInput, SttInput } from '../validators/voice.validator.js';
 
 const ELEVENLABS_BASE = 'https://api.elevenlabs.io/v1';
-const DEFAULT_VOICE_ID = '3bAVnCtF2Efx7MOj2bJ0';
-const UPSTREAM_TIMEOUT_MS = 30_000;
+const DEFAULT_OPENAI_VOICE = 'coral'; // FERA Official OpenAI Voice (Warm, Natural, Indonesian)
+const UPSTREAM_TIMEOUT_MS = 15_000;
+
+const OPENAI_VOICE_NAMES = new Set(['alloy', 'ash', 'coral', 'echo', 'fable', 'onyx', 'nova', 'sage', 'shimmer']);
 
 const requestOpenAiTts = async (apiKey: string, voice: string, text: string) => {
-  const openAiVoices = new Set(['alloy', 'ash', 'coral', 'echo', 'fable', 'onyx', 'nova', 'sage', 'shimmer']);
-  const chosenVoice = openAiVoices.has(voice.toLowerCase()) ? voice.toLowerCase() : 'coral';
+  const chosenVoice = OPENAI_VOICE_NAMES.has(voice.toLowerCase()) ? voice.toLowerCase() : DEFAULT_OPENAI_VOICE;
   return fetch('https://api.openai.com/v1/audio/speech', {
     method: 'POST',
     headers: {
@@ -21,6 +23,7 @@ const requestOpenAiTts = async (apiKey: string, voice: string, text: string) => 
       voice: chosenVoice,
       input: text,
       response_format: 'mp3',
+      speed: 1.05,
     }),
     signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
   });
@@ -61,55 +64,84 @@ export const generateTts = async (req: Request, res: Response, next: NextFunctio
     const openAiKey = env.OPENAI_API_KEY?.trim();
     const elevenLabsKey = env.ELEVENLABS_API_KEY?.trim();
 
-    // Priority 1: OpenAI TTS (tts-1) with voice 'coral' for FERA
-    // Fast, natural, highly expressive Indonesian pronunciation, ~600ms latency
+    const cleanText = text.trim();
+    if (!cleanText) {
+      throw AppError.badRequest('Teks untuk sintesis suara tidak boleh kosong.');
+    }
+
+    // Determine target voice (OpenAI v2: coral for FERA, sage for Analyst)
+    const rawVoice = (voiceId || DEFAULT_OPENAI_VOICE).trim().toLowerCase();
+    const targetVoiceId = OPENAI_VOICE_NAMES.has(rawVoice) ? rawVoice : DEFAULT_OPENAI_VOICE;
+
+    // Check Multi-Tier Cache for instant 0ms playback on repeated speech
+    const cacheKey = cacheService.hashKey('tts:audio:v2', `${targetVoiceId}:${cleanText.toLowerCase()}`);
+    const cachedBase64 = await cacheService.get<string>(cacheKey);
+    if (cachedBase64) {
+      const audioBuffer = Buffer.from(cachedBase64, 'base64');
+      res.setHeader('Content-Type', 'audio/mpeg');
+      res.setHeader('Content-Length', audioBuffer.byteLength.toString());
+      res.setHeader('Cache-Control', 'public, max-age=86400');
+      res.setHeader('X-Cache-Hit', 'true');
+      res.setHeader('X-Voice-Provider', 'openai-v2');
+      res.status(200).send(audioBuffer);
+      return;
+    }
+
+    // Priority 1 (Official v2): OpenAI TTS (tts-1) with voice 'coral' for FERA
+    // Fast, ultra-natural, highly expressive Indonesian pronunciation, sub-second latency
     if (openAiKey && openAiKey.length > 5) {
       try {
-        const targetVoice = voiceId || 'coral';
-        const openAiRes = await requestOpenAiTts(openAiKey, targetVoice, text);
+        const openAiRes = await requestOpenAiTts(openAiKey, targetVoiceId, cleanText);
         if (openAiRes.ok) {
           const audioBuffer = await openAiRes.arrayBuffer();
+          const buffer = Buffer.from(audioBuffer);
+          await cacheService.set(cacheKey, buffer.toString('base64'), 86400);
+
           res.setHeader('Content-Type', 'audio/mpeg');
-          res.setHeader('Content-Length', audioBuffer.byteLength.toString());
-          res.setHeader('Cache-Control', 'private, no-store');
-          res.status(200).send(Buffer.from(audioBuffer));
+          res.setHeader('Content-Length', buffer.byteLength.toString());
+          res.setHeader('Cache-Control', 'public, max-age=86400');
+          res.setHeader('X-Voice-Provider', 'openai-v2');
+          res.status(200).send(buffer);
           return;
         }
-        console.warn(`[VoiceController] OpenAI TTS returned ${openAiRes.status}, falling back to ElevenLabs`);
+        console.warn(`[VoiceController] OpenAI TTS upstream returned ${openAiRes.status}`);
       } catch (openAiErr) {
-        console.warn('[VoiceController] OpenAI TTS request failed, falling back to ElevenLabs:', openAiErr);
+        console.warn('[VoiceController] OpenAI TTS request failed:', openAiErr);
       }
     }
 
-    // Priority 2: ElevenLabs Fallback
-    if (!elevenLabsKey || elevenLabsKey.length < 5) {
-      throw new AppError('Layanan suara belum dikonfigurasi di server.', 503, 'SERVICE_UNAVAILABLE');
+    // Priority 2: Fallback to ElevenLabs only if explicitly configured and OpenAI was unavailable
+    if (elevenLabsKey && elevenLabsKey.length > 5) {
+      try {
+        const settings = {
+          stability: 0.45,
+          similarity_boost: 0.85,
+          style: 0.15,
+          use_speaker_boost: true,
+          ...voiceSettings,
+        };
+
+        const resolvedVoice = targetVoiceId.length > 10 ? targetVoiceId : '3bAVnCtF2Efx7MOj2bJ0';
+        const elevenLabsRes = await requestElevenLabsTts(elevenLabsKey, resolvedVoice, cleanText, settings);
+
+        if (elevenLabsRes.ok) {
+          const audioBuffer = await elevenLabsRes.arrayBuffer();
+          const buffer = Buffer.from(audioBuffer);
+          await cacheService.set(cacheKey, buffer.toString('base64'), 86400);
+
+          res.setHeader('Content-Type', 'audio/mpeg');
+          res.setHeader('Content-Length', buffer.byteLength.toString());
+          res.setHeader('Cache-Control', 'private, no-store');
+          res.setHeader('X-Voice-Provider', 'elevenlabs-fallback');
+          res.status(200).send(buffer);
+          return;
+        }
+      } catch (elevenErr) {
+        console.warn('[VoiceController] ElevenLabs fallback TTS failed:', elevenErr);
+      }
     }
 
-    const targetVoiceId = voiceId && voiceId.length > 10 ? voiceId : DEFAULT_VOICE_ID;
-    const settings = {
-      stability: 0.62,
-      similarity_boost: 0.78,
-      style: 0.05,
-      use_speaker_boost: true,
-      ...voiceSettings,
-    };
-
-    let elevenLabsRes = await requestElevenLabsTts(elevenLabsKey, targetVoiceId, text, settings);
-    if (!elevenLabsRes.ok && targetVoiceId !== DEFAULT_VOICE_ID) {
-      elevenLabsRes = await requestElevenLabsTts(elevenLabsKey, DEFAULT_VOICE_ID, text, settings);
-    }
-
-    if (!elevenLabsRes.ok) {
-      const errText = await elevenLabsRes.text().catch(() => '');
-      throw AppError.internal(`ElevenLabs TTS error (${elevenLabsRes.status}): ${errText.slice(0, 500)}`);
-    }
-
-    const audioBuffer = await elevenLabsRes.arrayBuffer();
-    res.setHeader('Content-Type', 'audio/mpeg');
-    res.setHeader('Content-Length', audioBuffer.byteLength.toString());
-    res.setHeader('Cache-Control', 'private, no-store');
-    res.status(200).send(Buffer.from(audioBuffer));
+    throw new AppError('Gagal memproses sintesis suara dari seluruh penyedia upstream.', 502, 'SERVICE_UNAVAILABLE');
   } catch (err) {
     next(err);
   }
