@@ -210,14 +210,6 @@ export class OpenAiRealtimeService {
         ? cleanVoice
         : 'coral';
 
-    // Realtime API requires flat function tool definitions (name, description, parameters at top level)
-    const realtimeTools = INFERA_TOOL_DEFINITIONS.map((t) => ({
-      type: 'function' as const,
-      name: t.function.name,
-      description: t.function.description,
-      parameters: t.function.parameters,
-    }));
-
     const payload = {
       session: {
         model: 'gpt-live-1',
@@ -227,8 +219,6 @@ export class OpenAiRealtimeService {
             voice: voiceParam,
           },
         },
-        tools: realtimeTools,
-        tool_choice: 'auto',
       },
       transport: {
         type: 'webrtc',
@@ -252,8 +242,8 @@ export class OpenAiRealtimeService {
         console.error(`[OpenAiLiveSession] Upstream error (${response.status}):`, errorBody);
         throw new AppError(
           `Gagal membuat sesi Live WebRTC OpenAI (${response.status}): ${errorBody.slice(0, 300)}`,
-          response.status === 401 || response.status === 403 ? 403 : 502,
-          'SERVICE_UNAVAILABLE'
+          response.status === 400 ? 400 : response.status === 401 || response.status === 403 ? 403 : 502,
+          response.status === 400 ? 'VALIDATION_ERROR' : 'SERVICE_UNAVAILABLE'
         );
       }
 
