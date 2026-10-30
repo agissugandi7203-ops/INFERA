@@ -7,8 +7,9 @@ export const API_V2_PREFIX = `/api/${API_V2_VERSION}`;
 export const DEFAULT_AI_MODEL = 'meta-llama/llama-3.3-70b-instruct:free';
 export const DEFAULT_OPENAI_CHAT_MODEL = 'gpt-6-luna';
 export const DEFAULT_OPENAI_REALTIME_MODEL = 'gpt-live-1';
+export const OFFICIAL_FERA_VOICE_ID = 'coral';
 export const CUTE_ANIME_VOICE_ID = 'voice_6ae35d565f908191a5b73228455d503f';
-export const DEFAULT_REALTIME_VOICE = CUTE_ANIME_VOICE_ID;
+export const DEFAULT_REALTIME_VOICE = OFFICIAL_FERA_VOICE_ID;
 
 export const ERROR_CODES = {
   BAD_REQUEST: 'BAD_REQUEST',

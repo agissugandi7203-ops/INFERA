@@ -1,10 +1,10 @@
-// 1. Suara Avatar FERA (OpenAI Live Custom Voice & WebRTC)
-export const VOICE_AVATAR_FERA = 'voice_6ae35d565f908191a5b73228455d503f'; // FERA Custom Voice (Suara Wanita Jernih, Ramah & Berwibawa)
+// 1. Suara Avatar FERA (Official OpenAI Voice & WebRTC)
+export const VOICE_AVATAR_FERA = 'coral'; // Suara Resmi FERA (Wanita Dewasa Cerdas, Ramah, Jernih & Berwibawa)
 export const VOICE_AVATAR_INFERA = VOICE_AVATAR_FERA;
 export const VOICE_AVATAR_VERA = VOICE_AVATAR_FERA;
-export const VOICE_AVATAR_LUNA = 'voice_6ae35d565f908191a5b73228455d503f';
+export const VOICE_AVATAR_LUNA = 'coral';
 export const VOICE_DEFAULT_ID = VOICE_AVATAR_FERA;
-export const VOICE_SECONDARY_ID = 'coral';
+export const VOICE_SECONDARY_ID = 'sage';
 
 // 2. Suara Inti AI Chat (INFERA Central AI System - Narator Resmi Laporan & Investigasi)
 export const VOICE_CHAT_SYSTEM_AUDITOR = 'coral'; // INFERA Official Voice

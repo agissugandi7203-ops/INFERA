@@ -1,6 +1,5 @@
 import {
   API_V2_PREFIX,
-  CUTE_ANIME_VOICE_ID,
   DEFAULT_REALTIME_VOICE,
   type RealtimeConnectionState,
   type RealtimeTranscriptItem,
@@ -127,7 +126,7 @@ export class RealtimeVoiceService {
         },
         body: JSON.stringify({
           sdp: offer.sdp,
-          voice: voice || CUTE_ANIME_VOICE_ID,
+          voice: voice || DEFAULT_REALTIME_VOICE,
         }),
       });
 
@@ -254,9 +253,20 @@ export class RealtimeVoiceService {
       analyser.smoothingTimeConstant = 0.4;
       source.connect(analyser);
 
-      // Connect source to audioCtx.destination directly for full 48kHz wideband audio output!
-      // This bypasses the narrow-band telephony/communications filter in Chrome and Windows.
-      source.connect(audioCtx.destination);
+      // Volume booster (+5.5 dB) & dynamics compressor for crystal-clear, loud, and punchy audio output
+      const gainNode = audioCtx.createGain();
+      gainNode.gain.setValueAtTime(1.85, audioCtx.currentTime);
+
+      const compressor = audioCtx.createDynamicsCompressor();
+      compressor.threshold.setValueAtTime(-24, audioCtx.currentTime);
+      compressor.knee.setValueAtTime(30, audioCtx.currentTime);
+      compressor.ratio.setValueAtTime(4, audioCtx.currentTime);
+      compressor.attack.setValueAtTime(0.003, audioCtx.currentTime);
+      compressor.release.setValueAtTime(0.25, audioCtx.currentTime);
+
+      source.connect(gainNode);
+      gainNode.connect(compressor);
+      compressor.connect(audioCtx.destination);
 
       // Keep muted HTMLAudioElement to satisfy browser WebRTC autoplay permission policy
       const audioEl = new Audio();

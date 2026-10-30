@@ -23,7 +23,7 @@ const requestOpenAiTts = async (apiKey: string, voice: string, text: string) => 
       voice: chosenVoice,
       input: text,
       response_format: 'mp3',
-      speed: 1.05,
+      speed: 1.0,
     }),
     signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
   });

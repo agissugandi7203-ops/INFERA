@@ -252,6 +252,7 @@ export class SpeechService {
     const url = URL.createObjectURL(blob);
     this.currentAudioUrl = url;
     const audio = new Audio(url);
+    audio.volume = 1.0;
     this.currentAudio = audio;
 
     let phase = 0;
@@ -305,8 +306,9 @@ export class SpeechService {
 
     const utterance = new SpeechSynthesisUtterance(cleanText);
     utterance.lang = 'id-ID';
-    utterance.rate = 1.08;
-    utterance.pitch = 1.35;
+    utterance.volume = 1.0;
+    utterance.rate = 1.0;
+    utterance.pitch = 1.0;
 
     const voices = this.synth.getVoices();
     const femaleVoice = voices.find(
