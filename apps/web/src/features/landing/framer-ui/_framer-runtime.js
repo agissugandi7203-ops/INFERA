@@ -56797,7 +56797,7 @@ var richTextContainerComponentType = "RichTextContainer";
 function getValidRestProps(rest) {
   const validProps = {};
   for (const key7 in rest) {
-    if (isValidMotionProp(key7) || isPropValid(key7)) {
+    if (!key7.startsWith("__") && (isValidMotionProp(key7) || isPropValid(key7))) {
       validProps[key7] = rest[key7];
     }
   }

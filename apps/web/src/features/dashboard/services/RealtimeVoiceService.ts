@@ -72,6 +72,37 @@ export class RealtimeVoiceService {
   }
 
   /**
+   * Cleanup any orphaned WebRTC <audio> elements or previous HMR service instances
+   */
+  private cleanupOrphanedAudio(): void {
+    try {
+      const win = window as unknown as { __inferaRealtimeService?: RealtimeVoiceService };
+      if (win.__inferaRealtimeService && win.__inferaRealtimeService !== this) {
+        try {
+          win.__inferaRealtimeService.disconnect();
+        } catch {
+          // ignore
+        }
+      }
+      win.__inferaRealtimeService = this;
+
+      document.querySelectorAll('audio').forEach((el) => {
+        if (el !== this.audioElement) {
+          try {
+            el.pause();
+            el.srcObject = null;
+            el.remove();
+          } catch {
+            // ignore
+          }
+        }
+      });
+    } catch {
+      // ignore
+    }
+  }
+
+  /**
    * Connect to OpenAI Live Sessions (gpt-live-1) via WebRTC
    */
   public async connect(voice: RealtimeVoiceName = DEFAULT_REALTIME_VOICE): Promise<void> {
@@ -79,30 +110,31 @@ export class RealtimeVoiceService {
       return;
     }
 
+    // Ensure any previous HMR instance or orphaned audio elements are killed first
+    this.cleanupOrphanedAudio();
+
     this.setState('connecting');
     this.listeners.onEmotionChange?.('listening');
     this.listeners.onLiveSpeechText?.('Menghubungkan suara FERA...');
 
     try {
-      // Pre-initialize and unlock AudioContext synchronously inside user click gesture
+      // Pre-initialize and unlock AudioContext using native OS sample rate (no forced 48kHz resampling!)
       const AudioCtx =
         window.AudioContext ||
         (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
       if (!this.audioContext || this.audioContext.state === 'closed') {
-        this.audioContext = new AudioCtx({ sampleRate: 48000, latencyHint: 'interactive' });
+        this.audioContext = new AudioCtx();
       }
       if (this.audioContext.state === 'suspended') {
         await this.audioContext.resume().catch(() => {});
       }
 
-      // Step 1: Acquire User Microphone with autoGainControl enabled so user voice is loud and clear
+      // Step 1: Acquire User Microphone with native sample rate & autoGainControl
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,
           noiseSuppression: true,
           autoGainControl: true,
-          sampleRate: 48000,
-          channelCount: 1,
         },
       });
       this.localStream = stream;
@@ -298,6 +330,7 @@ export class RealtimeVoiceService {
       }
 
       const audioEl = document.createElement('audio');
+      audioEl.setAttribute('data-infera-webrtc', 'true');
       audioEl.srcObject = remoteStream;
       audioEl.autoplay = true;
       audioEl.muted = false;
@@ -305,19 +338,20 @@ export class RealtimeVoiceService {
       audioEl.setAttribute('playsinline', 'true');
       audioEl.style.display = 'none';
       document.body.appendChild(audioEl);
+      this.audioElement = audioEl;
+      this.cleanupOrphanedAudio();
       audioEl.play().catch((e) => {
         console.warn('[RealtimeVoice] AudioElement play warning:', e);
       });
-      this.audioElement = audioEl;
 
-      // 2. Web Audio API AnalyserNode + synchronous gain boost
+      // 2. Web Audio API AnalyserNode (native OS sample rate, connected ONLY to analyser)
       const AudioCtx =
         window.AudioContext ||
         (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
       const audioCtx =
         this.audioContext && this.audioContext.state !== 'closed'
           ? this.audioContext
-          : new AudioCtx({ sampleRate: 48000, latencyHint: 'interactive' });
+          : new AudioCtx();
       this.audioContext = audioCtx;
 
       if (audioCtx.state === 'suspended') {
