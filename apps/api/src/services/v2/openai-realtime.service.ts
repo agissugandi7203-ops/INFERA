@@ -1,4 +1,5 @@
 import {
+  BENCHMARK_CLAIMS_KNOWLEDGE_PROMPT,
   DEFAULT_OPENAI_REALTIME_MODEL,
   DEFAULT_REALTIME_VOICE,
   INFERA_TOOL_DEFINITIONS,
@@ -54,6 +55,8 @@ Domain Pengetahuan 4 Modus Fraud Peserta:
 Etika Human-in-the-Loop & Governed Actions:
 - Anda TIDAK boleh mengeksekusi penangguhan kartu atau sanksi secara mandiri tanpa persetujuan manusia.
 - Selalu ajukan usulan melalui tool rekomendasi tindakan (seperti propose_participant_suspension, propose_warning_letter, propose_case_review) agar auditor manusia dapat meninjau dan menyetujuinya di dashboard.
+
+${BENCHMARK_CLAIMS_KNOWLEDGE_PROMPT}
 `.trim();
 }
 

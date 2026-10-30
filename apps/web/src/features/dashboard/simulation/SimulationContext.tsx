@@ -1,10 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import type { JknClaimRecord, SimulationStats } from '@healthathon/shared';
-import {
-  generateClaimByScenario,
-  generateNormalClaim,
-  generateParticipantDoctorShoppingClaim,
-} from './claimGenerator';
+import { getBenchmarkJknClaims, type JknClaimRecord, type SimulationStats } from '@healthathon/shared';
+import { generateClaimByScenario } from './claimGenerator';
 
 interface SimulationContextType {
   claims: JknClaimRecord[];
@@ -85,14 +81,10 @@ export const SimulationProvider: React.FC<{
     }
   }, []);
 
-  // Initial seed: 7 clean verified claims + 1 benchmark case for audit
+  // Initial seed: 18 active benchmark claims for instant audit proof & evaluation
   useEffect(() => {
     if (claims.length === 0) {
-      const initialBatch: JknClaimRecord[] = [];
-      for (let i = 0; i < 7; i++) {
-        initialBatch.push(generateNormalClaim());
-      }
-      initialBatch.push(generateParticipantDoctorShoppingClaim());
+      const initialBatch: JknClaimRecord[] = getBenchmarkJknClaims();
       setClaims(initialBatch);
       const firstAnomaly = initialBatch.find((c) => c.isAnomaly);
       if (firstAnomaly) setSelectedClaimForAudit(firstAnomaly);

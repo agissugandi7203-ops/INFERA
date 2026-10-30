@@ -3,6 +3,7 @@ import {
   ActionRecommendation,
   FraudAnomalySignal,
   InvestigationRiskLevel,
+  getBenchmarkJknClaims,
 } from '@healthathon/shared';
 import type { JknClaimRecord } from '@healthathon/shared';
 import { FALLBACK_CASES } from '../../../../services/participantRiskApi';
@@ -416,6 +417,20 @@ async function findParticipantData(query: string, context?: ToolExecutionContext
       return { source: 'live' as const, data: context.selectedClaim };
     }
     return null;
+  }
+
+  // 0. Check hardcoded active demo benchmark claims (0ms instantaneous lookup)
+  const benchMatch = getBenchmarkJknClaims().find(
+    (c) =>
+      c.noSep.toLowerCase() === cleanQ ||
+      c.noSep.toLowerCase().includes(cleanQ) ||
+      c.namaPeserta.toLowerCase() === cleanQ ||
+      c.namaPeserta.toLowerCase().includes(cleanQ) ||
+      c.nik === cleanQ ||
+      (c.nik.length > 5 && cleanQ.includes(c.nik.replace(/\*/g, '')))
+  );
+  if (benchMatch) {
+    return { source: 'live' as const, data: benchMatch };
   }
 
   // 1. Check live simulation anomalies & claims first (highest real-time priority)

@@ -3,6 +3,7 @@ import {
   ToolProgressStep,
   RagSearchResult,
   InvestigationRiskLevel,
+  BENCHMARK_CLAIMS_KNOWLEDGE_PROMPT,
 } from '@healthathon/shared';
 import {
   TOOL_FRIENDLY_LABELS,
@@ -101,7 +102,9 @@ ATURAN WAJIB & ANTI-HALUSINASI:
 5. Human-in-the-Loop:
    - Rekomendasikan tindakan berjenjang ("propose_participant_suspension", "propose_warning_letter", "propose_case_review") tanpa eksekusi sepihak.
 6. Format Markdown Bersih:
-   - Sajikan teks Markdown bersih. JANGAN PERNAH membungkus respon dalam format JSON atau objek {"text": ...}.`;
+   - Sajikan teks Markdown bersih. JANGAN PERNAH membungkus respon dalam format JSON atau objek {"text": ...}.
+
+${BENCHMARK_CLAIMS_KNOWLEDGE_PROMPT}`;
 }
 
 interface PlannedTool {

@@ -6,3 +6,4 @@ export * from './tool.types.js';
 export * from './tool.definitions.js';
 export * from './realtime.types.js';
 export * from './temporal.utils.js';
+export * from './claims-benchmark.js';

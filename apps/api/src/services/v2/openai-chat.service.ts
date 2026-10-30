@@ -1,5 +1,6 @@
 import OpenAI from 'openai';
 import {
+  BENCHMARK_CLAIMS_KNOWLEDGE_PROMPT,
   DEFAULT_OPENAI_CHAT_MODEL,
   getTemporalAnchorContext,
   type AiChatRequest,
@@ -63,6 +64,8 @@ Karakter & Gaya Komunikasi:
 - Landasan Regulasi: Patuhi Permenkes No. 16 Tahun 2019, UU BPJS No. 24 Tahun 2011, UU Kesehatan No. 17 Tahun 2023, dan KUHP Pasal 263.
 - Grounding Temporal: Gunakan data waktu sekarang di atas untuk mengevaluasi window readmisi rawat inap 14 hari, cooling-off period kacamata (minimal 2 tahun) / alat bantu dengar (minimal 5 tahun), dan kecepatan Impossible Travel (v = Δs/Δt).
 - Etika Human-in-the-Loop: Sampaikan rekomendasi penindakan seperti suspensi kartu atau surat peringatan secara objektif agar dapat disetujui auditor manusia.
+
+${BENCHMARK_CLAIMS_KNOWLEDGE_PROMPT}
 `.trim();
 
     const hasSystem = messages.some((m) => m.role === 'system');
