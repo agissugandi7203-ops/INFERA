@@ -426,6 +426,7 @@ async function findParticipantData(query: string, context?: ToolExecutionContext
       c.noSep.toLowerCase().includes(cleanQ) ||
       c.namaPeserta.toLowerCase() === cleanQ ||
       c.namaPeserta.toLowerCase().includes(cleanQ) ||
+      c.namaFaskes.toLowerCase().includes(cleanQ) ||
       c.nik === cleanQ ||
       (c.nik.length > 5 && cleanQ.includes(c.nik.replace(/\*/g, '')))
   );
@@ -443,7 +444,8 @@ async function findParticipantData(query: string, context?: ToolExecutionContext
     (c) =>
       c.noKartu.toLowerCase().includes(cleanQ) ||
       c.noSep.toLowerCase().includes(cleanQ) ||
-      c.namaPeserta.toLowerCase().includes(cleanQ)
+      c.namaPeserta.toLowerCase().includes(cleanQ) ||
+      c.namaFaskes.toLowerCase().includes(cleanQ)
   );
 
   if (liveMatch) {
@@ -541,7 +543,50 @@ export async function executeInferaTool(
 
   switch (toolName) {
     case 'analyze_participant': {
-      const query = String(args.participant_query || '');
+      const query = String(args.participant_query || '').trim();
+      const cleanQ = query.toLowerCase();
+
+      // Check if query is asking for a Health Facility (Faskes)
+      const allActiveClaims =
+        context?.claims && context.claims.length > 0 ? context.claims : getBenchmarkJknClaims();
+      const facilityClaims = allActiveClaims.filter(
+        (c) =>
+          cleanQ.length >= 3 &&
+          (c.namaFaskes.toLowerCase().includes(cleanQ) ||
+            cleanQ.includes(c.namaFaskes.toLowerCase()) ||
+            c.ppkPelayanan.toLowerCase() === cleanQ)
+      );
+
+      if (facilityClaims.length > 0) {
+        const faskesName = facilityClaims[0].namaFaskes;
+        const totalTariff = facilityClaims.reduce((sum, c) => sum + (c.cbgTariff || 0), 0);
+        const anomalies = facilityClaims.filter((c) => c.isAnomaly);
+        return {
+          success: true,
+          summary: `Fasilitas Kesehatan ${faskesName} memiliki ${facilityClaims.length} klaim aktif (Total Tarif: Rp ${totalTariff.toLocaleString('id-ID')}), terdiri dari ${anomalies.length} klaim anomali dan ${facilityClaims.length - anomalies.length} klaim lolos wajar.`,
+          data: {
+            facility_name: faskesName,
+            faskes_class: facilityClaims[0].kelasFaskes,
+            total_claims: facilityClaims.length,
+            total_tariff_idr: totalTariff,
+            anomalies_count: anomalies.length,
+            clean_claims_count: facilityClaims.length - anomalies.length,
+            claims: facilityClaims.map((cl) => ({
+              no_sep: cl.noSep,
+              patient_name: cl.namaPeserta,
+              nik: cl.nik,
+              service_type: cl.jnsPelayanan,
+              diagnosa: `${cl.kodeDiagnosa} - ${cl.namaDiagnosa}`,
+              cbg_code: cl.cbgCode,
+              tariff_cbg: cl.cbgTariff,
+              risk_score: cl.fraudRiskScore,
+              status: cl.isAnomaly ? 'ANOMALI' : 'LOLOS_WAJAR',
+              anomaly_reason: cl.anomalyTitle,
+            })),
+          },
+        };
+      }
+
       const found = await findParticipantData(query, context);
 
       if (!found) {
@@ -987,9 +1032,10 @@ export async function executeInferaTool(
 
       return {
         success: true,
-        summary: `Pintasan navigasi ke ${route} disiapkan: "${reason}"`,
+        summary: `Pintasan navigasi ke ${route} berhasil dibuka: "${reason}"`,
         data: {
           route,
+          targetRoute: route,
           reason,
         },
       };

@@ -17,6 +17,7 @@ export interface RealtimeVoiceListeners {
   onTranscript?: (item: RealtimeTranscriptItem) => void;
   onLiveSpeechText?: (liveText: string) => void;
   onActionRecommendation?: (recommendation: ActionRecommendation) => void;
+  onNavigate?: (route: string) => void;
   onError?: (error: string) => void;
 }
 
@@ -27,14 +28,17 @@ export class RealtimeVoiceService {
   private audioContext: AudioContext | null = null;
   private audioElement: HTMLAudioElement | null = null;
   private mouthInterval: number | null = null;
+  private userTranscriptTimer: number | null = null;
+  private assistantTranscriptTimer: number | null = null;
 
   private state: RealtimeConnectionState = 'disconnected';
   private listeners: RealtimeVoiceListeners = {};
   private executionContext?: ToolExecutionContext;
   private currentUserTranscript = '';
-  private bufferedUserText = '';
   private currentAssistantTranscript = '';
+  private handledCallIds = new Set<string>();
   private lastMouthOpen = 0;
+  private silentTicks = 0;
 
   constructor(listeners: RealtimeVoiceListeners = {}) {
     this.listeners = listeners;
@@ -53,7 +57,12 @@ export class RealtimeVoiceService {
   }
 
   public isConnected(): boolean {
-    return this.state === 'connected' || this.state === 'listening' || this.state === 'speaking';
+    return (
+      this.state === 'connecting' ||
+      this.state === 'connected' ||
+      this.state === 'listening' ||
+      this.state === 'speaking'
+    );
   }
 
   private setState(newState: RealtimeConnectionState): void {
@@ -63,24 +72,35 @@ export class RealtimeVoiceService {
   }
 
   /**
-   * Connect to OpenAI Realtime Voice via WebRTC
-   * Uses direct SDP exchange with GPT-Live & custom anime voice (voice_6ae35d565f908191a5b73228455d503f)
+   * Connect to OpenAI Live Sessions (gpt-live-1) via WebRTC
    */
   public async connect(voice: RealtimeVoiceName = DEFAULT_REALTIME_VOICE): Promise<void> {
-    if (this.isConnected() || this.state === 'connecting') {
+    if (this.isConnected()) {
       return;
     }
 
     this.setState('connecting');
     this.listeners.onEmotionChange?.('listening');
+    this.listeners.onLiveSpeechText?.('Menghubungkan suara FERA...');
 
     try {
-      // Step 1: Acquire User Microphone with studio-quality constraints (disable telephone AGC)
+      // Pre-initialize and unlock AudioContext synchronously inside user click gesture
+      const AudioCtx =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      if (!this.audioContext || this.audioContext.state === 'closed') {
+        this.audioContext = new AudioCtx({ sampleRate: 48000, latencyHint: 'interactive' });
+      }
+      if (this.audioContext.state === 'suspended') {
+        await this.audioContext.resume().catch(() => {});
+      }
+
+      // Step 1: Acquire User Microphone with autoGainControl enabled so user voice is loud and clear
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,
           noiseSuppression: true,
-          autoGainControl: false,
+          autoGainControl: true,
           sampleRate: 48000,
           channelCount: 1,
         },
@@ -99,13 +119,19 @@ export class RealtimeVoiceService {
         }
       };
 
+      pc.onconnectionstatechange = () => {
+        if (pc.connectionState === 'failed' || pc.connectionState === 'closed') {
+          this.disconnect();
+        }
+      };
+
       // Add local microphone audio track to WebRTC connection
       const audioTrack = stream.getAudioTracks()[0];
       if (audioTrack) {
         pc.addTrack(audioTrack, stream);
       }
 
-      // Step 3: Setup SCTP DataChannel (live-events & oai-events) for JSON transcripts & events
+      // Step 3: Setup SCTP DataChannel ('live-events') for JSON transcripts & tool call events
       const dc = pc.createDataChannel('live-events');
       this.dataChannel = dc;
       this.setupDataChannel(dc);
@@ -114,8 +140,10 @@ export class RealtimeVoiceService {
       const offer = await pc.createOffer();
       await pc.setLocalDescription(offer);
 
-      // Step 5: Send SDP offer to Backend v2 (which connects to OpenAI Live Sessions with custom voice)
-      const rawApiUrl = (import.meta.env.VITE_API_URL || '').replace(/\/api\/v[12]\/?$/, '').replace(/\/+$/, '');
+      // Step 5: Send SDP offer to Backend v2 (which connects to OpenAI Live Sessions with gpt-live-1)
+      const rawApiUrl = (import.meta.env.VITE_API_URL || '')
+        .replace(/\/api\/v[12]\/?$/, '')
+        .replace(/\/+$/, '');
       const authHeaders = await getAuthHeaders();
 
       const res = await fetch(`${rawApiUrl}${API_V2_PREFIX}/voice/realtime-session`, {
@@ -148,8 +176,10 @@ export class RealtimeVoiceService {
         sdp: answerSdp,
       });
 
-      this.setState('connected');
-      this.listeners.onEmotionChange?.('normal');
+      // Keep state in 'listening' so the visual indicator stays active while duplex mic is open
+      this.setState('listening');
+      this.listeners.onEmotionChange?.('listening');
+      this.listeners.onLiveSpeechText?.('');
     } catch (err: unknown) {
       const errorMsg = err instanceof Error ? err.message : String(err);
       console.error('[RealtimeVoiceService] Connection error:', errorMsg);
@@ -164,6 +194,19 @@ export class RealtimeVoiceService {
    * Disconnect and release all WebRTC and Web Audio resources cleanly
    */
   public disconnect(): void {
+    this.flushUserTranscript();
+    this.flushAssistantTranscript();
+
+    if (this.userTranscriptTimer) {
+      clearTimeout(this.userTranscriptTimer);
+      this.userTranscriptTimer = null;
+    }
+
+    if (this.assistantTranscriptTimer) {
+      clearTimeout(this.assistantTranscriptTimer);
+      this.assistantTranscriptTimer = null;
+    }
+
     if (this.mouthInterval) {
       clearInterval(this.mouthInterval);
       this.mouthInterval = null;
@@ -172,6 +215,9 @@ export class RealtimeVoiceService {
     if (this.audioElement) {
       this.audioElement.pause();
       this.audioElement.srcObject = null;
+      if (this.audioElement.parentNode) {
+        this.audioElement.parentNode.removeChild(this.audioElement);
+      }
       this.audioElement = null;
     }
 
@@ -207,15 +253,19 @@ export class RealtimeVoiceService {
       this.peerConnection = null;
     }
 
+    this.currentUserTranscript = '';
     this.currentAssistantTranscript = '';
+    this.handledCallIds.clear();
     this.lastMouthOpen = 0;
+    this.silentTicks = 0;
+    this.listeners.onLiveSpeechText?.('');
     this.listeners.onMouthOpen?.(0);
     this.listeners.onEmotionChange?.('normal');
     this.setState('disconnected');
   }
 
   /**
-   * Sends an intentional text message via the DataChannel
+   * Sends an intentional text message via the DataChannel (GPT-Live format)
    */
   public sendTextMessage(text: string): void {
     if (!this.dataChannel || this.dataChannel.readyState !== 'open') {
@@ -224,7 +274,7 @@ export class RealtimeVoiceService {
     }
 
     const event = {
-      type: 'conversation.item.create',
+      type: 'response.item.create',
       item: {
         type: 'message',
         role: 'user',
@@ -238,54 +288,60 @@ export class RealtimeVoiceService {
 
   private setupAudioPipeline(remoteStream: MediaStream): void {
     try {
-      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-      const audioCtx = new AudioCtx({ sampleRate: 48000, latencyHint: 'interactive' });
+      // 1. Primary native WebRTC audio playback via unmuted HTMLAudioElement in DOM
+      if (this.audioElement) {
+        this.audioElement.pause();
+        this.audioElement.srcObject = null;
+        if (this.audioElement.parentNode) {
+          this.audioElement.parentNode.removeChild(this.audioElement);
+        }
+      }
+
+      const audioEl = document.createElement('audio');
+      audioEl.srcObject = remoteStream;
+      audioEl.autoplay = true;
+      audioEl.muted = false;
+      audioEl.volume = 1.0;
+      audioEl.setAttribute('playsinline', 'true');
+      audioEl.style.display = 'none';
+      document.body.appendChild(audioEl);
+      audioEl.play().catch((e) => {
+        console.warn('[RealtimeVoice] AudioElement play warning:', e);
+      });
+      this.audioElement = audioEl;
+
+      // 2. Web Audio API AnalyserNode + synchronous gain boost
+      const AudioCtx =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      const audioCtx =
+        this.audioContext && this.audioContext.state !== 'closed'
+          ? this.audioContext
+          : new AudioCtx({ sampleRate: 48000, latencyHint: 'interactive' });
       this.audioContext = audioCtx;
 
-      // Resume context if browser suspended it
       if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
+        audioCtx.resume().catch(() => {});
       }
 
       const source = audioCtx.createMediaStreamSource(remoteStream);
       const analyser = audioCtx.createAnalyser();
       analyser.fftSize = 64;
-      analyser.smoothingTimeConstant = 0.4;
+      analyser.smoothingTimeConstant = 0.35;
+      // Connect ONLY to analyser for 60 FPS lip-sync; audioEl plays the clean native WebRTC audio directly (prevents double-audio echo!)
       source.connect(analyser);
-
-      // Volume booster (+5.5 dB) & dynamics compressor for crystal-clear, loud, and punchy audio output
-      const gainNode = audioCtx.createGain();
-      gainNode.gain.setValueAtTime(1.85, audioCtx.currentTime);
-
-      const compressor = audioCtx.createDynamicsCompressor();
-      compressor.threshold.setValueAtTime(-24, audioCtx.currentTime);
-      compressor.knee.setValueAtTime(30, audioCtx.currentTime);
-      compressor.ratio.setValueAtTime(4, audioCtx.currentTime);
-      compressor.attack.setValueAtTime(0.003, audioCtx.currentTime);
-      compressor.release.setValueAtTime(0.25, audioCtx.currentTime);
-
-      source.connect(gainNode);
-      gainNode.connect(compressor);
-      compressor.connect(audioCtx.destination);
-
-      // Keep muted HTMLAudioElement to satisfy browser WebRTC autoplay permission policy
-      const audioEl = new Audio();
-      audioEl.srcObject = remoteStream;
-      audioEl.muted = true;
-      audioEl.autoplay = true;
-      audioEl.play().catch(() => {});
-      this.audioElement = audioEl;
 
       const dataArray = new Uint8Array(analyser.frequencyBinCount);
 
-      // Sample RMS amplitude every 30ms for 60 FPS mouth flap sync
+      if (this.mouthInterval) {
+        clearInterval(this.mouthInterval);
+      }
+
+      // 3. Drive 60 FPS mouth flap & speaking state directly from Web Audio RMS energy
+      // (Per GPT-Live migration playbook: gpt-live-1 does not emit explicit audio-done events)
       this.mouthInterval = window.setInterval(() => {
-        if (this.state !== 'speaking') {
-          if (this.lastMouthOpen > 0) {
-            this.lastMouthOpen = 0;
-            this.listeners.onMouthOpen?.(0);
-          }
-          return;
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume().catch(() => {});
         }
 
         analyser.getByteFrequencyData(dataArray);
@@ -295,10 +351,27 @@ export class RealtimeVoiceService {
         }
         const avg = sum / dataArray.length;
 
-        // Map audio level (0-255) to mouth flap value (0.0 to 1.0)
-        const mouthOpen = Math.min(1.0, Math.max(0, (avg - 8) / 75));
-        this.lastMouthOpen = mouthOpen;
-        this.listeners.onMouthOpen?.(mouthOpen);
+        if (avg > 9) {
+          this.silentTicks = 0;
+          if (this.state !== 'speaking') {
+            this.setState('speaking');
+            this.listeners.onEmotionChange?.('speaking');
+          }
+          const mouthOpen = Math.min(1.0, Math.max(0.08, (avg - 8) / 62));
+          this.lastMouthOpen = mouthOpen;
+          this.listeners.onMouthOpen?.(mouthOpen);
+        } else {
+          if (this.lastMouthOpen > 0) {
+            this.lastMouthOpen = 0;
+            this.listeners.onMouthOpen?.(0);
+          }
+          this.silentTicks += 1;
+          // After ~650ms of silence following assistant speech, return to active 'listening' state
+          if (this.state === 'speaking' && this.silentTicks > 22) {
+            this.setState('listening');
+            this.listeners.onEmotionChange?.('listening');
+          }
+        }
       }, 30);
     } catch (err) {
       console.warn('[RealtimeVoice] Web Audio pipeline warning:', err);
@@ -307,7 +380,9 @@ export class RealtimeVoiceService {
 
   private setupDataChannel(dc: RTCDataChannel): void {
     dc.onopen = () => {
-      console.log('[RealtimeVoice] DataChannel opened');
+      console.log('[RealtimeVoice] DataChannel (live-events) opened');
+      this.setState('listening');
+      this.listeners.onEmotionChange?.('listening');
     };
 
     dc.onclose = () => {
@@ -328,102 +403,154 @@ export class RealtimeVoiceService {
     };
   }
 
+  private flushUserTranscript(): void {
+    if (this.userTranscriptTimer) {
+      clearTimeout(this.userTranscriptTimer);
+      this.userTranscriptTimer = null;
+    }
+    const text = this.currentUserTranscript.trim();
+    if (!text) return;
+    this.currentUserTranscript = '';
+    this.listeners.onLiveSpeechText?.('');
+    this.listeners.onTranscript?.({
+      id: 'user-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
+      role: 'user',
+      text,
+      timestamp: new Date().toISOString(),
+      isFinal: true,
+    });
+  }
+
+  private flushAssistantTranscript(): void {
+    if (this.assistantTranscriptTimer) {
+      clearTimeout(this.assistantTranscriptTimer);
+      this.assistantTranscriptTimer = null;
+    }
+    const text = this.currentAssistantTranscript.trim();
+    if (!text) return;
+    this.currentAssistantTranscript = '';
+    this.listeners.onLiveSpeechText?.('');
+    this.listeners.onTranscript?.({
+      id: 'assistant-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
+      role: 'assistant',
+      text,
+      timestamp: new Date().toISOString(),
+      isFinal: true,
+    });
+  }
+
   private async handleDataChannelMessage(msg: Record<string, unknown>): Promise<void> {
     const type = String(msg.type || '');
 
-    // 1. User starts speaking -> Instant Barge-in!
-    if (type === 'input_audio_buffer.speech_started' || type === 'session.input_speech.started') {
-      this.setState('listening');
-      this.currentUserTranscript = '';
-      this.listeners.onMouthOpen?.(0);
-      this.listeners.onEmotionChange?.('listening');
-      this.listeners.onLiveSpeechText?.('');
-      return;
-    }
-
-    // 2. User stopped speaking
-    if (type === 'input_audio_buffer.speech_stopped' || type === 'session.input_speech.stopped') {
-      this.setState('connected');
-      this.listeners.onEmotionChange?.('thinking');
-      return;
-    }
-
-    // 3. User Audio Transcription Streaming Deltas (Update live speech preview pill, NEVER spam chat bubbles)
+    // 1. User Audio Transcription Streaming Deltas (gpt-live-1 emits session.input_transcript.delta)
     if (type === 'session.input_transcript.delta') {
+      // If assistant transcript was buffered from previous turn, flush it first
+      if (this.currentAssistantTranscript.trim()) {
+        this.flushAssistantTranscript();
+      }
+
       const delta = String(msg.delta || '');
       this.currentUserTranscript += delta;
       if (this.currentUserTranscript.trim()) {
         this.listeners.onLiveSpeechText?.(this.currentUserTranscript.trim());
       }
+
+      if (this.userTranscriptTimer) {
+        clearTimeout(this.userTranscriptTimer);
+      }
+      this.userTranscriptTimer = window.setTimeout(() => {
+        this.flushUserTranscript();
+      }, 950);
       return;
     }
 
-    // 3b. Finalized User Speech Transcription (Buffer to prevent fragmented bubbles)
-    if (type === 'conversation.item.input_audio_transcription.completed' || type === 'session.input_transcript.done') {
-      const seg = (String(msg.transcript || '') || this.currentUserTranscript).trim();
-      this.currentUserTranscript = '';
-      this.listeners.onLiveSpeechText?.('');
-      if (seg) {
-        if (this.bufferedUserText) {
-          this.bufferedUserText += ' ' + seg;
-        } else {
-          this.bufferedUserText = seg;
+    // Legacy / Fallback input transcript done
+    if (
+      type === 'conversation.item.input_audio_transcription.completed' ||
+      type === 'session.input_transcript.done'
+    ) {
+      const seg = String(msg.transcript || '').trim();
+      if (seg && !this.currentUserTranscript.includes(seg)) {
+        this.currentUserTranscript = (this.currentUserTranscript + ' ' + seg).trim();
+      }
+      this.flushUserTranscript();
+      return;
+    }
+
+    // 2. Delegation Created -> User finished speaking, backend reasoning started
+    if (type === 'session.delegation.created') {
+      this.flushUserTranscript();
+      this.listeners.onEmotionChange?.('thinking');
+      return;
+    }
+
+    // 3. Assistant Audio Transcript Streaming Deltas (gpt-live-1 emits session.output_transcript.delta)
+    if (type === 'session.output_transcript.delta' || type === 'response.audio_transcript.delta') {
+      // Ensure user transcript appears before assistant reply
+      if (this.currentUserTranscript.trim()) {
+        this.flushUserTranscript();
+      }
+
+      this.setState('speaking');
+      this.listeners.onEmotionChange?.('speaking');
+
+      const delta = String(msg.delta || '');
+      this.currentAssistantTranscript += delta;
+      if (this.currentAssistantTranscript.trim()) {
+        this.listeners.onLiveSpeechText?.(this.currentAssistantTranscript.trim());
+      }
+
+      if (this.assistantTranscriptTimer) {
+        clearTimeout(this.assistantTranscriptTimer);
+      }
+      this.assistantTranscriptTimer = window.setTimeout(() => {
+        this.flushAssistantTranscript();
+      }, 1100);
+      return;
+    }
+
+    // Legacy / Fallback output transcript done
+    if (type === 'response.audio_transcript.done' || type === 'session.output_transcript.done') {
+      const seg = String(msg.transcript || '').trim();
+      if (seg && !this.currentAssistantTranscript) {
+        this.currentAssistantTranscript = seg;
+      }
+      this.flushAssistantTranscript();
+      return;
+    }
+
+    // 4. GPT-Live Delegated Responses Event Envelope (Tool Calls & Reasoning)
+    if (type === 'response.event' && msg.event && typeof msg.event === 'object') {
+      if (this.currentUserTranscript.trim()) {
+        this.flushUserTranscript();
+      }
+
+      const innerEvent = msg.event as Record<string, unknown>;
+      const innerType = String(innerEvent.type || '');
+
+      if (
+        innerType === 'response.output_item.done' &&
+        innerEvent.item &&
+        typeof innerEvent.item === 'object'
+      ) {
+        const item = innerEvent.item as Record<string, unknown>;
+        if (item.type === 'function_call') {
+          await this.handleToolCall(item);
         }
       }
       return;
     }
 
-    // Flush buffered user transcript as a single message right when assistant response begins
-    if (this.bufferedUserText && (type.startsWith('response.') || type.startsWith('session.output_'))) {
-      const consolidatedUserText = this.bufferedUserText.trim();
-      this.bufferedUserText = '';
-      if (consolidatedUserText) {
-        this.listeners.onTranscript?.({
-          id: 'user-' + Date.now(),
-          role: 'user',
-          text: consolidatedUserText,
-          timestamp: new Date().toISOString(),
-          isFinal: true,
-        });
-      }
-    }
-
-    // 4. Assistant Audio Transcript Streaming & Completion
-    if (type === 'response.audio_transcript.delta' || type === 'session.output_transcript.delta') {
-      this.setState('speaking');
-      this.listeners.onEmotionChange?.('speaking');
-      this.currentAssistantTranscript += String(msg.delta || '');
-      return;
-    }
-
-    if (type === 'response.audio_transcript.done' || type === 'session.output_transcript.done') {
-      const fullTranscript = (this.currentAssistantTranscript || String(msg.transcript || '')).trim();
-      this.currentAssistantTranscript = '';
-      if (fullTranscript) {
-        this.listeners.onTranscript?.({
-          id: 'assistant-' + Date.now(),
-          role: 'assistant',
-          text: fullTranscript,
-          timestamp: new Date().toISOString(),
-          isFinal: true,
-        });
-      }
-      this.setState('connected');
-      this.listeners.onMouthOpen?.(0);
-      this.listeners.onEmotionChange?.('normal');
-      return;
-    }
-
-    // 5. Function Calling Dispatcher
+    // 5. Legacy Function Calling Dispatcher
     if (type === 'response.function_call_arguments.done') {
       await this.handleToolCall(msg);
       return;
     }
 
     // 6. Generic Error from OpenAI Gateway
-    if (type === 'error') {
+    if (type === 'error' || type === 'session.error') {
       const errObj = (msg.error as Record<string, unknown>) || {};
-      const errorMsg = String(errObj.message || 'Kesalahan gateway OpenAI');
+      const errorMsg = String(errObj.message || msg.message || 'Kesalahan gateway OpenAI Live');
       console.warn('[RealtimeVoice] Gateway error event:', errorMsg);
       this.listeners.onError?.(errorMsg);
     }
@@ -434,6 +561,10 @@ export class RealtimeVoiceService {
     const name = String(event.name || '');
     const argsStr = String(event.arguments || '{}');
 
+    if (!callId || !name) return;
+    if (this.handledCallIds.has(callId)) return;
+    this.handledCallIds.add(callId);
+
     let parsedArgs: Record<string, unknown> = {};
     try {
       parsedArgs = JSON.parse(argsStr);
@@ -441,26 +572,38 @@ export class RealtimeVoiceService {
       parsedArgs = {};
     }
 
-    console.log(`[RealtimeVoice] Invoking tool "${name}" via DataChannel:`, parsedArgs);
+    console.log(`[RealtimeVoice] Invoking tool "${name}" (${callId}) via DataChannel:`, parsedArgs);
     this.listeners.onEmotionChange?.('thinking');
+    this.listeners.onLiveSpeechText?.(`Menjalankan ${name.replace(/_/g, ' ')}...`);
 
     try {
       const result = await executeInferaTool(name, parsedArgs, this.executionContext);
 
-      // If an action recommendation was produced (e.g. suspension / warning letter), notify UI
+      // 1. Handle page navigation tool immediately
+      if (name === 'navigate_to_workflow' && result.success) {
+        const targetRoute =
+          (result.data as { targetRoute?: string })?.targetRoute ||
+          String(parsedArgs.route || '/dashboard');
+        this.listeners.onNavigate?.(targetRoute);
+      }
+
+      // 2. If an action recommendation was produced (e.g. suspension / warning letter), notify UI
       if (result.recommendation) {
         this.listeners.onActionRecommendation?.(result.recommendation);
       }
 
-      // If critical fraud detected, express surprise/alert on Luna's face
-      if (result.summary.toLowerCase().includes('critical') || result.summary.toLowerCase().includes('anomali')) {
+      // 3. If critical fraud detected, express surprise/alert on FERA's face
+      if (
+        result.summary.toLowerCase().includes('critical') ||
+        result.summary.toLowerCase().includes('anomali')
+      ) {
         this.listeners.onEmotionChange?.('surprised');
       }
 
-      // Send tool execution output back to OpenAI
+      // 4. Send tool execution output back to OpenAI Live Sessions (response.item.create + response.create)
       if (this.dataChannel && this.dataChannel.readyState === 'open') {
         const toolOutputEvent = {
-          type: 'conversation.item.create',
+          type: 'response.item.create',
           item: {
             type: 'function_call_output',
             call_id: callId,
@@ -474,8 +617,6 @@ export class RealtimeVoiceService {
         };
 
         this.dataChannel.send(JSON.stringify(toolOutputEvent));
-
-        // Request OpenAI to formulate verbal response from tool output
         this.dataChannel.send(JSON.stringify({ type: 'response.create' }));
       }
     } catch (err: unknown) {
@@ -483,7 +624,7 @@ export class RealtimeVoiceService {
       if (this.dataChannel && this.dataChannel.readyState === 'open') {
         this.dataChannel.send(
           JSON.stringify({
-            type: 'conversation.item.create',
+            type: 'response.item.create',
             item: {
               type: 'function_call_output',
               call_id: callId,

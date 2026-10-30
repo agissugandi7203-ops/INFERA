@@ -128,9 +128,11 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
   useEffect(() => {
     const service = new RealtimeVoiceService({
       onStateChange: (st) => {
-        setIsListening(st === 'listening');
-        setIsSoundDetected(st === 'listening' || st === 'speaking');
-        setIsWebRtcActive(st === 'connected' || st === 'listening' || st === 'speaking');
+        const isActive =
+          st === 'connecting' || st === 'connected' || st === 'listening' || st === 'speaking';
+        setIsListening(isActive);
+        setIsSoundDetected(st === 'connected' || st === 'listening' || st === 'speaking');
+        setIsWebRtcActive(isActive);
       },
       onMouthOpen: (openVal) => {
         if (controllerRef.current) {
@@ -139,7 +141,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
         setManualMouthOpen(openVal);
       },
       onEmotionChange: (emo) => {
-        handleSelectEmotion(emo, 4500);
+        handleSelectEmotion(emo, emo === 'listening' || emo === 'speaking' ? 0 : 4500);
       },
       onTranscript: (item) => {
         setMessages((prev) => [

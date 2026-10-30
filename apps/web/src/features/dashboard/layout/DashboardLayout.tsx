@@ -122,7 +122,7 @@ const DashboardLayoutContent: React.FC<
       controllerRef.current.setEmotion(emo);
     }
 
-    if (emo !== 'normal' && emo !== 'speaking' && timedownMs > 0) {
+    if (emo !== 'normal' && emo !== 'speaking' && emo !== 'listening' && timedownMs > 0) {
       emotionTimedownRef.current = setTimeout(() => {
         setCurrentEmotion('normal');
         if (controllerRef.current) {
@@ -131,6 +131,18 @@ const DashboardLayoutContent: React.FC<
       }, timedownMs);
     }
   };
+
+  // Sync live simulation claims & anomalies with RealtimeVoiceService execution context
+  useEffect(() => {
+    if (realtimeServiceRef.current) {
+      realtimeServiceRef.current.setExecutionContext({
+        claims,
+        anomalies,
+        selectedClaim: selectedClaimForAudit,
+        userRole: 'auditor',
+      });
+    }
+  }, [claims, anomalies, selectedClaimForAudit]);
 
   // React to streaming anomalies
   useEffect(() => {
@@ -666,33 +678,45 @@ const DashboardLayoutContent: React.FC<
         realtimeServiceRef.current = new RealtimeVoiceService();
       }
 
+      realtimeServiceRef.current.setExecutionContext({
+        claims,
+        anomalies,
+        selectedClaim: selectedClaimForAudit,
+        userRole: 'auditor',
+      });
+
       const activeVoice = (settings.avatarVoiceId || settings.elevenLabsVoiceId || VOICE_DEFAULT_ID) as RealtimeVoiceName;
 
       realtimeServiceRef.current.setListeners({
         onStateChange: (state) => {
-          if (state === 'connected') {
+          if (state === 'connecting') {
             setIsWebRtcActive(true);
-            setIsListening(false);
+            setIsListening(true);
+            setIsSoundDetected(false);
             setVoiceErrorMessage(null);
-          } else if (state === 'listening') {
+            handleSelectEmotion('listening', 0);
+          } else if (state === 'connected' || state === 'listening') {
             setIsWebRtcActive(true);
             setIsListening(true);
             setIsSoundDetected(true);
+            setVoiceErrorMessage(null);
             handleSelectEmotion('listening', 0);
           } else if (state === 'speaking') {
             setIsWebRtcActive(true);
-            setIsListening(false);
-            setIsSoundDetected(false);
+            setIsListening(true);
+            setIsSoundDetected(true);
             handleSelectEmotion('speaking', 0);
           } else if (state === 'disconnected') {
             setIsWebRtcActive(false);
             setIsListening(false);
             setIsSoundDetected(false);
+            setLiveVoiceText('');
             handleSelectEmotion('normal', 0);
           } else if (state === 'error') {
             setIsWebRtcActive(false);
             setIsListening(false);
             setIsSoundDetected(false);
+            setLiveVoiceText('');
             handleSelectEmotion('confused', 3000);
           }
         },
@@ -703,11 +727,26 @@ const DashboardLayoutContent: React.FC<
           setManualMouthOpen(mouthOpen);
         },
         onEmotionChange: (emo) => {
-          handleSelectEmotion(emo, 4000);
+          handleSelectEmotion(emo, emo === 'listening' || emo === 'speaking' ? 0 : 4000);
         },
         onLiveSpeechText: (liveText) => {
           // Updates avatar badge / indicator during speech, NEVER inserts chat bubble
           setLiveVoiceText(liveText);
+        },
+        onNavigate: (route) => {
+          navigate(route);
+        },
+        onActionRecommendation: (rec) => {
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: 'msg-' + Date.now() + '-rec',
+              role: 'assistant',
+              content: `Usulan tindakan **${rec.title}** untuk **${rec.targetName}** telah disiapkan untuk persetujuan Anda.`,
+              timestamp: new Date().toISOString(),
+              recommendations: [rec],
+            },
+          ]);
         },
         onTranscript: (item) => {
           setLiveVoiceText('');
@@ -739,7 +778,9 @@ const DashboardLayoutContent: React.FC<
         },
       });
 
+      setIsWebRtcActive(true);
       setIsListening(true);
+      setIsSoundDetected(true);
       handleSelectEmotion('listening', 0);
       setVoiceErrorMessage(null);
 

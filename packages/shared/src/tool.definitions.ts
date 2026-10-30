@@ -11,14 +11,14 @@ export const INFERA_TOOL_DEFINITIONS: AiToolDefinition[] = [
     function: {
       name: 'analyze_participant',
       description:
-        'Menganalisis rekam data dan profil risiko peserta JKN berdasarkan No Kartu, NIK, Nama, atau ID Kasus. Mengambil data aktual dari sistem audit stream dan studi kasus benchmark terverifikasi.',
+        'Menganalisis rekam data klaim, fasilitas kesehatan (Faskes), dan profil risiko peserta JKN berdasarkan Nama Peserta, Nama Faskes (Puskesmas/RS/Klinik), No SEP, No Kartu, NIK, atau ID Kasus. Mengambil data aktual dari database dan aliran transaksi aktif.',
       parameters: {
         type: 'object',
         properties: {
           participant_query: {
             type: 'string',
             description:
-              'Kata kunci pencarian peserta: Nomor Kartu BPJS (13 digit), NIK (16 digit), Nama Peserta (misal "Budi Santoso", "Hendra Wijaya", "Nurul Hidayati", "Agus Pratama"), atau ID Kasus (misal "CASE-001", "HK-ID-SHARING-2026").',
+              'Kata kunci pencarian: Nama Peserta (misal "Budi Santoso", "Hendra Wijaya"), Nama Fasilitas Kesehatan / Faskes (misal "Puskesmas Gambir", "RS Mitra Husada Semarang", "RS Sejahtera Abadi Medan", "Klinik Utama Sehat Mandiri"), Nomor SEP, Nomor Kartu BPJS, NIK, atau ID Kasus.',
           },
           include_encounters: {
             type: 'boolean',
@@ -230,6 +230,7 @@ export const INFERA_TOOL_DEFINITIONS: AiToolDefinition[] = [
           route: {
             type: 'string',
             enum: [
+              '/dashboard',
               '/dashboard/identity-risk',
               '/dashboard/unnecessary-services',
               '/dashboard/pharmacy-alkes',

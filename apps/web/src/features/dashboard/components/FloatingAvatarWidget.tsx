@@ -334,7 +334,15 @@ export const FloatingAvatarWidget: React.FC<FloatingAvatarWidgetProps> = ({
               <span className="absolute -top-0.5 right-1 w-2 h-2 rounded-full bg-emerald-300 animate-ping" />
             )}
             <span className="truncate">
-              {liveTranscript ? `"${liveTranscript}"` : (isSoundDetected ? 'Mendengarkan...' : 'Menunggu suara Anda...')}
+              {liveTranscript
+                ? `"${liveTranscript}"`
+                : currentEmotion === 'speaking'
+                  ? 'FERA Berbicara...'
+                  : currentEmotion === 'thinking'
+                    ? 'FERA Memproses Data...'
+                    : isSoundDetected
+                      ? 'FERA Aktif • Silakan bicara...'
+                      : 'Menghubungkan FERA...'}
             </span>
           </div>
         )}
@@ -350,7 +358,15 @@ export const FloatingAvatarWidget: React.FC<FloatingAvatarWidgetProps> = ({
         {/* WebGL Avatar */}
         <div className="w-full h-full pointer-events-none overflow-hidden">
           <AvatarCanvas
-            currentEmotion={isListening ? 'listening' : currentEmotion}
+            currentEmotion={
+              currentEmotion === 'speaking' ||
+              currentEmotion === 'thinking' ||
+              currentEmotion === 'surprised'
+                ? currentEmotion
+                : isListening
+                  ? 'listening'
+                  : currentEmotion
+            }
             mouthOpenAmount={manualMouthOpen}
             onControllerReady={onControllerReady}
             isMinimized={isMinimized}
