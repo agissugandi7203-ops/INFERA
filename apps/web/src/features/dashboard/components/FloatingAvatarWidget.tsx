@@ -68,7 +68,6 @@ export const FloatingAvatarWidget: React.FC<FloatingAvatarWidgetProps> = ({
   isMinimized = false,
   selectedVoiceId = VOICE_DEFAULT_ID,
   onSelectVoice,
-  isWebRtcActive = false,
 }) => {
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 640;
   const defaultScale = isMobile ? calculateResponsiveMobileScale() : DEFAULT_SCALE_DESKTOP;
@@ -321,14 +320,6 @@ export const FloatingAvatarWidget: React.FC<FloatingAvatarWidgetProps> = ({
         className={`select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
         title="Klik untuk berbicara • Klik & tahan untuk geser • Klik kanan untuk opsi"
       >
-        {/* Realtime WebRTC Active Badge */}
-        {isWebRtcActive && (
-          <div className="absolute top-2 left-1/2 -translate-x-1/2 flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold bg-emerald-950/90 text-emerald-300 border border-emerald-500/40 shadow-lg backdrop-blur-md pointer-events-none z-30 animate-in fade-in duration-200">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span>GPT REALTIME WebRTC</span>
-          </div>
-        )}
-
         {/* Listening Indicator / Live Speech Preview */}
         {isListening && (
           <div
